@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
-@Autonomous(name = "Time", group = "Robot")
+@Autonomous(name = "Drive by Time", group = "Robot")
 
 public class AutoDriveByTime extends LinearOpMode {
 

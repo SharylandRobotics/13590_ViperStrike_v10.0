@@ -4,6 +4,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class RobotHardware {
@@ -18,6 +19,7 @@ public class RobotHardware {
     private DcMotor rightBackDrive = null;
     public DcMotor liftDrive = null;
     // public DcMotor extensionDrive = null;
+    public WebcamName myEyes = null; // CAMERA!! remember to change the type of this var if not available on Dhub
     public Servo clawPinch = null;
     private CRServo clawYaw = null;
     public Servo clawAxial = null;
@@ -102,13 +104,15 @@ public class RobotHardware {
         clawAxial = myOpMode.hardwareMap.get(Servo.class, "claw_axial");
         clawExtension = myOpMode.hardwareMap.get(Servo.class, "claw_extension");
 
+        myEyes = myOpMode.hardwareMap.get(WebcamName.class, "myEyes");
+
         DRIVE_SPEED = 0.5; // Maximum autonomous driving speed for better distance accuracy.
         STRAFE_SPEED = 0.5; // Maximum autonomous strafing speed for better distance accuracy.
         TURN_SPEED = 0.4; // Maximum autonomous turning speed for better rotational accuracy.
         LIFT_SPEED = 1.0; // Maximum lift speed.
 
-        CLAW_CLOSE = 0.0; // TBD
-        CLAW_OPEN = 0.6; // TBD
+        CLAW_CLOSE = 0.8; // TBD
+        CLAW_OPEN = 0.0; // TBD
 
         CLAW_DOWN = 0.0; // TBD
         CLAW_UP = 0.6; // TBD
@@ -247,7 +251,7 @@ public class RobotHardware {
        master encoder function later on (a function with all encoders in it, wheels + lift)
      */
 
-    // Following are variables to pass across the next 2 functions defined
+    // Following are variables to pass values across the next 2 functions defined
     private int newLiftTarget;
     private double timeoutEXTERNAL;
 
