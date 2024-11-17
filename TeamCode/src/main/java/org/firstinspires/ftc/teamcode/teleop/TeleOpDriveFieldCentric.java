@@ -24,6 +24,8 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
         // Initialize all the hardware, using the hardware class.
         robot.init();
 
+        // DO NOT MOVE ROBOT HERE: IT WILL BE A PENALTY!
+
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -41,12 +43,48 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             robot.driveFieldCentric(drive, strafe, turn);
 
             // Send a telemetry message to explain controls and show robot status
-            telemetry.addData("\nStatus", "Run Time: " + runtime);
+            telemetry.addData("Status", "Run Time: " + runtime.seconds());
             telemetry.addData("Manual", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            telemetry.addData("Servos&Motors", "Pinch: %.2f, Axial: %.2f, Lift: %5.2 ",
+                    robot.clawPinch.getPosition(), robot.clawAxial.getPosition(),
+                    robot.liftDrive.getCurrentPosition());
             telemetry.update();
 
             // Place this loop so hands move at a reasonable speed
             sleep(50);
+
+            if (gamepad2.x) { // Close and Open Claw
+                robot.setClawPosition(robot.enable,0,robot.pass,0);
+            } else if (gamepad2.b) {
+                robot.setClawPosition(robot.disable,0,robot.pass,0);
+            }
+
+
+            if (gamepad2.left_bumper) { // Raise and Lower Claw
+                robot.setClawPosition(robot.pass,0,robot.enable,0);
+            } else if (gamepad2.right_bumper) {
+                robot.setClawPosition(robot.pass,0,robot.disable,0);
+            }
+
+
+            if (gamepad2.left_trigger >= 0) { // Rotate Claw
+                robot.setClawPosition(robot.pass,-gamepad2.left_trigger,robot.pass,0);
+            } else if (gamepad2.right_trigger >= 0) {
+                robot.setClawPosition(robot.pass,gamepad2.right_trigger,robot.pass,0);
+            }
+
+            if (gamepad2.y) { // Drive Lift
+                robot.liftDrive.setPower(1.0);
+            } else if (gamepad2.a) {
+                robot.liftDrive.setPower(-1.0);
+            }
+
+            /* Use for Linear Actuator for arm extension, Monday
+            if (gamepad2.left_stick_y >= 0) {
+                robot.extensionDrive.setPower(gamepad2.left_stick_y);
+            }
+
+             */
         }
     }
 }
