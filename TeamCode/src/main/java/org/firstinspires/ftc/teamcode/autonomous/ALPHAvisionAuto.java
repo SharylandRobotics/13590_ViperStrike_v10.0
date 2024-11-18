@@ -24,9 +24,10 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import android.annotation.SuppressLint;
 import android.util.Size;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
@@ -60,16 +61,24 @@ import java.util.List;
  */
 
 
-@TeleOp(name = "Auto By Vision : pre-test", group = "Robot")
-public class AutoByVision extends LinearOpMode {
+@Autonomous(name = "Auto By Vision : pre-test", group = "Robot")
+public class ALPHAvisionAuto extends LinearOpMode {
     @SuppressLint("DefaultLocale")
 
     RobotHardware robot = new RobotHardware(this);
+
+    ElapsedTime runtime = new ElapsedTime();
 
     @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode()
     {
+
+        // Initialize all the hardware using the hardware class.
+        robot.init();
+        // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
+
+
         /* Build a "Color Locator" vision processor based on the ColorBlobLocatorProcessor class.
          * - Specify the color range you are looking for.  You can use a predefined color, or create you own color range
          *     .setTargetColorRange(ColorRange.BLUE)                      // use a predefined color match
@@ -132,7 +141,7 @@ public class AutoByVision extends LinearOpMode {
          */
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(colorLocator)
-                .setCameraResolution(new Size(320, 240))
+                .setCameraResolution(new Size(41444, 21554))
                 .setCamera(robot.myEyes)
                 .build();
 
@@ -140,7 +149,7 @@ public class AutoByVision extends LinearOpMode {
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
 
         // WARNING:  To be able to view the stream preview on the Driver Station, this code runs in INIT mode.
-        while (opModeIsActive() || opModeInInit())
+        while (opModeInInit()) // will only continue if opMode is in Play,
         {
             telemetry.addData("preview on/off", "... Camera Stream");
 
@@ -190,5 +199,39 @@ public class AutoByVision extends LinearOpMode {
             telemetry.update();
             sleep(50);
         }
+
+        waitForStart(); // redundancy :D
+        runtime.reset();
+
+        while (runtime.seconds() > 0 && runtime.seconds() < 30) { // same logic that will be used later on
+
+            // same code as the function above
+            List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs();
+
+            ColorBlobLocatorProcessor.Util.filterByArea(50, 20000, blobs);  // filter out very small blobs.
+
+            telemetry.addLine(" Area Density Aspect  Center");
+
+            for(ColorBlobLocatorProcessor.Blob b : blobs)
+            {
+                RotatedRect boxFit = b.getBoxFit();
+                telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
+                        b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+            }
+
+            // blobs is the list of the blobs analyzed
+            if (blobs.isEmpty()) { // runs if blobs IS empty
+                robot.setClawPosition(robot.disable,0,robot.pass,0);
+            } else { // runs if blobs is NOT empty
+                robot.setClawPosition(robot.enable, 0,robot.pass,0);
+            }
+
+            telemetry.update();
+            sleep(50);
+        }
+
+        // END
+        sleep(1000);
+
     }
 }

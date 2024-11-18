@@ -20,6 +20,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
         double drive;
         double strafe;
         double turn;
+        double extend;
 
         // Initialize all the hardware, using the hardware class.
         robot.init();
@@ -38,20 +39,12 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
+            //extend = gamepad2.left_stick_y; use for extension motor
 
             // Combine drive, strafe, and turn for blended motion. Use RobotHardware class
             robot.driveFieldCentric(drive, strafe, turn);
 
-            // Send a telemetry message to explain controls and show robot status
-            telemetry.addData("Status", "Run Time: " + runtime.seconds());
-            telemetry.addData("Manual", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            telemetry.addData("Servos&Motors", "Pinch: %.2f, Axial: %.2f, Lift: %5.2 ",
-                    robot.clawPinch.getPosition(), robot.clawAxial.getPosition(),
-                    robot.liftDrive.getCurrentPosition());
-            telemetry.update();
 
-            // Place this loop so hands move at a reasonable speed
-            sleep(50);
 
             if (gamepad2.x) { // Close and Open Claw
                 robot.setClawPosition(robot.enable,0,robot.pass,0);
@@ -80,11 +73,19 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             }
 
             /* Use for Linear Actuator for arm extension, Monday
-            if (gamepad2.left_stick_y >= 0) {
                 robot.extensionDrive.setPower(gamepad2.left_stick_y);
-            }
-
              */
+
+            // Send a telemetry message to explain controls and show robot status
+            telemetry.addData("Status", "Run Time: " + runtime.seconds());
+            telemetry.addData("Manual", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            telemetry.addData("Servos&Motors", "Pinch: %.2f, Axial: %.2f, Lift: %5.2 ",
+                    robot.clawPinch.getPosition(), robot.clawAxial.getPosition(),
+                    robot.liftDrive.getCurrentPosition());
+            telemetry.update();
+
+            // Place this loop so hands move at a reasonable speed
+            sleep(50);
         }
     }
 }
