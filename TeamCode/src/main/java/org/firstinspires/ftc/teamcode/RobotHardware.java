@@ -1,11 +1,24 @@
 package org.firstinspires.ftc.teamcode;
 
+// hardware & class imports
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+// camera imports
+import android.annotation.SuppressLint;
+import android.util.Size;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.opencv.core.RotatedRect;
+import java.util.List;
+
 
 public class RobotHardware {
 
@@ -64,16 +77,19 @@ public class RobotHardware {
     public enum statesOfBeing {
         ACTIVATE,
         DEACTIVATE,
-        PASS
+        PASS,
+        SUPERPOSITION
     }
 
     // initialize enum constants ; this is for passing enum values into other classes
     public statesOfBeing enable = statesOfBeing.ACTIVATE;
     public statesOfBeing disable = statesOfBeing.DEACTIVATE;
+    public statesOfBeing superposition = statesOfBeing.SUPERPOSITION;
     public statesOfBeing pass = statesOfBeing.PASS;
 
 
     // Declare Lift Encoder Variables, REMEMBER TO DELCARE WHEEL ONES LATER!!
+
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: GoBILDA 117 Motor Encoder
     static final double     SPOOL_DIAMETER_INCHES   = 1.4035433 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV) / (SPOOL_DIAMETER_INCHES * 3.1415);
@@ -346,7 +362,11 @@ public class RobotHardware {
 
         } else if (axial == enable) { clawAxial.setPosition(CLAW_UP); // Raises Claw:
 
-        } else if (axial == disable) { clawAxial.setPosition(CLAW_DOWN); } // Lowers Claw:
+        } else if (axial == disable) { clawAxial.setPosition(CLAW_DOWN); // Lowers Claw:
+
+        } else if (axial == superposition) { clawAxial.setPosition(CLAW_MID); // Parallels Claw to floor:
+
+        }
 
         clawYaw.setPower(yaw); // Rotates the claw based on trigger value
 
@@ -368,4 +388,97 @@ public class RobotHardware {
                     ,15);
         }
     }
+
+    /*
+    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE -------------------------
+                                just beware yk.
+    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE -------------------------
+     */
+
+    // init vision variables
+    public ColorBlobLocatorProcessor colorLocator;
+    public VisionPortal portal;
+    public List<ColorBlobLocatorProcessor.Blob> blobs;
+
+    public void visionInit () {
+        ColorBlobLocatorProcessor colorLocator = new ColorBlobLocatorProcessor.Builder()
+                .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
+                .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.5, 0.5, 0.5, -0.5))  // search central 1/4 of camera view
+                .setDrawContours(true)                        // Show contours on the Stream Preview
+                .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                .build();
+
+
+        VisionPortal portal = new VisionPortal.Builder()
+                .addProcessor(colorLocator)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setCameraResolution(new Size(1920, 1080))
+                .setCamera(myEyes)
+                .build();
+
+        myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
+        myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+
+    }
+
+    @SuppressLint("DefaultLocale")
+    public void detectR () { /* ----- USE THIS FUNC LIKE SO... -----
+                                while (condition)
+                                {
+                                    robot.detectR();  // analyzes camera feed and puts blobs it finds into a list
+
+                                    if (blobs (operator) (condition)) {  // blobs is the list mentioned above...
+                                        (action)
+                                    } // this checks if the list of blobs (condition) and if it is met it executes (action)
+                                }
+
+                                OR
+
+                                while (true)
+                                {
+                                    robot.detectR();  // analyzes camera feed and puts blobs it finds into a list
+
+                                    if (blobs (operator) (condition)) {  // blobs is the list mentioned above...
+                                        break;
+                                    } // this checks if the list of blobs (condition) and if it is met it breaks out the loop
+                                }
+
+                                (action); // action is then performed
+                              */
+
+        myOpMode.telemetry.addData("wakey wakey...", "\n" + // init message :D
+                "⠀⠀⠀⠄⠀⠀⠀⠀⠄⠂⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" +
+                "⠀⠔⠁⠀⠀⠀⠀⠀⠀⠂⠀⠁⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠐⠂⠠⡀⠀⠀⠀\n" +
+                "⠀⣠⣶⣾⣾⣿⡿⣷⡀⢐⠀⠀⠁⠀⠀⡰⠃⣀⣀⣀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀\n" +
+                "⢸⣿⢻⣿⣿⣿⣷⣹⡗⢨⠀⠀⠀⡆⠠⠀⣾⢛⣿⣿⣿⣶⣦⣄⠀⠀⠀⠀⠈⠀\n" +
+                "⠀⢿⣿⣿⡻⣿⣿⣿⠃⠀⠀⠀⢀⡧⠆⢠⡏⣾⣿⣿⡏⠉⣿⣿⣿⣦⣄⠀⠀⠀\n" +
+                "⠀⠈⢿⣿⣿⣿⡿⠃⠀⡘⠀⢀⠔⠀⡄⠀⣷⣿⣿⣿⣷⣾⣿⣿⣿⣿⣿⣷⣄⠀\n" +
+                "⠀⠀⠀⠙⢩⠀⢀⣤⠊⠔⠚⠀⠀⠀⠘⡀⠈⠿⣿⣿⣿⣿⣹⣿⣿⣿⢟⡵⠣⠂\n" +
+                "⠀⠀⠀⠠⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠂⢄⠈⠙⠻⠿⣿⡿⠿⡻⠝⠀⠀⠀\n" +
+                "⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠀⠀⠀⠀⠘⠀⠀⠀⠀⠀\n" +
+                "⠀⠀⠆⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠡⠀⠀⠀⠀\n" +
+                "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠒⠒⠦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀\n" +
+                "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀");
+
+        List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs(); // set list to whatever the camera found
+
+        ColorBlobLocatorProcessor.Util.filterByArea(50, 20000, blobs);  // filter out very small blobs.
+
+        myOpMode.telemetry.addLine(" Area Density Aspect  Center");
+
+        // Display the size (area) and center location for each Blob.
+        for(ColorBlobLocatorProcessor.Blob b : blobs) // telemetry the blobs found
+        {
+            RotatedRect boxFit = b.getBoxFit();
+            myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
+                    b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+        }
+
+        myOpMode.telemetry.update();
+        myOpMode.sleep(50);
+
+    }
+
+
 }
