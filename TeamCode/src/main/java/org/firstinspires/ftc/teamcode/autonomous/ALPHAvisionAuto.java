@@ -141,7 +141,8 @@ public class ALPHAvisionAuto extends LinearOpMode {
          */
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(colorLocator)
-                .setCameraResolution(new Size(41444, 21554))
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setCameraResolution(new Size(1920, 1080))
                 .setCamera(robot.myEyes)
                 .build();
 
@@ -203,7 +204,7 @@ public class ALPHAvisionAuto extends LinearOpMode {
         waitForStart(); // redundancy :D
         runtime.reset();
 
-        while (runtime.seconds() > 0 && runtime.seconds() < 30) { // same logic that will be used later on
+        while ((runtime.seconds() > 0 && runtime.seconds() < 30) && opModeIsActive()) { // same logic that will be used later on
 
             // same code as the function above
             List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs();

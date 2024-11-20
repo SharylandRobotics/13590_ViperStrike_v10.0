@@ -52,6 +52,7 @@ public class RobotHardware {
     public double CLAW_CLOSE;
     public double CLAW_OPEN;
     public double CLAW_DOWN;
+    public double CLAW_MID;
     public double CLAW_UP;
     public double CLAW_IN;
     public double CLAW_OUT;
@@ -104,18 +105,19 @@ public class RobotHardware {
         clawAxial = myOpMode.hardwareMap.get(Servo.class, "claw_axial");
         clawExtension = myOpMode.hardwareMap.get(Servo.class, "claw_extension");
 
-        myEyes = myOpMode.hardwareMap.get(WebcamName.class, "myEyes");
+        myEyes = myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1");
 
         DRIVE_SPEED = 0.5; // Maximum autonomous driving speed for better distance accuracy.
         STRAFE_SPEED = 0.5; // Maximum autonomous strafing speed for better distance accuracy.
         TURN_SPEED = 0.4; // Maximum autonomous turning speed for better rotational accuracy.
         LIFT_SPEED = 1.0; // Maximum lift speed.
 
-        CLAW_CLOSE = 0.8; // TBD
-        CLAW_OPEN = 0.0; // TBD
+        CLAW_CLOSE = 0.4; // TBD
+        CLAW_OPEN = 0.1; // TBD
 
-        CLAW_DOWN = 0.0; // TBD
-        CLAW_UP = 0.6; // TBD
+        CLAW_DOWN = 0.4; // TBD
+        CLAW_MID = 0.6; // TBD
+        CLAW_UP = 1.0; // TBD
 
         CLAW_IN = 0.0; // TBD
         CLAW_OUT = 0.6; // TBD
@@ -329,7 +331,7 @@ public class RobotHardware {
 
 
 
-    public void setClawPosition(statesOfBeing pinch, double yaw, statesOfBeing axial, double extension) {
+    public void setClawPosition(statesOfBeing pinch, float yaw, statesOfBeing axial, double extension) {
 
         //noinspection StatementWithEmptyBody
         if (pinch == pass){ // here to make sure it doesn't waste processing power

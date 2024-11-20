@@ -79,10 +79,12 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             // Send a telemetry message to explain controls and show robot status
             telemetry.addData("Status", "Run Time: " + runtime.seconds());
             telemetry.addData("Manual", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            telemetry.addData("Servos&Motors", "Pinch: %.2f, Axial: %.2f, Lift: %5.2 ",
+            /*telemetry.addData("Servos&Motors", "Pinch: %.2f, Axial: %.2f, Lift: %5.2 ",
                     robot.clawPinch.getPosition(), robot.clawAxial.getPosition(),
                     robot.liftDrive.getCurrentPosition());
             telemetry.update();
+
+             */
 
             // Place this loop so hands move at a reasonable speed
             sleep(50);
