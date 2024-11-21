@@ -25,7 +25,7 @@ public class AutoDriveByTime extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        robot.encoderLift(robot.LIFT_SPEED, 15,15);
+        robot.encoderElbow(robot.ELBOW_SPEED, 15,15);
         /*
         // Step through each let of the path, ensuring that the Autonomous mode has not been stopped along the way
         robot.setClawPosition(robot.enable, 0, robot.enable, 0);

@@ -67,9 +67,9 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             }
 
             if (gamepad2.y) { // Drive Lift
-                robot.liftDrive.setPower(1.0);
+                robot.elbowDrive.setPower(1.0);
             } else if (gamepad2.a) {
-                robot.liftDrive.setPower(-1.0);
+                robot.elbowDrive.setPower(-1.0);
             }
 
             /* Use for Linear Actuator for arm extension, Monday

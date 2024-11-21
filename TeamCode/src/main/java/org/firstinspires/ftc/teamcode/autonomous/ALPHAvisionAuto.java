@@ -44,85 +44,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
         waitForStart();
         runtime.reset();
 
-        // Grab Preload Specimen
-        robot.setClawPosition(robot.enable, 0, robot.enable, 0);
-
-        sleep(800);
-
-        // Drive forward for 3 seconds
-        robot.driveFieldCentric(robot.DRIVE_SPEED, 0, 0);
-        // Enable Lift
-        robot.encoderLift(robot.LIFT_SPEED,15,13);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.3)) {
-            telemetry.addData("Path", "Leg 1: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-            // Check if Lift is Done
-            robot.encoderLiftFinish(false);
-        }
-        // Wait until Lift is Done
-        robot.encoderLiftFinish(true);
-
-        sleep(500);
-
-        robot.driveFieldCentric(0.1, 0, 0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 0.3)) {
-            telemetry.addData("Path", "Leg 2: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        sleep(500);
-
-        robot.encoderLift(robot.LIFT_SPEED, -15,13);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.0)) {
-            telemetry.addData("Path", "Minor Leg 2.1: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        robot.setClawPosition(robot.pass,0,robot.disable,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 0.2)) {
-            telemetry.addData("Path", "Minor Leg 2.2: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-        robot.setClawPosition(robot.disable,0,robot.pass,0);
-        robot.driveFieldCentric(-robot.DRIVE_SPEED,0,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 0.5)) {
-            telemetry.addData("Path", "Leg 3: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        sleep(500);
-
-        robot.driveFieldCentric(0,robot.STRAFE_SPEED,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.3)) {
-            telemetry.addData("Path", "Leg 4: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        robot.encoderLiftFinish(true);
-        robot.driveFieldCentric(0,0,robot.TURN_SPEED);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.0)) {
-            telemetry.addData("Path", "Leg 5: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        sleep(500);
-
-        robot.driveFieldCentric(0.1,0,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 0.7)) {
-            telemetry.addData("Path", "Leg 6: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        sleep(500);
-
         while (true) {
             robot.detectR();
 
@@ -151,7 +72,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(500);
 
-        robot.encoderLift(robot.LIFT_SPEED,15,13);
+        robot.encoderElbow(robot.ELBOW_SPEED,15,13);
         robot.driveFieldCentric(0,0,-robot.TURN_SPEED);
         runtime.reset();
         while (opModeIsActive() && (runtime.seconds() < 0.7)) {
@@ -167,7 +88,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
             telemetry.addData("Path", "Leg 3: %4.1f S Elapsed", runtime.seconds());
             telemetry.update();
         }
-        robot.encoderLiftFinish(true);
+        robot.encoderElbowFinish(true);
 
         sleep(1000);
         stop();
