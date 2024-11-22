@@ -54,7 +54,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
             robot.driveFieldCentric(0,0.025,0); // move SLOWLY until blob appears
         }
-        // ASSUME BLOB HAS BEEN FOUND
+        // ASSUME BLOB HAS BEEN FOUND !
         sleep(500);
 
         robot.setClawPosition(robot.disable,0,robot.superposition,0);

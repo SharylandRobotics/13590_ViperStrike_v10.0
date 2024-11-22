@@ -407,9 +407,9 @@ public class RobotHardware {
     }
 
     /*
-    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE -------------------------
+    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE --------------------------
                                 just beware yk.
-    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE -------------------------
+    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE --------------------------
      */
 
     // init vision variables
