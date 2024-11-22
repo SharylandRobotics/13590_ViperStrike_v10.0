@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
 @TeleOp(name = "Field Centric", group = "Robot")
@@ -39,12 +40,12 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
-            //extend = gamepad2.left_stick_y; use for extension motor
+            extend = gamepad2.left_stick_y; // use for extension motor
 
             // Combine drive, strafe, and turn for blended motion. Use RobotHardware class
             robot.driveFieldCentric(drive, strafe, turn);
 
-
+            robot.extensionDrive.setPower(Range.clip(extend,-1.0,1.0)); // Linear Actuator/ Extension Drive
 
             if (gamepad2.x) { // Close and Open Claw
                 robot.setClawPosition(robot.enable,0,robot.pass,0);
@@ -66,15 +67,13 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
                 robot.setClawPosition(robot.pass,gamepad2.right_trigger,robot.pass,0);
             }
 
-            if (gamepad2.y) { // Drive Lift
+            if (gamepad2.y) { // Drive Elbow
                 robot.elbowDrive.setPower(1.0);
             } else if (gamepad2.a) {
                 robot.elbowDrive.setPower(-1.0);
             }
 
-            /* Use for Linear Actuator for arm extension, Monday
-                robot.extensionDrive.setPower(gamepad2.left_stick_y);
-             */
+
 
             // Send a telemetry message to explain controls and show robot status
             telemetry.addData("Status", "Run Time: " + runtime.seconds());

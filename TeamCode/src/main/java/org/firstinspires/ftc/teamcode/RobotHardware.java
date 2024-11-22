@@ -31,12 +31,11 @@ public class RobotHardware {
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
     public DcMotor elbowDrive = null;
-    // public DcMotor extensionDrive = null;
+    public DcMotor extensionDrive = null;
     public WebcamName myEyes = null; // CAMERA!! remember to change the type of this var if not available on Dhub
     public Servo clawPinch = null;
     private CRServo clawYaw = null;
     public Servo clawAxial = null;
-    private Servo clawExtension = null;
 
     // Define Sensor objects (Make them private so that they CANT be accessed externally)
     private IMU imu = null; // Universal IMU interface
@@ -97,8 +96,10 @@ public class RobotHardware {
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: GoBILDA 117 Motor Encoder
-    static final double     SPOOL_DIAMETER_INCHES   = 1.4035433 ;     // For figuring circumference
-    static final double     COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV) / (SPOOL_DIAMETER_INCHES * 3.1415);
+    static final double GEAR_DIAMETER_INCHES = 0.6929134 ;     // For figuring circumference; the driver gear
+    static final double DRIVE_GEAR_REDUCTION = 5.0;
+    static final double     COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)
+                                                / (GEAR_DIAMETER_INCHES * 3.1415);
 
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
@@ -115,17 +116,16 @@ public class RobotHardware {
     public void init(){
 
         // Define and initialize ALL installed motors (note: need to use reference to the actual OpMode).
-        leftFrontDrive = myOpMode.hardwareMap.get(DcMotor.class,"left_front_drive");
+        leftFrontDrive = myOpMode.hardwareMap.get(DcMotor.class,"left_front_drive"); // Stuff on CH
         leftBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "left_back_drive");
         rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_front_drive");
         rightBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_back_drive");
-        elbowDrive = myOpMode.hardwareMap.get(DcMotor.class, "elbow_drive");
-        // extensionDrive = myOpMode.hardwareMap.get(DcMotor.class, "extension_drive");
 
+        elbowDrive = myOpMode.hardwareMap.get(DcMotor.class, "elbow_drive"); // Stuff on EH
+        extensionDrive = myOpMode.hardwareMap.get(DcMotor.class, "extension_drive");
         clawPinch = myOpMode.hardwareMap.get(Servo.class, "claw_pinch");
         clawYaw = myOpMode.hardwareMap.get(CRServo.class, "claw_yaw");
         clawAxial = myOpMode.hardwareMap.get(Servo.class, "claw_axial");
-        clawExtension = myOpMode.hardwareMap.get(Servo.class, "claw_extension");
 
         myEyes = myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1");
 
@@ -176,15 +176,17 @@ public class RobotHardware {
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+
         elbowDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-        // extensionDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        extensionDrive.setDirection(DcMotorSimple.Direction.FORWARD);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         elbowDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        // extensionDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE
+        extensionDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
 
@@ -378,7 +380,7 @@ public class RobotHardware {
 
         clawYaw.setPower(yaw); // Rotates the claw based on trigger value
 
-        clawExtension.setPosition(extension); // ** Will Change to be like clawYaw **
+        extensionDrive.setPower(extension); // ** Will Change to be like clawYaw **
     }
 
     public void setElbowPosition(statesOfBeing position) { // USE ONLY AFTER DEFINING Elbow_TOP
@@ -438,7 +440,8 @@ public class RobotHardware {
     }
 
     @SuppressLint("DefaultLocale")
-    public void detectR () { /* ----- USE THIS FUNC LIKE SO... -----
+    public void detectR () {
+        /* ----- USE THIS FUNC LIKE SO... -----
                                 while (condition)
                                 {
                                     robot.detectR();  // analyzes camera feed and puts blobs it finds into a list
