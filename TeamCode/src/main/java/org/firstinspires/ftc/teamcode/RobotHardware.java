@@ -178,7 +178,7 @@ public class RobotHardware {
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
         elbowDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-        extensionDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        extensionDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
