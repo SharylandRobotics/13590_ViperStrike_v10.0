@@ -68,9 +68,7 @@ public class RobotHardware {
     public double CLAW_UP;
     public double CLAW_IN;
     public double CLAW_OUT;
-    public double ELBOW_PERPENDICULAR;
-    public double ELBOW_ANGLED;
-    public double ELBOW_ANTIANGLED;
+
     // End of Rudimentary inits...
 
 
@@ -79,9 +77,7 @@ public class RobotHardware {
         ACTIVATE,
         DEACTIVATE,
         PASS,
-        SUPERPOSITION,
-        PARALLEL,
-        PERPENDICULAR
+        SUPERPOSITION
     }
 
     // initialize enum constants ; this is for passing enum values into other classes
@@ -89,18 +85,20 @@ public class RobotHardware {
     public statesOfBeing disable = statesOfBeing.DEACTIVATE;
     public statesOfBeing superposition = statesOfBeing.SUPERPOSITION;
     public statesOfBeing pass = statesOfBeing.PASS;
-    public statesOfBeing parallel = statesOfBeing.PARALLEL;
-    public statesOfBeing perpendicular = statesOfBeing.PERPENDICULAR;
-
 
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
+    static final double COUNTS_PER_DEGREE =
+        28 // counts for motor revolution...
+            * 250047.0 / 4913.0 // times internal gearing (yes, counts per motor rev are the BARE drive)
+            * 100 / 20 // external gearing, 20 to 100 teeth
+            * 1/360; // ... per degree
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: GoBILDA 117 Motor Encoder
-    static final double GEAR_DIAMETER_INCHES = 0.6929134 ;     // For figuring circumference; the driver gear
-    static final double DRIVE_GEAR_REDUCTION = 5.0;
-    static final double     COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)
-                                                / (GEAR_DIAMETER_INCHES * 3.1415);
-
+    // Elbow Positions
+    public double ELBOW_COLLAPSED = 0;
+    public double ELBOW_PERPENDICULAR = 45 * COUNTS_PER_DEGREE;
+    public double ELBOW_ANGLED = 90 * COUNTS_PER_DEGREE;
+    public double ELBOW_ANTI_ANGLED = 180 * COUNTS_PER_DEGREE;
+    public double ELBOW_ANTI_COLLAPSED = 270 * COUNTS_PER_DEGREE;
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -144,10 +142,6 @@ public class RobotHardware {
         CLAW_IN = 0.0; // TBD
         CLAW_OUT = 0.6; // TBD
 
-        ELBOW_PERPENDICULAR = 0.7; // TBD
-        ELBOW_ANGLED = 7.5; // TBD
-        ELBOW_ANTIANGLED = -22.5; // TBD
-
         // Define and initialize ALL installed sensors (note: need to use reference to the actual OpMode).
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
 
@@ -188,7 +182,10 @@ public class RobotHardware {
         elbowDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         extensionDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
+        // ensure elbow starts at 0
+        elbowDrive.setTargetPosition(0);
+        elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
@@ -201,28 +198,6 @@ public class RobotHardware {
                     rightFrontDrive.getCurrentPosition(), rightBackDrive.getCurrentPosition());
             myOpMode.telemetry.update();
         }
-    }
-
-    /* Stop and reset encoders ; made into a function to avoid clutter & to remove necessary declarations
-        Ex. reseting encoders on auto by time or in TeleOp modes, which may affect performance
-     */
-    public void stopNreset() {
-        /* stop and reset encoders!! ( for later )
-
-         */
-
-        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
     }
 
     /**
@@ -275,68 +250,6 @@ public class RobotHardware {
         setDrivePower(leftFrontPower, leftBackPower, rightFrontPower, rightBackPower);
     }
 
-    /* function for using the encoder on the elbowDrive, may be able to be included in a
-       master encoder function later on (a function with all encoders in it, wheels + elbow)
-     */
-
-    // Following are variables to pass values across the next 2 functions defined
-    private int newElbowTarget;
-    private double timeoutEXTERNAL;
-
-    // 1st half of encoderElbow, used to set a distance target, NEEDS 2nd half to finish action/not break
-    public void encoderElbow(double speed, double inches, double timeoutS) {
-        if (myOpMode.opModeIsActive()) {
-
-            timeoutEXTERNAL = timeoutS;
-
-            // Determine new target position, and pass to motor controller
-            newElbowTarget = elbowDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
-            elbowDrive.setTargetPosition(newElbowTarget);
-
-            // Turn On RUN_TO_POSITION
-            elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            // reset the timeout time and start motion.
-            runtime.reset();
-            elbowDrive.setPower(Math.abs(speed));
-
-            // keep looping while we are still active, and there is time left, and both motors are running.
-            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
-            // its target position, the motion will stop.  This is "safer" in the event that the robot will
-            // always end the motion as soon as possible.
-            // However, if you require that BOTH motors have finished their moves before the robot continues
-            // onto the next step, use (isBusy() || isBusy()) in the loop test.
-
-        }
-
-
-    }
-
-    // 2nd half of encoderElbow function, used to perform actions before/while encoderElbow is running
-    public void encoderElbowFinish(boolean timeout){
-            // Display it for the driver.
-        myOpMode.telemetry.addData("Path1", "Running to %7d :%7d", newElbowTarget);
-        myOpMode.telemetry.addData("Path2", "Running at %7d :%7d",
-                elbowDrive.getCurrentPosition());
-        myOpMode.telemetry.update();
-        if (!elbowDrive.isBusy()) {
-            elbowDrive.setPower(0);
-
-            elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-        if (timeout) {
-            myOpMode.resetRuntime();
-            while ((runtime.seconds() < timeoutEXTERNAL) && elbowDrive.isBusy()) {
-                myOpMode.telemetry.addData(String.valueOf(newElbowTarget), "new target");
-                myOpMode.telemetry.addData(String.valueOf(elbowDrive.getCurrentPosition()), "current pos");
-                myOpMode.telemetry.update();
-            }
-
-            elbowDrive.setPower(0);
-
-            elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
     /**
      * Pass the requested wheel motor power to the appropriate hardware drive motors.
      *
@@ -380,29 +293,6 @@ public class RobotHardware {
         clawYaw.setPower(yaw); // Rotates the claw based on trigger value
 
         extensionDrive.setPower(extension); // ** Will Change to be like clawYaw **
-    }
-
-    public void setElbowPosition(statesOfBeing position) { // USE ONLY AFTER DEFINING Elbow_TOP
-
-        if (position == pass) { // here to make sure it doesn't waste processing power
-            encoderElbowFinish(false);
-
-        } else if (position == parallel) {
-            encoderElbow(ELBOW_SPEED,-elbowDrive.getCurrentPosition() // this calculates the distance to the parallel pos
-                    ,15);
-        } else if (position == perpendicular) {
-            encoderElbow(ELBOW_SPEED,-elbowDrive.getCurrentPosition() + ELBOW_PERPENDICULAR // this calculates the distance from
-                    // the current position to the perpendicular position ; pos to 0, 0 to 90 deg
-                    ,15);
-        } else if (position == enable) {
-            encoderElbow(ELBOW_SPEED,-elbowDrive.getCurrentPosition() + ELBOW_ANGLED// this calculates the distance from
-                                                                                // the current position to the 45 deg position
-                    ,15);
-
-        } else if (position == disable) {
-            encoderElbow(ELBOW_SPEED,-elbowDrive.getCurrentPosition() + ELBOW_ANTIANGLED // this calculates the distance from the current pos to the 135 deg pos
-                    ,15);
-        }
     }
 
     /*

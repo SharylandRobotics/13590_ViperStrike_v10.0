@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
 @TeleOp(name = "Field Centric", group = "Robot")
@@ -21,7 +20,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
         double drive;
         double strafe;
         double turn;
-        double extend;
+        double elbowPos;
 
         // Initialize all the hardware, using the hardware class.
         robot.init();
@@ -40,30 +39,29 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
+            elbowPos = robot.ELBOW_COLLAPSED;
 
             // Combine drive, strafe, and turn for blended motion. Use RobotHardware class
             robot.driveFieldCentric(drive, strafe, turn);
 
-            if (gamepad2.x) { // Close and Open Claw
+            // Close and Open Claw
+            if (gamepad2.x) {
                 robot.setClawPosition(robot.enable,0,robot.pass,0);
             } else if (gamepad2.b) {
                 robot.setClawPosition(robot.disable,0,robot.pass,0);
             }
 
-            if (gamepad2.left_bumper) { // Raise and Lower Claw
+            // Raise and Lower Claw
+            if (gamepad2.left_bumper) {
                 robot.setClawPosition(robot.pass,0,robot.enable,0);
             } else if (gamepad2.right_bumper) {
                 robot.setClawPosition(robot.pass,0,robot.disable,0);
             }
 
+            // Rotate Claw here
 
-            if (gamepad2.left_trigger >= 0) { // Rotate Claw
-                robot.setClawPosition(robot.pass,-gamepad2.left_trigger,robot.pass,0);
-            } else if (gamepad2.right_trigger >= 0) {
-                robot.setClawPosition(robot.pass,gamepad2.right_trigger,robot.pass,0);
-            }
-
-            if (gamepad2.y) { // Drive Elbow
+            // Drive Elbow
+            if (gamepad2.y) {
                 robot.elbowDrive.setPower(1.0);
             } else if (gamepad2.a) {
                 robot.elbowDrive.setPower(-1.0);
@@ -71,18 +69,28 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
                 robot.elbowDrive.setPower(0.0);
             }
 
+            // Drive Extension
             if (gamepad2.left_trigger != 0) {
                 robot.extensionDrive.setPower(-1.0);
             } else if (gamepad2.right_trigger != 0) {
                 robot.extensionDrive.setPower(1.0);
             } else { robot.extensionDrive.setPower(0.0); }
 
-            if (gamepad2.dpad_right) {
-                robot.setElbowPosition(robot.perpendicular);
+            // Set Elbow Positions
+            if (gamepad2.dpad_up) {
+                elbowPos = robot.ELBOW_PERPENDICULAR;
+            } else if (gamepad2.dpad_right) {
+                elbowPos = robot.ELBOW_ANTI_ANGLED;
+            } else if (gamepad2.dpad_down) {
+                elbowPos = robot.ELBOW_COLLAPSED;
             } else if (gamepad2.dpad_left) {
-                robot.setElbowPosition(robot.parallel);
+                elbowPos = robot.ELBOW_ANGLED;
+            } else if (gamepad2.left_stick_button) {
+                elbowPos = robot.ELBOW_ANTI_COLLAPSED;
             }
 
+            // Call setTargetPosition for elbow, ensure input is int
+            robot.elbowDrive.setTargetPosition((int) elbowPos);
 
             // Send a telemetry message to explain controls and show robot status
             telemetry.addData("Status", "Run Time: " + runtime.seconds());

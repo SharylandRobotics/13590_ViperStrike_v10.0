@@ -20,7 +20,6 @@ public class AutoDriveByTime extends LinearOpMode {
 
         // Initialize all the hardware using the hardware class.
         robot.init();
-        robot.stopNreset();
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();

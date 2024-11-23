@@ -39,7 +39,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
         // Initialize all the hardware using the hardware class. ONLY NEED TO BE DONE ONCE
         robot.visionInit();
         robot.init();
-        robot.stopNreset();
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -56,39 +55,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
         }
         // ASSUME BLOB HAS BEEN FOUND !
         sleep(500);
-
-        robot.setClawPosition(robot.disable,0,robot.superposition,0);
-
-        sleep(500);
-
-        robot.driveFieldCentric(0.1,0,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 0.2)) {
-            telemetry.addData("Path", "Leg 7: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        robot.setClawPosition(robot.enable,0,robot.pass,0);
-
-        sleep(500);
-
-        robot.encoderElbow(robot.ELBOW_SPEED,15,13);
-        robot.driveFieldCentric(0,0,-robot.TURN_SPEED);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 0.7)) {
-            telemetry.addData("Path", "Leg 8: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        sleep(500);
-
-        robot.driveFieldCentric(0,robot.STRAFE_SPEED,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.0)) {
-            telemetry.addData("Path", "Leg 3: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-        robot.encoderElbowFinish(true);
 
         sleep(1000);
         stop();
