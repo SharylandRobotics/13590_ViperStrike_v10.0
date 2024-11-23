@@ -43,7 +43,7 @@ public class VisionTest extends LinearOpMode {
     @Override
     public void runOpMode()
     {
-        YawPitchRollAngles  yawAngles = robot.imu.getRobotYawPitchRollAngles();
+        YawPitchRollAngles  yawAngles;
 
 
         robot.visionInit();
@@ -53,6 +53,7 @@ public class VisionTest extends LinearOpMode {
         {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             telemetry.addData("check preview, initialized", "... Camera Stream");
+            telemetry.addData("current orientation", String.valueOf(yawAngles));
             robot.detectR(); // run camera
         }
 
