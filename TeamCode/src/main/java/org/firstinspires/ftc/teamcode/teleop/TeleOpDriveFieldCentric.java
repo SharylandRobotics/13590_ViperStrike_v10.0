@@ -40,6 +40,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             strafe = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
             elbowPos = robot.ELBOW_COLLAPSED;
+            // Find out how to use left_stick_y for extension movement FIXME
 
             // Combine drive, strafe, and turn for blended motion. Use RobotHardware class
             robot.driveFieldCentric(drive, strafe, turn);

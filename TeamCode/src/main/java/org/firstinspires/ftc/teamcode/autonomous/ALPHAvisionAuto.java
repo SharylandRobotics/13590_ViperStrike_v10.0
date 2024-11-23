@@ -43,7 +43,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         waitForStart();
         runtime.reset();
 
-        while (true) {
+        while (true) { // FIXME
             robot.detectR();
 
             if (!robot.blobs.isEmpty()) { // check until a blob appears

@@ -24,6 +24,7 @@ public class AutoDriveByTime extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        // FIXME
         /*
         // Step through each let of the path, ensuring that the Autonomous mode has not been stopped along the way
         robot.setClawPosition(robot.enable, 0, robot.enable, 0);
