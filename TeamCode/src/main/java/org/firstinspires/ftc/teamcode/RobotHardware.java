@@ -144,7 +144,7 @@ public class RobotHardware {
         CLAW_IN = 0.0; // TBD
         CLAW_OUT = 0.6; // TBD
 
-        ELBOW_PERPENDICULAR = 15; // TBD
+        ELBOW_PERPENDICULAR = 0.7; // TBD
         ELBOW_ANGLED = 7.5; // TBD
         ELBOW_ANTIANGLED = -22.5; // TBD
 
@@ -177,7 +177,7 @@ public class RobotHardware {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        elbowDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        elbowDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         extensionDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -327,9 +327,8 @@ public class RobotHardware {
         if (timeout) {
             myOpMode.resetRuntime();
             while ((runtime.seconds() < timeoutEXTERNAL) && elbowDrive.isBusy()) {
-                myOpMode.telemetry.addData("Path1", "Running to %7d :%7d", newElbowTarget);
-                myOpMode.telemetry.addData("Path2", "Running at %7d :%7d",
-                        elbowDrive.getCurrentPosition());
+                myOpMode.telemetry.addData(String.valueOf(newElbowTarget), "new target");
+                myOpMode.telemetry.addData(String.valueOf(elbowDrive.getCurrentPosition()), "current pos");
                 myOpMode.telemetry.update();
             }
 

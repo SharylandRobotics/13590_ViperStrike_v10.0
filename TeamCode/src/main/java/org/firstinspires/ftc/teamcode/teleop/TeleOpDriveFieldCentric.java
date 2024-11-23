@@ -40,19 +40,15 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
-            extend = gamepad2.left_stick_y; // use for extension motor
 
             // Combine drive, strafe, and turn for blended motion. Use RobotHardware class
             robot.driveFieldCentric(drive, strafe, turn);
-
-            robot.extensionDrive.setPower(Range.clip(extend,-1.0,1.0)); // Linear Actuator/ Extension Drive
 
             if (gamepad2.x) { // Close and Open Claw
                 robot.setClawPosition(robot.enable,0,robot.pass,0);
             } else if (gamepad2.b) {
                 robot.setClawPosition(robot.disable,0,robot.pass,0);
             }
-
 
             if (gamepad2.left_bumper) { // Raise and Lower Claw
                 robot.setClawPosition(robot.pass,0,robot.enable,0);
@@ -75,11 +71,25 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
                 robot.elbowDrive.setPower(0.0);
             }
 
+            if (gamepad2.left_trigger != 0) {
+                robot.extensionDrive.setPower(-1.0);
+            } else if (gamepad2.right_trigger != 0) {
+                robot.extensionDrive.setPower(1.0);
+            } else { robot.extensionDrive.setPower(0.0); }
+
+            if (gamepad2.dpad_right) {
+                robot.setElbowPosition(robot.perpendicular);
+            } else if (gamepad2.dpad_left) {
+                robot.setElbowPosition(robot.parallel);
+            }
 
 
             // Send a telemetry message to explain controls and show robot status
             telemetry.addData("Status", "Run Time: " + runtime.seconds());
             telemetry.addData("Manual", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            telemetry.addData(String.valueOf(gamepad2.right_stick_y), "hi");
+            telemetry.addData(String.valueOf(robot.elbowDrive.getCurrentPosition()), "pos");
+            telemetry.update();
 
 
             // Place this loop so hands move at a reasonable speed
