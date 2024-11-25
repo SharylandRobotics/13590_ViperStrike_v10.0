@@ -36,13 +36,14 @@ public class ALPHAvisionAuto extends LinearOpMode{
     @Override
     public void runOpMode() {
 
+
         // Initialize all the hardware using the hardware class. ONLY NEED TO BE DONE ONCE
         robot.visionInit();
         robot.init();
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
-
+/*
         while (true) { // FIXME
             robot.detectR();
 
@@ -59,6 +60,8 @@ public class ALPHAvisionAuto extends LinearOpMode{
         sleep(1000);
         stop();
 
+
+         */
 
 
 

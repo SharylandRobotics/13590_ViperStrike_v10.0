@@ -89,16 +89,20 @@ public class RobotHardware {
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
     static final double COUNTS_PER_DEGREE =
         28 // counts for motor revolution...
-            * 250047.0 / 4913.0 // times internal gearing (yes, counts per motor rev are the BARE drive)
-            * 100 / 20 // external gearing, 20 to 100 teeth
-            * 1/360; // ... per degree
+            * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
+            * ((double) 100 / 20) // external gearing, 20 to 100 teeth
+            * ((double) 1 /360); // ... per degree
+    static final int ELBOW_ANGLE_OFFSET = 57;
 
     // Elbow Positions
+    // ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
+    // the numbers added after it are tweaks for more accurate positions due to gravity and such
     public double ELBOW_COLLAPSED = 0;
-    public double ELBOW_PERPENDICULAR = 45 * COUNTS_PER_DEGREE;
-    public double ELBOW_ANGLED = 90 * COUNTS_PER_DEGREE;
-    public double ELBOW_ANTI_ANGLED = 180 * COUNTS_PER_DEGREE;
-    public double ELBOW_ANTI_COLLAPSED = 270 * COUNTS_PER_DEGREE;
+    public double ELBOW_PARALLEL = (ELBOW_ANGLE_OFFSET + 2) * COUNTS_PER_DEGREE;
+    public double ELBOW_ANGLED = (45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
+    public double ELBOW_PERPENDICULAR = (90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
+    public double ELBOW_ANTI_ANGLED = (180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
+    public double ELBOW_ANTI_COLLAPSED = (270 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -171,7 +175,7 @@ public class RobotHardware {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        elbowDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        elbowDrive.setDirection(DcMotorSimple.Direction.FORWARD);
         extensionDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -186,6 +190,7 @@ public class RobotHardware {
         elbowDrive.setTargetPosition(0);
         elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
@@ -193,9 +198,10 @@ public class RobotHardware {
         // Wait for the game to start (Display Gyro value while waiting)
         while (myOpMode.opModeInInit()) {
             myOpMode.telemetry.addData("Status", "Hardware Initialized");
-            myOpMode.telemetry.addData("Starting at", "%7d :%7d :%7d :%7d",
+            myOpMode.telemetry.addData("Wheels starting at", "%7d :%7d :%7d :%7d",
                     leftFrontDrive.getCurrentPosition(), leftBackDrive.getCurrentPosition(),
                     rightFrontDrive.getCurrentPosition(), rightBackDrive.getCurrentPosition());
+            myOpMode.telemetry.addData("Starting Elbow Pos:", elbowDrive.getCurrentPosition());
             myOpMode.telemetry.update();
         }
     }
@@ -302,12 +308,13 @@ public class RobotHardware {
      */
 
     // init vision variables
+
     public ColorBlobLocatorProcessor colorLocator;
     public VisionPortal portal;
     public List<ColorBlobLocatorProcessor.Blob> blobs;
 
     public void visionInit () {
-        ColorBlobLocatorProcessor colorLocator = new ColorBlobLocatorProcessor.Builder()
+         colorLocator = new ColorBlobLocatorProcessor.Builder()
                 .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
                 .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                 .setRoi(ImageRegion.asUnityCenterCoordinates(-0.5, 0.5, 0.5, -0.5))  // search central 1/4 of camera view
@@ -320,7 +327,7 @@ public class RobotHardware {
                 .addProcessor(colorLocator)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setCameraResolution(new Size(1920, 1080))
-                .setCamera(myEyes)
+                .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .build();
 
         myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
@@ -352,7 +359,9 @@ public class RobotHardware {
                                 }
 
                                 (action); // action is then performed
-                              */
+
+         */
+
 
         myOpMode.telemetry.addData("wakey wakey...", "\n" + // init message :D
                 "⠀⠀⠀⠄⠀⠀⠀⠀⠄⠂⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" +

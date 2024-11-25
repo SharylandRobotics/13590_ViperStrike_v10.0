@@ -63,9 +63,9 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
 
             // Drive Elbow
             if (gamepad2.y) {
-                robot.elbowDrive.setPower(1.0);
-            } else if (gamepad2.a) {
                 robot.elbowDrive.setPower(-1.0);
+            } else if (gamepad2.a) {
+                robot.elbowDrive.setPower(1.0);
             } else {
                 robot.elbowDrive.setPower(0.0);
             }

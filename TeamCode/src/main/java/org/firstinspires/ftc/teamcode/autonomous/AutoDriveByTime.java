@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
@@ -24,6 +25,13 @@ public class AutoDriveByTime extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL);
+        robot.elbowDrive.setPower(0.3);
+        robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (opModeIsActive() && robot.elbowDrive.isBusy()) {
+            telemetry.addData("Elbow Pos:", robot.elbowDrive.getCurrentPosition());
+            telemetry.update();
+        }
         // FIXME
         /*
         // Step through each let of the path, ensuring that the Autonomous mode has not been stopped along the way

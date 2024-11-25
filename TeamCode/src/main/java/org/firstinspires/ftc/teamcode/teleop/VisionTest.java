@@ -30,7 +30,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
-
 @TeleOp(name = "Vision: test", group = "Robot")
 public class VisionTest extends LinearOpMode {
     @SuppressLint("DefaultLocale")
@@ -61,22 +60,23 @@ public class VisionTest extends LinearOpMode {
         robot.imu.resetYaw(); // reset orientation
         runtime.reset();
 
+
         while (opModeIsActive()) { // once in play, print orientation
 
             /* the plan is to check orientation and draw a master north line in camera, thus giving it a sense
                 of direction when thrown of course. This will also allow more precise camera-based movement.
                 The line should move along with the camera: if the robot rotates 30deg ccw, the line will move
                 30deg to the right projected(how it will display in 2d) onto the camera display.
-             */
+            */
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // Check out the waters
 
             telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
-
             robot.detectR(); // run camera
-
+            telemetry.update();
 
 
             sleep(50);
         }
+
     }
 }
