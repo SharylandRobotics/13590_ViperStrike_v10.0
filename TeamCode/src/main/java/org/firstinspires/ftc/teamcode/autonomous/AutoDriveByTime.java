@@ -25,11 +25,15 @@ public class AutoDriveByTime extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL);
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_COLLAPSED);
         robot.elbowDrive.setPower(0.3);
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.clawAxial.setPosition(0.3);
         while (opModeIsActive() && robot.elbowDrive.isBusy()) {
             telemetry.addData("Elbow Pos:", robot.elbowDrive.getCurrentPosition());
+            telemetry.addData("Elbow Angle:", Math.round((robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE)
+                                                        - robot.ELBOW_ANGLE_OFFSET));
+            telemetry.addData("Axial Pos:", robot.clawAxial.getPosition());
             telemetry.update();
         }
         // FIXME

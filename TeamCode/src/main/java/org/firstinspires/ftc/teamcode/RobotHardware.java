@@ -87,22 +87,23 @@ public class RobotHardware {
     public statesOfBeing pass = statesOfBeing.PASS;
 
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
-    static final double COUNTS_PER_DEGREE =
+    public final double COUNTS_PER_DEGREE =
         28 // counts for motor revolution...
             * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
             * ((double) 100 / 20) // external gearing, 20 to 100 teeth
             * ((double) 1 /360); // ... per degree
-    static final int ELBOW_ANGLE_OFFSET = 57;
+    public final int ELBOW_ANGLE_OFFSET = 59;
 
     // Elbow Positions
     // ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
     // the numbers added after it are tweaks for more accurate positions due to gravity and such
+    // Rounding converts the value into a long (dk why) so it shows up like 90.0, add (int) to convert
     public double ELBOW_COLLAPSED = 0;
-    public double ELBOW_PARALLEL = (ELBOW_ANGLE_OFFSET + 2) * COUNTS_PER_DEGREE;
-    public double ELBOW_ANGLED = (45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
-    public double ELBOW_PERPENDICULAR = (90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
-    public double ELBOW_ANTI_ANGLED = (180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
-    public double ELBOW_ANTI_COLLAPSED = (270 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE;
+    public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_ANTI_ANGLED = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_ANTI_COLLAPSED = Math.round((270 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -139,9 +140,9 @@ public class RobotHardware {
         CLAW_CLOSE = 0.4; // TBD
         CLAW_OPEN = 0.1; // TBD
 
-        CLAW_DOWN = 0.4; // TBD
-        CLAW_MID = 0.6; // TBD
-        CLAW_UP = 1.0; // TBD
+        CLAW_DOWN = 0.92;
+        CLAW_MID = 0.51;
+        CLAW_UP = 0.08;
 
         CLAW_IN = 0.0; // TBD
         CLAW_OUT = 0.6; // TBD
@@ -299,6 +300,15 @@ public class RobotHardware {
         clawYaw.setPower(yaw); // Rotates the claw based on trigger value
 
         extensionDrive.setPower(extension); // ** Will Change to be like clawYaw **
+    }
+
+    public void calibrateClaw() {
+
+        double elbowDeg = Math.round( (elbowDrive.getCurrentPosition()/COUNTS_PER_DEGREE) - ELBOW_ANGLE_OFFSET);
+
+        clawAxial.setPosition((-0.16/45)* Math.abs(elbowDeg-45) +0.67);
+
+        clawAxial.setPosition(0);
     }
 
     /*
