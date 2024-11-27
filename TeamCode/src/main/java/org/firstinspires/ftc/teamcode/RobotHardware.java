@@ -94,16 +94,26 @@ public class RobotHardware {
             * ((double) 1 /360); // ... per degree
     public final int ELBOW_ANGLE_OFFSET = 59;
 
-    // Elbow Positions
-    // ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
-    // the numbers added after it are tweaks for more accurate positions due to gravity and such
-    // Rounding converts the value into a long (dk why) so it shows up like 90.0, add (int) to convert
+    /* Elbow Positions
+     ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
+     the numbers added after it are tweaks for more accurate positions due to gravity and such
+     Rounding converts the value into a long (dk why) so it shows up like 90.0, add (int) to convert
+
+     VARIABLES CONCERNING ANGLES HAVE THIS RULE APPLIED:
+
+     TRUE angles are angles RELATIVE to the MOTOR STARTING POINT, NOT TO YOUR PREFERRED PLANE OF REFERENCE
+     STANDARD angles, or angles w/o the TRUE suffix are angles BASED on the PLANE OF REFERENCE
+
+     SN: these variables declared here are the only ones that are exempt to this rule as they are used when stating
+         positions in the executive code and i do not wish to cause confusion there.
+     */
     public double ELBOW_COLLAPSED = 0;
     public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_ANTI_ANGLED = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_ANTI_COLLAPSED = Math.round((270 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_ANTI_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_ANTI_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -140,9 +150,16 @@ public class RobotHardware {
         CLAW_CLOSE = 0.4; // TBD
         CLAW_OPEN = 0.1; // TBD
 
-        CLAW_DOWN = 0.92;
-        CLAW_MID = 0.51;
-        CLAW_UP = 0.08;
+        CLAW_DOWN = 0.92; // MAXIMUM, not playable position
+        CLAW_MID = 0.51; // playable position
+        CLAW_UP = 0.08; // MAXIMUM, not playable position
+
+        /*
+            Playable positions, initialize them if you feel the need to do so in the future:
+            CLAW_BOTTOM = 0.3;
+            CLAW_ANGLED = 0.67;
+            Not initialized because you can just call the calibrateClaw(); function
+         */
 
         CLAW_IN = 0.0; // TBD
         CLAW_OUT = 0.6; // TBD
@@ -301,14 +318,38 @@ public class RobotHardware {
 
         extensionDrive.setPower(extension); // ** Will Change to be like clawYaw **
     }
+    // to stop the claw from switching back and forth while in perpendicular position
+        /* more specifically, it stops the elbow from having a preferred side to turn to when at 149 deg
+            for ex. Without this, if you went to the perpendicular position from the backwards side,
+            it would automatically face the claw the other way
+         */
+    statesOfBeing elbowDirection = enable;
+    public void calibrateClaw() { // VERY IMPORTANT: moves the claw to face parallel to the ground
+                                  // relative to the elbow's position
+        // returns the current angle without the offset
+        double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / COUNTS_PER_DEGREE));
 
-    public void calibrateClaw() {
 
-        double elbowDeg = Math.round( (elbowDrive.getCurrentPosition()/COUNTS_PER_DEGREE) - ELBOW_ANGLE_OFFSET);
 
-        clawAxial.setPosition((-0.16/45)* Math.abs(elbowDeg-45) +0.67);
+        if (elbowDegTRUE < 149) { // sets function to normal
+            clawAxial.setPosition((-0.17 / 45) * Math.abs(elbowDegTRUE - 149) + 0.85); // this if for when the elbow is normal
+            elbowDirection = enable;
+        } else if (elbowDegTRUE > 149){ // changes function to inverse
+            clawAxial.setPosition((0.16 / 45) * Math.abs(elbowDegTRUE - 149) + 0.19); // this is for when the elbow is backwards
+            elbowDirection = disable;
+        } else { // for increased accuracy, set to 90 base floor
+            if (elbowDirection == enable) {
+                clawAxial.setPosition(0.85);
+            } else {
+                clawAxial.setPosition(0.19);
+            }
+        }
+        /*
+        if (elbowDegTRUE > 149) { // this is for when the elbow is facing backwards
+            clawAxial.setPosition((-0.17/45)* Math.abs(elbowDegTRUE -284) +0.67);
+        }
 
-        clawAxial.setPosition(0);
+         */
     }
 
     /*
