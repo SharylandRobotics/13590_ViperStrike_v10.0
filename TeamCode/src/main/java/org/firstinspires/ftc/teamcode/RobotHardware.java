@@ -112,6 +112,7 @@ public class RobotHardware {
     public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_ANTI_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_ANTI_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_ANTI_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
 
@@ -156,8 +157,9 @@ public class RobotHardware {
 
         /*
             Playable positions, initialize them if you feel the need to do so in the future:
-            CLAW_BOTTOM = 0.3;
-            CLAW_ANGLED = 0.67;
+            CLAW_BOTTOM = 0.3; // Claw at collapsed position
+            CLAW_ANGLED = 0.67; // Claw at angled position
+            CLAW_ANTI_BOTTOM = 0.72 // Claw at anti collapsed position
             Not initialized because you can just call the calibrateClaw(); function
          */
 
@@ -174,8 +176,8 @@ public class RobotHardware {
          hub is pointing. All directions are relative to the robot, and left/right is as-viewed from behind the robot.
          */
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
 
         imu.initialize(parameters);
 
@@ -324,32 +326,37 @@ public class RobotHardware {
             it would automatically face the claw the other way
          */
     statesOfBeing elbowDirection = enable;
-    public void calibrateClaw() { // VERY IMPORTANT: moves the claw to face parallel to the ground
-                                  // relative to the elbow's position
+    public void calibrateClaw(double orientation) { // VERY IMPORTANT: moves the claw to face parallel/perpendicular to the ground
+                                                    // relative to the elbow's position
         // returns the current angle without the offset
         double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / COUNTS_PER_DEGREE));
-
-
+        double targetClawPos; // used to avoid changing the claw position too many times in here
 
         if (elbowDegTRUE < 149) { // sets function to normal
-            clawAxial.setPosition((-0.17 / 45) * Math.abs(elbowDegTRUE - 149) + 0.85); // this if for when the elbow is normal
+            targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 149) + 0.85); // this if for when the elbow is normal
             elbowDirection = enable;
         } else if (elbowDegTRUE > 149){ // changes function to inverse
-            clawAxial.setPosition((0.16 / 45) * Math.abs(elbowDegTRUE - 149) + 0.19); // this is for when the elbow is backwards
+            targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 149) + 0.19); // this is for when the elbow is backwards
             elbowDirection = disable;
         } else { // for increased accuracy, set to 90 base floor
             if (elbowDirection == enable) {
-                clawAxial.setPosition(0.85);
+                targetClawPos = (0.85);
             } else {
-                clawAxial.setPosition(0.19);
+                targetClawPos = (0.19);
             }
         }
-        /*
-        if (elbowDegTRUE > 149) { // this is for when the elbow is facing backwards
-            clawAxial.setPosition((-0.17/45)* Math.abs(elbowDegTRUE -284) +0.67);
+
+        if (orientation == ELBOW_PERPENDICULAR){ // change position to perpendicular to floor
+            if (elbowDegTRUE < 84 && elbowDegTRUE > 27) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
+                targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 84) + CLAW_DOWN); // this if for when the elbow is normal
+                elbowDirection = enable;
+            } else if (elbowDegTRUE > 214 && elbowDegTRUE < 271){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+                targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 214) + CLAW_UP); // this is for when the elbow is backwards
+                elbowDirection = disable;
+            }
         }
 
-         */
+        clawAxial.setPosition(targetClawPos);
     }
 
     /*
@@ -430,7 +437,7 @@ public class RobotHardware {
 
         List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs(); // set list to whatever the camera found
 
-        ColorBlobLocatorProcessor.Util.filterByArea(50, 20000, blobs);  // filter out very small blobs.
+        ColorBlobLocatorProcessor.Util.filterByArea(200, 20000, blobs);  // filter out very small blobs.
 
         myOpMode.telemetry.addLine(" Area Density Aspect  Center");
 

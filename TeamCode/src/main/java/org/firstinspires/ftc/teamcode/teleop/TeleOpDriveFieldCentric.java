@@ -110,7 +110,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
 
             // Check to calibrate the claw
             if (calibrate) {
-                robot.calibrateClaw();
+                robot.calibrateClaw(robot.ELBOW_PARALLEL);
             }
 
             // Send a telemetry message to explain controls and show robot status
