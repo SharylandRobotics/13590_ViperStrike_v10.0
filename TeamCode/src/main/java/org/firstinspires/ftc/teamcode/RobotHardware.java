@@ -115,6 +115,9 @@ public class RobotHardware {
     public double ELBOW_ANTI_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_ANTI_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
+    public double angleConvert(double angle){
+        return Math.round((angle + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    }
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -371,25 +374,53 @@ public class RobotHardware {
     public VisionPortal portal;
     public List<ColorBlobLocatorProcessor.Blob> blobs;
 
-    public void visionInit () {
-         colorLocator = new ColorBlobLocatorProcessor.Builder()
-                .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
-                .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
-                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.5, 0.5, 0.5, -0.5))  // search central 1/4 of camera view
-                .setDrawContours(true)                        // Show contours on the Stream Preview
-                .setBlurSize(5)                               // Smooth the transitions between different colors in image
-                .build();
+    /**
+     *
+     * @param color What {@link ColorRange} color you want, BLUE, RED, or YELLOW
+     * @param portalQ If you want to reset the {@link VisionPortal} or not, true is yes, false is no
+     * @param left How far left from the center the border should be, range of 1,-1
+     * @param top How far up from the center the border should be, range of 1,-1
+     * @param right How far right from the center the border should be, range of 1,-1
+     * @param bottom How far down from the center the border should be, range of 1,-1
+     */
+    public void visionInit (ColorRange color, boolean portalQ, double left, double top, double right, double bottom) {
+        if (color == ColorRange.BLUE) {
 
+            colorLocator = new ColorBlobLocatorProcessor.Builder()
+                    .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
+                    .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                    .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                    .setDrawContours(true)                        // Show contours on the Stream Preview
+                    .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                    .build();
+        } else if (color ==ColorRange.RED) {
+            colorLocator = new ColorBlobLocatorProcessor.Builder()
+                    .setTargetColorRange(ColorRange.RED)         // use a predefined color match
+                    .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                    .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                    .setDrawContours(true)                        // Show contours on the Stream Preview
+                    .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                    .build();
+        } else {
+            colorLocator = new ColorBlobLocatorProcessor.Builder()
+                    .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
+                    .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                    .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                    .setDrawContours(true)                        // Show contours on the Stream Preview
+                    .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                    .build();
+        }
 
-        VisionPortal portal = new VisionPortal.Builder()
-                .addProcessor(colorLocator)
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setCameraResolution(new Size(1920, 1080))
-                .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .build();
-
-        myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
-        myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+        if (portalQ) {
+            VisionPortal portal = new VisionPortal.Builder()
+                    .addProcessor(colorLocator)
+                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                    .setCameraResolution(new Size(1920, 1080))
+                    .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .build();
+            myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
+            myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+        }
 
     }
 

@@ -25,6 +25,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
         double elbowFactor;
 
         boolean calibrate = false; // Used to keep user changes for this variable
+        boolean calibrateP = false;
 
         // Initialize all the hardware, using the hardware class.
         robot.init();
@@ -69,7 +70,17 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             // Calibrate Claw Toggle
             if (gamepad2.right_stick_button) {
                 calibrate = !calibrate;
+                if (calibrate) {
+                    calibrateP = false;
+                }
             }
+            if (gamepad2.left_stick_button) {
+                calibrateP = !calibrateP;
+                if (calibrateP) {
+                    calibrate = false;
+                }
+            }
+
 
             // Drive Elbow
             // VERYY JUMPY, ESPECIALLY GOING AGAINST GRAVITY. consider using smt like GoBILDA example
@@ -99,10 +110,11 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
                 elbowPos = robot.ELBOW_COLLAPSED;
             } else if (gamepad2.dpad_left) {
                 elbowPos = robot.ELBOW_ANGLED;
-            } else if (gamepad2.left_stick_button) {
+            }/* else if (gamepad2.left_stick_button) {
                 elbowPos = robot.ELBOW_ANTI_COLLAPSED;
 
             }
+            */
 
             // Call setTargetPosition for elbow, ensure input is int
             robot.elbowDrive.setTargetPosition((int) elbowPos + (int) elbowFactor);
@@ -111,6 +123,8 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             // Check to calibrate the claw
             if (calibrate) {
                 robot.calibrateClaw(robot.ELBOW_PARALLEL);
+            } else if (calibrateP) {
+                robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
             }
 
             // Send a telemetry message to explain controls and show robot status
