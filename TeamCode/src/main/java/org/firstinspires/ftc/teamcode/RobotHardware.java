@@ -92,7 +92,8 @@ public class RobotHardware {
             * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
             * ((double) 100 / 20) // external gearing, 20 to 100 teeth
             * ((double) 1 /360); // ... per degree
-    public final int ELBOW_ANGLE_OFFSET = 59;
+    public final int ELBOW_ANGLE_OFFSET = 189; // FIXME Should be the angle from parallel to floor to the true zero
+    public final int ELBOW_TRUE_OFFSET = 144; // FIXME Should be from true zero to perpendicular
 
     /* Elbow Positions
      ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
@@ -105,15 +106,15 @@ public class RobotHardware {
      STANDARD angles, or angles w/o the TRUE suffix are angles BASED on the PLANE OF REFERENCE
 
      SN: these variables declared here are the only ones that are exempt to this rule as they are used when stating
-         positions in the executive code and i do not wish to cause confusion there.
+         positions in the executive code and I do not wish to cause confusion there.
      */
     public double ELBOW_COLLAPSED = 0;
     public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_ANTI_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_ANTI_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_ANTI_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_FORWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_FORWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_FORWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
     public double angleConvert(double angle){
         return Math.round((angle + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
@@ -335,12 +336,12 @@ public class RobotHardware {
         double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / COUNTS_PER_DEGREE));
         double targetClawPos; // used to avoid changing the claw position too many times in here
 
-        if (elbowDegTRUE < 149) { // sets function to normal
-            targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 149) + 0.85); // this if for when the elbow is normal
-            elbowDirection = enable;
-        } else if (elbowDegTRUE > 149){ // changes function to inverse
-            targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 149) + 0.19); // this is for when the elbow is backwards
-            elbowDirection = disable;
+        if (elbowDegTRUE > ELBOW_TRUE_OFFSET) { // sets function to normal/forwards facing FIXME
+            targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - ELBOW_TRUE_OFFSET) + 0.85); // this if for when the elbow is normal
+            elbowDirection = enable; // elbow is facing forward
+        } else if (elbowDegTRUE < ELBOW_TRUE_OFFSET){ // changes function to inverse/backwards facing FIXME
+            targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - ELBOW_TRUE_OFFSET) + 0.19); // this is for when the elbow is backwards
+            elbowDirection = disable; // elbow is facing backwards
         } else { // for increased accuracy, set to 90 base floor
             if (elbowDirection == enable) {
                 targetClawPos = (0.85);
@@ -349,13 +350,18 @@ public class RobotHardware {
             }
         }
 
+        /*
+        the number next to elbowDegTRUE is at what position the claw should be at your limit
+        ex. If the claw is down, the angle should be where the arm is angled at for the claw to be facing straight
+        at the floor.
+         */
         if (orientation == ELBOW_PERPENDICULAR){ // change position to perpendicular to floor
-            if (elbowDegTRUE < 84 && elbowDegTRUE > 27) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
-                targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 84) + CLAW_DOWN); // this if for when the elbow is normal
-                elbowDirection = enable;
-            } else if (elbowDegTRUE > 214 && elbowDegTRUE < 271){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
-                targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 214) + CLAW_UP); // this is for when the elbow is backwards
-                elbowDirection = disable;
+            if (elbowDegTRUE < 266 && elbowDegTRUE > 209) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
+                targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
+                elbowDirection = enable; // elbow is facing forward
+            } else if (elbowDegTRUE > 22 && elbowDegTRUE < 79){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+                targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
+                elbowDirection = disable; // elbow is facing backwards
             }
         }
 

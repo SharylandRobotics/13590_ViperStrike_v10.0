@@ -23,6 +23,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
         double turn;
         double elbowPos = 0; // just here to keep intelliJ quiet
         double elbowFactor;
+        double extend;
 
         boolean calibrate = false; // Used to keep user changes for this variable
         boolean calibrateP = false;
@@ -47,6 +48,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             turn = gamepad1.right_stick_x;
 
             // Find out how to use left_stick_y for extension movement FIXME
+            extend = -gamepad2.left_stick_y;
 
             // Combine drive, strafe, and turn for blended motion. Use RobotHardware class
             robot.driveFieldCentric(drive, strafe, turn);
@@ -105,9 +107,9 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             if (gamepad2.dpad_up) {
                 elbowPos = robot.ELBOW_PERPENDICULAR;
             } else if (gamepad2.dpad_right) {
-                elbowPos = robot.ELBOW_ANTI_ANGLED;
+                elbowPos = robot.ELBOW_FORWARD_ANGLED;
             } else if (gamepad2.dpad_down) {
-                elbowPos = robot.ELBOW_COLLAPSED;
+                elbowPos = robot.ELBOW_FORWARD_COLLAPSED;
             } else if (gamepad2.dpad_left) {
                 elbowPos = robot.ELBOW_ANGLED;
             }/* else if (gamepad2.left_stick_button) {
