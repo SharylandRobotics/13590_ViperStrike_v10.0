@@ -24,6 +24,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
@@ -39,8 +40,10 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
 
         // Initialize all the hardware using the hardware class. ONLY NEED TO BE DONE ONCE
-        robot.visionInit(ColorRange.BLUE, true,-0.5,0.5,0.5,-0.5);
         robot.init();
+        robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.elbowDrive.setPower(1.0);
+        robot.visionInit(ColorRange.BLUE, true,-0.5,0.5,0.5,-0.5);
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -61,7 +64,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         while (true) {
             robot.detectR();
 
-            if (!robot.blobs.isEmpty()) { // check until a blob appears
+            if (robot.blobS != null) { // check until a blob appears
                 robot.driveFieldCentric(0,0,0); // stop movement
                 break; // break out the loop
             }
@@ -72,7 +75,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         while (true) {
             robot.detectR();
 
-            if (!robot.blobs.isEmpty()) { // check until a blob appears
+            if (robot.blobS != null) { // check until a blob appears
                 robot.driveFieldCentric(0,0,0); // stop movement
                 break; // break out the loop
             }

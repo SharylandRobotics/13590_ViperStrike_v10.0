@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
@@ -23,9 +24,12 @@ public class AutoDriveByTime extends LinearOpMode {
         double heading;
         // Initialize all the hardware using the hardware class.
         robot.init();
+        robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.elbowDrive.setPower(1.0);
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL);
 
         /*
         robot.elbowDrive.setTargetPosition((int) robot.ELBOW_ANTI_COLLAPSED);

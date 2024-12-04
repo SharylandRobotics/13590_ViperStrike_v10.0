@@ -198,7 +198,7 @@ public class RobotHardware {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        elbowDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        elbowDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         extensionDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -372,7 +372,7 @@ public class RobotHardware {
 
     public ColorBlobLocatorProcessor colorLocator;
     public VisionPortal portal;
-    public List<ColorBlobLocatorProcessor.Blob> blobs;
+    public List<ColorBlobLocatorProcessor.Blob> blobS;
 
     /**
      *
@@ -466,14 +466,14 @@ public class RobotHardware {
                 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠒⠒⠦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀\n" +
                 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀");
 
-        List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs(); // set list to whatever the camera found
+        List<ColorBlobLocatorProcessor.Blob> blobS = colorLocator.getBlobs(); // set list to whatever the camera found
 
-        ColorBlobLocatorProcessor.Util.filterByArea(200, 20000, blobs);  // filter out very small blobs.
+        ColorBlobLocatorProcessor.Util.filterByArea(200, 20000, blobS);  // filter out very small blobs.
 
         myOpMode.telemetry.addLine(" Area Density Aspect  Center");
 
         // Display the size (area) and center location for each Blob.
-        for(ColorBlobLocatorProcessor.Blob b : blobs) // telemetry the blobs found
+        for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found
         {
             RotatedRect boxFit = b.getBoxFit();
             myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
