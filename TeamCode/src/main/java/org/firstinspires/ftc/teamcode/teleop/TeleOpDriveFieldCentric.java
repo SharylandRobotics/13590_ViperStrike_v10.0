@@ -96,12 +96,20 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
                 elbowFactor = robot.ELBOW_FUDGE_FACTOR * 0;
             }
 
-            // Drive Extension
-            if (gamepad2.left_trigger != 0) {
-                robot.extensionDrive.setPower(-1.0);
-            } else if (gamepad2.right_trigger != 0) {
-                robot.extensionDrive.setPower(1.0);
-            } else { robot.extensionDrive.setPower(0.0); }
+            // Extension Logic, don't move if at/past limit
+            if (robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT) {
+                robot.extensionDrive.setPower(0);
+            } else {
+                robot.extensionDrive.setPower(extend);
+                // Drive Extension
+                if (gamepad2.left_trigger != 0) {
+                    robot.extensionDrive.setPower(-1.0);
+                } else if (gamepad2.right_trigger != 0) {
+                    robot.extensionDrive.setPower(1.0);
+                } else {
+                    robot.extensionDrive.setPower(0.0);
+                }
+            }
 
             // Set Elbow Positions
             if (gamepad2.dpad_up) {
@@ -132,8 +140,9 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             // Send a telemetry message to explain controls and show robot status
             telemetry.addData("Status", "Run Time: " + runtime.seconds());
             telemetry.addData("Manual", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            telemetry.addData(String.valueOf(gamepad2.right_stick_y), "hi");
-            telemetry.addData(String.valueOf(robot.elbowDrive.getCurrentPosition()), "pos");
+            telemetry.addData("GAMEPAD2 LEFT STICK Y: ", String.valueOf(gamepad2.left_stick_y));
+            telemetry.addData("ELBOW POSITION: ", String.valueOf(robot.elbowDrive.getCurrentPosition()));
+            telemetry.addData("EXTENSION POSITION: ", String.valueOf(robot.extensionDrive.getCurrentPosition()));
             telemetry.update();
 
 

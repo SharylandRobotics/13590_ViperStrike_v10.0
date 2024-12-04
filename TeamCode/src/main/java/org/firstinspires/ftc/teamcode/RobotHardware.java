@@ -86,14 +86,24 @@ public class RobotHardware {
     public statesOfBeing superposition = statesOfBeing.SUPERPOSITION;
     public statesOfBeing pass = statesOfBeing.PASS;
 
+    // Declare Extender Encoder Variables
+    public final double EXTENSION_COUNTS_PER_REV =
+        28 // counts for bare motor revolution
+            * ( (((1+ (46.0/17.0))) * (1+ (46.0/11.0))) ) // times internal gearing (aka gear ratio formula)
+            * (1.0) // external gearing, 60 to 60 teeth
+            * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
+    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * 60) - 1; // the other number is how many revs
+            // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
+
+
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
     public final double COUNTS_PER_DEGREE =
         28 // counts for motor revolution...
             * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
-            * ((double) 100 / 20) // external gearing, 20 to 100 teeth
-            * ((double) 1 /360); // ... per degree
-    public final int ELBOW_ANGLE_OFFSET = 189; // FIXME Should be the angle from parallel to floor to the true zero
-    public final int ELBOW_TRUE_OFFSET = 144; // FIXME Should be from true zero to perpendicular
+            * (100.0 / 20.0) // external gearing, 20 to 100 teeth
+            * (1.0 / 360.0); // ... per degree
+    public final int ELBOW_ANGLE_OFFSET = 55; // FIXME Should be the angle from parallel to floor to the true zero
+    public final int ELBOW_TRUE_OFFSET = 145; // FIXME Should be from true zero to perpendicular
 
     /* Elbow Positions
      ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
@@ -356,10 +366,10 @@ public class RobotHardware {
         at the floor.
          */
         if (orientation == ELBOW_PERPENDICULAR){ // change position to perpendicular to floor
-            if (elbowDegTRUE < 266 && elbowDegTRUE > 209) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
+            if (elbowDegTRUE < 267 && elbowDegTRUE > 210) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
                 targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
                 elbowDirection = enable; // elbow is facing forward
-            } else if (elbowDegTRUE > 22 && elbowDegTRUE < 79){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+            } else if (elbowDegTRUE > 23 && elbowDegTRUE < 80){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
                 targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
                 elbowDirection = disable; // elbow is facing backwards
             }

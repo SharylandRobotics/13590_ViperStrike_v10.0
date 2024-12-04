@@ -43,23 +43,20 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.init();
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
-        robot.visionInit(ColorRange.BLUE, true,-0.5,0.5,0.5,-0.5);
+        robot.visionInit(ColorRange.BLUE, true,0.5,1.0,1.0,1.0);
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
         robot.setClawPosition(robot.enable,0,robot.pass,0);
 
-        robot.calibrateClaw(robot.ELBOW_PARALLEL);
+        robot.calibrateClaw(robot.ELBOW_FORWARD_PARALLEL);
 
         sleep(500);
 
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(5)));
         //FIXME
 
-        /*
-        robot.visionInit(ColorRange.BLUE, false);
-         */
 
         while (true) {
             robot.detectR();
