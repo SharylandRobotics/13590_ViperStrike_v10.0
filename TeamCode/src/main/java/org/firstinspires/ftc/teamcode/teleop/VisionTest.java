@@ -30,6 +30,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.opencv.core.Point;
 
 @TeleOp(name = "Vision: test", group = "Robot")
 public class VisionTest extends LinearOpMode {
@@ -54,7 +55,10 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             telemetry.addData("check preview, initialized", "... Camera Stream");
             telemetry.addData("current orientation", String.valueOf(yawAngles));
-            robot.detectR(); // run camera
+            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
+            if(robot.blobS != null ) {
+                telemetry.addData("RUNG SPOTTED", "!!!!");
+            }
         }
 
         waitForStart();
@@ -72,7 +76,7 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // Check out the waters
 
             telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
-            robot.detectR(); // run camera
+            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
             telemetry.update();
 
 

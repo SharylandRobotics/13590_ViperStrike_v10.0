@@ -16,7 +16,10 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -127,7 +130,7 @@ public class RobotHardware {
     public double ELBOW_FORWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
     public double angleConvert(double angle){
-        return Math.round((angle + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+        return Math.round((angle) * COUNTS_PER_DEGREE);
     }
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
@@ -392,6 +395,31 @@ public class RobotHardware {
 
     /**
      *
+     * @param leftUp Top Left Point of the ROI you wish to set
+     * @param rightDown Bottom Right Point of the ROI you wish to set
+     *                  These Points can only make shapes with all perpendicular angles (only squares/rectangles)
+     * @param blobList Pass the list (blob list) you wish to filter
+     */
+    public void filterBySetROI(Point leftUp, Point rightDown, List<ColorBlobLocatorProcessor.Blob> blobList) {
+        ArrayList<ColorBlobLocatorProcessor.Blob> toRemove = new ArrayList<>();
+
+        for(ColorBlobLocatorProcessor.Blob b : blobList)
+        {
+            double bCenterX = b.getBoxFit().center.x;
+            double bCenterY = b.getBoxFit().center.y;
+
+            if (bCenterX <= leftUp.x || bCenterY >= leftUp.y ||
+                bCenterX >= rightDown.x || bCenterY <= rightDown.y)
+            {
+                toRemove.add(b);
+            }
+        }
+
+        blobList.removeAll(toRemove);
+    }
+
+    /**
+     *
      * @param color What {@link ColorRange} color you want, BLUE, RED, or YELLOW
      * @param portalQ If you want to reset the {@link VisionPortal} or not, true is yes, false is no
      * @param left How far left from the center the border should be, range of 1,-1
@@ -441,7 +469,7 @@ public class RobotHardware {
     }
 
     @SuppressLint("DefaultLocale")
-    public void detectR () {
+    public void detectR (Point topLeft, Point bottomRight) {
         /* ----- USE THIS FUNC LIKE SO... -----
                                 while (condition)
                                 {
@@ -473,16 +501,11 @@ public class RobotHardware {
                 "⠀⠔⠁⠀⠀⠀⠀⠀⠀⠂⠀⠁⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠐⠂⠠⡀⠀⠀⠀\n" +
                 "⠀⣠⣶⣾⣾⣿⡿⣷⡀⢐⠀⠀⠁⠀⠀⡰⠃⣀⣀⣀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀\n" +
                 "⢸⣿⢻⣿⣿⣿⣷⣹⡗⢨⠀⠀⠀⡆⠠⠀⣾⢛⣿⣿⣿⣶⣦⣄⠀⠀⠀⠀⠈⠀\n" +
-                "⠀⢿⣿⣿⡻⣿⣿⣿⠃⠀⠀⠀⢀⡧⠆⢠⡏⣾⣿⣿⡏⠉⣿⣿⣿⣦⣄⠀⠀⠀\n" +
-                "⠀⠈⢿⣿⣿⣿⡿⠃⠀⡘⠀⢀⠔⠀⡄⠀⣷⣿⣿⣿⣷⣾⣿⣿⣿⣿⣿⣷⣄⠀\n" +
-                "⠀⠀⠀⠙⢩⠀⢀⣤⠊⠔⠚⠀⠀⠀⠘⡀⠈⠿⣿⣿⣿⣿⣹⣿⣿⣿⢟⡵⠣⠂\n" +
-                "⠀⠀⠀⠠⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠂⢄⠈⠙⠻⠿⣿⡿⠿⡻⠝⠀⠀⠀\n" +
-                "⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠀⠀⠀⠀⠘⠀⠀⠀⠀⠀\n" +
-                "⠀⠀⠆⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠡⠀⠀⠀⠀\n" +
-                "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠒⠒⠦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀\n" +
-                "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀");
+                "⠀⢿⣿⣿⡻⣿⣿⣿⠃⠀⠀⠀⢀⡧⠆⢠⡏⣾⣿⣿⡏⠉⣿⣿⣿⣦⣄⠀⠀⠀\n");
 
         List<ColorBlobLocatorProcessor.Blob> blobS = colorLocator.getBlobs(); // set list to whatever the camera found
+
+        filterBySetROI(topLeft, bottomRight, blobS);
 
         ColorBlobLocatorProcessor.Util.filterByArea(200, 20000, blobS);  // filter out very small blobs.
 

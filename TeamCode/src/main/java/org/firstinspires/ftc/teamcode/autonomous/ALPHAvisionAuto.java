@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.opencv.core.Point;
 
 @Autonomous(name = "ALPHA auto by Vision", group = "Robot")
 public class ALPHAvisionAuto extends LinearOpMode{
@@ -50,27 +51,32 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.setClawPosition(robot.enable,0,robot.pass,0);
 
-        robot.calibrateClaw(robot.ELBOW_FORWARD_PARALLEL);
+
 
         sleep(500);
 
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(5)));
+        robot.elbowDrive.setTargetPosition((int) ((robot.ELBOW_PERPENDICULAR) - robot.angleConvert(3)));
         //FIXME
 
 
-        while (true) {
-            robot.detectR();
-
+        while (opModeIsActive()) {
+            robot.detectR(new Point(480,810), new Point(1440,270));
+            robot.calibrateClaw(robot.ELBOW_FORWARD_PARALLEL);
             if (robot.blobS != null) { // check until a blob appears
                 robot.driveFieldCentric(0,0,0); // stop movement
+                telemetry.addData("RUNG SPOTTED", "!!!!");
                 break; // break out the loop
             }
 
-            robot.driveFieldCentric(0.25,0,0); // move SLOWLY until blob appears
+            robot.driveFieldCentric(-0.25,0,0); // move SLOWLY until blob appears
         }
 
-        while (true) {
-            robot.detectR();
+        sleep(500);
+
+        robot.setClawPosition(robot.enable,0,robot.disable,0);
+
+        while (opModeIsActive()) {
+            robot.detectR(new Point(480,810), new Point(1440,270));
 
             if (robot.blobS != null) { // check until a blob appears
                 robot.driveFieldCentric(0,0,0); // stop movement
@@ -83,7 +89,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
         sleep(500);
 
         sleep(1000);
-        stop();
 
 
 
