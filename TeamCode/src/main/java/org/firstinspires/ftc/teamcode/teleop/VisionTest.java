@@ -47,7 +47,7 @@ public class VisionTest extends LinearOpMode {
         YawPitchRollAngles  yawAngles;
 
 
-        robot.visionInit(ColorRange.BLUE, true,-0.5,0.5,0.5,-0.5);
+        robot.visionInit("BLUE", true,-0.5,0.5,0.5,-0.5);
         robot.init();
         // WARNING:  To be able to view the stream preview on the Driver Station, this code runs in INIT mode.
         while (opModeInInit())

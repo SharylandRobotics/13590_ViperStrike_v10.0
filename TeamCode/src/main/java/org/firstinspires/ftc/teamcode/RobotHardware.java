@@ -312,7 +312,7 @@ public class RobotHardware {
 
 
 
-    public void setClawPosition(statesOfBeing pinch, float yaw, statesOfBeing axial, double extension) {
+    public void setClawPosition(statesOfBeing pinch, float yaw, statesOfBeing axial) {
 
         //noinspection StatementWithEmptyBody
         if (pinch == pass){ // here to make sure it doesn't waste processing power
@@ -334,8 +334,6 @@ public class RobotHardware {
         }
 
         clawYaw.setPower(yaw); // Rotates the claw based on trigger value
-
-        extensionDrive.setPower(extension); // ** Will Change to be like clawYaw **
     }
     // to stop the claw from switching back and forth while in perpendicular position
         /* more specifically, it stops the elbow from having a preferred side to turn to when at 149 deg
@@ -403,6 +401,8 @@ public class RobotHardware {
     public void filterBySetROI(Point leftUp, Point rightDown, List<ColorBlobLocatorProcessor.Blob> blobList) {
         ArrayList<ColorBlobLocatorProcessor.Blob> toRemove = new ArrayList<>();
 
+        //Imgproc.line(image, new Point(100, 100), new Point(400, 400), new Scalar(0, 255, 0), 5);
+
         for(ColorBlobLocatorProcessor.Blob b : blobList)
         {
             double bCenterX = b.getBoxFit().center.x;
@@ -420,39 +420,42 @@ public class RobotHardware {
 
     /**
      *
-     * @param color What {@link ColorRange} color you want, BLUE, RED, or YELLOW
+     * @param color What color you want (IN STRING VALUE), BLUE, RED, or YELLOW
      * @param portalQ If you want to reset the {@link VisionPortal} or not, true is yes, false is no
      * @param left How far left from the center the border should be, range of 1,-1
      * @param top How far up from the center the border should be, range of 1,-1
      * @param right How far right from the center the border should be, range of 1,-1
      * @param bottom How far down from the center the border should be, range of 1,-1
      */
-    public void visionInit (ColorRange color, boolean portalQ, double left, double top, double right, double bottom) {
-        if (color == ColorRange.BLUE) {
-
-            colorLocator = new ColorBlobLocatorProcessor.Builder()
-                    .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
-                    .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
-                    .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
-                    .setDrawContours(true)                        // Show contours on the Stream Preview
-                    .setBlurSize(5)                               // Smooth the transitions between different colors in image
-                    .build();
-        } else if (color ==ColorRange.RED) {
-            colorLocator = new ColorBlobLocatorProcessor.Builder()
-                    .setTargetColorRange(ColorRange.RED)         // use a predefined color match
-                    .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
-                    .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
-                    .setDrawContours(true)                        // Show contours on the Stream Preview
-                    .setBlurSize(5)                               // Smooth the transitions between different colors in image
-                    .build();
-        } else {
-            colorLocator = new ColorBlobLocatorProcessor.Builder()
-                    .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
-                    .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
-                    .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
-                    .setDrawContours(true)                        // Show contours on the Stream Preview
-                    .setBlurSize(5)                               // Smooth the transitions between different colors in image
-                    .build();
+    public void visionInit (String color, boolean portalQ, double left, double top, double right, double bottom) {
+        switch (color) { // CUTTING EDGE CODE!!!!
+            case "BLUE":
+                colorLocator = new ColorBlobLocatorProcessor.Builder()
+                        .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
+                        .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                        .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                        .setDrawContours(true)                        // Show contours on the Stream Preview
+                        .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                        .build();
+                break;
+            case "RED":
+                colorLocator = new ColorBlobLocatorProcessor.Builder()
+                        .setTargetColorRange(ColorRange.RED)         // use a predefined color match
+                        .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                        .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                        .setDrawContours(true)                        // Show contours on the Stream Preview
+                        .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                        .build();
+                break;
+            case "YELLOW":
+                colorLocator = new ColorBlobLocatorProcessor.Builder()
+                        .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
+                        .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                        .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                        .setDrawContours(true)                        // Show contours on the Stream Preview
+                        .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                        .build();
+                break;
         }
 
         if (portalQ) {
