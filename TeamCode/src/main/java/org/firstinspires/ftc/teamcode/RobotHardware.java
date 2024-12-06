@@ -210,10 +210,10 @@ public class RobotHardware {
          wheel that runs backward. Keep testing until ALL the wheels move the robot forward when you push the left
          joystick forward.
          */
-        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
         elbowDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         extensionDrive.setDirection(DcMotorSimple.Direction.REVERSE);

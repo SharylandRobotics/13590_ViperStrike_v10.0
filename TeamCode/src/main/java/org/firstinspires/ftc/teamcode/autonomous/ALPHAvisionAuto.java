@@ -56,21 +56,38 @@ public class ALPHAvisionAuto extends LinearOpMode{
         runtime.reset();
 
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15)));
-        robot.driveFieldCentric(-0.25,0,0);
+        robot.driveFieldCentric(0.25,0,0);
+
         while (opModeIsActive() ) {
             robot.calibrateClaw(robot.ELBOW_PARALLEL);
             robot.detectR(new Point(480,810), new Point(1440,270));
             //List<ColorBlobLocatorProcessor.Blob> blobS = robot.colorLocator.getBlobs();
             //telemetry.addData("BlOBS", String.valueOf(robot.blobS.isEmpty()));
-            if (robot.blobS != null) {
+
+            if (!robot.blobS.isEmpty()) {
                 robot.driveFieldCentric(0,0,0);
-                telemetry.addData("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","AAAAAAAAA");
-                sleep(3000);
+                telemetry.addData("RUNG"," FOUND");
+                robot.setClawPosition(robot.pass,0,robot.superposition);
+                sleep(500);
                 break;
             }
+
+
             sleep(20);
         }
 
+        robot.driveFieldCentric(0.25,0,0);
+        sleep(300);
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(40)));
+        sleep(200);
+        while (robot.elbowDrive.isBusy()) {
+            robot.setClawPosition(robot.pass,0,robot.superposition);
+            telemetry.addData("GIVE ME", "LUNCH");
+            if (robot.elbowDrive.getCurrentPosition() == (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(50))) {
+                robot.setClawPosition(robot.disable,0,robot.pass);
+            }
+        }
+        sleep(3000);
         telemetry.addData("DONE","!!");
 
     }
