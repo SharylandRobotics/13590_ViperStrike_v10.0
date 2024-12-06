@@ -23,14 +23,18 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import android.annotation.SuppressLint;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
 import org.opencv.core.Point;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 @TeleOp(name = "Vision: test", group = "Robot")
 public class VisionTest extends LinearOpMode {
@@ -47,8 +51,11 @@ public class VisionTest extends LinearOpMode {
         YawPitchRollAngles  yawAngles;
 
 
-        robot.visionInit("BLUE", true,-0.5,0.5,0.5,-0.5);
+        robot.visionInit("BLUE", true,-0.6,0.6,0.6,-0.6);
         robot.init();
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        FtcDashboard.getInstance().startCameraStream(camera, 30);
         // WARNING:  To be able to view the stream preview on the Driver Station, this code runs in INIT mode.
         while (opModeInInit())
         {
@@ -56,9 +63,7 @@ public class VisionTest extends LinearOpMode {
             telemetry.addData("check preview, initialized", "... Camera Stream");
             telemetry.addData("current orientation", String.valueOf(yawAngles));
             robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
-            if(robot.blobS != null ) {
-                telemetry.addData("RUNG SPOTTED", "!!!!");
-            }
+
         }
 
         waitForStart();
@@ -78,8 +83,9 @@ public class VisionTest extends LinearOpMode {
             telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
             robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
             telemetry.update();
-
-
+            if(robot.blobS != null ) {
+                telemetry.addData("RUNG SPOTTED", "!!!!");
+            }
             sleep(50);
         }
 

@@ -16,8 +16,11 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -401,7 +404,12 @@ public class RobotHardware {
     public void filterBySetROI(Point leftUp, Point rightDown, List<ColorBlobLocatorProcessor.Blob> blobList) {
         ArrayList<ColorBlobLocatorProcessor.Blob> toRemove = new ArrayList<>();
 
-        //Imgproc.line(image, new Point(100, 100), new Point(400, 400), new Scalar(0, 255, 0), 5);
+        Point leftDown = new Point(leftUp.x, rightDown.y);
+        Point rightUp = new Point(rightDown.x, leftUp.y);
+
+        Point[] pointsSet = {leftUp, leftDown, rightUp, rightDown};
+
+        Imgproc.minAreaRect( new MatOfPoint2f(pointsSet));
 
         for(ColorBlobLocatorProcessor.Blob b : blobList)
         {
@@ -506,7 +514,7 @@ public class RobotHardware {
                 "⢸⣿⢻⣿⣿⣿⣷⣹⡗⢨⠀⠀⠀⡆⠠⠀⣾⢛⣿⣿⣿⣶⣦⣄⠀⠀⠀⠀⠈⠀\n" +
                 "⠀⢿⣿⣿⡻⣿⣿⣿⠃⠀⠀⠀⢀⡧⠆⢠⡏⣾⣿⣿⡏⠉⣿⣿⣿⣦⣄⠀⠀⠀\n");
 
-        List<ColorBlobLocatorProcessor.Blob> blobS = colorLocator.getBlobs(); // set list to whatever the camera found
+        blobS = colorLocator.getBlobs(); // set list to whatever the camera found
 
         filterBySetROI(topLeft, bottomRight, blobS);
 
