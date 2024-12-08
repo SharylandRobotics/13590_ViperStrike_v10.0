@@ -56,38 +56,59 @@ public class ALPHAvisionAuto extends LinearOpMode{
         runtime.reset();
 
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15)));
-        robot.driveFieldCentric(0.25,0,0);
+        robot.driveFieldCentric(0.6,0,0);
 
-        while (opModeIsActive() ) {
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.8 ) {
             robot.calibrateClaw(robot.ELBOW_PARALLEL);
-            robot.detectR(new Point(480,810), new Point(1440,270));
-            //List<ColorBlobLocatorProcessor.Blob> blobS = robot.colorLocator.getBlobs();
-            //telemetry.addData("BlOBS", String.valueOf(robot.blobS.isEmpty()));
-
-            if (!robot.blobS.isEmpty()) {
-                robot.driveFieldCentric(0,0,0);
-                telemetry.addData("RUNG"," FOUND");
-                robot.setClawPosition(robot.pass,0,robot.superposition);
-                sleep(500);
-                break;
-            }
-
-
-            sleep(20);
         }
 
-        robot.driveFieldCentric(0.25,0,0);
+        robot.driveFieldCentric(0,0,0);
+        robot.setClawPosition(robot.pass,0,robot.superposition);
+
         sleep(300);
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(40)));
-        sleep(200);
+        robot.driveFieldCentric(0.3,0,0);
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60)));
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.2  ) {
+            telemetry.addData("STABILIZING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
         while (robot.elbowDrive.isBusy()) {
             robot.setClawPosition(robot.pass,0,robot.superposition);
-            telemetry.addData("GIVE ME", "LUNCH");
-            if (robot.elbowDrive.getCurrentPosition() == (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(50))) {
-                robot.setClawPosition(robot.disable,0,robot.pass);
+
+            if (robot.elbowDrive.getCurrentPosition() == (int) (robot.COUNTS_PER_DEGREE * 90) ) {
+                break;
             }
         }
+        robot.setClawPosition(robot.disable,0,robot.pass);
+        telemetry.addData("GIVE ME", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
+        telemetry.update();
+        sleep(200);
+        robot.setClawPosition(robot.enable,0, robot.pass);
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_COLLAPSED);
+
+        robot.driveFieldCentric(-0.6,0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.01) {
+            telemetry.addData("BACKING UP", "...");
+            telemetry.update();
+        }
+
+        sleep(500);
+
+        robot.driveFieldCentric(-0.8,0.8,0);
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.6) {
+            telemetry.addData("STRAFING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
         sleep(3000);
+        robot.turnUntil(179.9);
+
         telemetry.addData("DONE","!!");
 
     }

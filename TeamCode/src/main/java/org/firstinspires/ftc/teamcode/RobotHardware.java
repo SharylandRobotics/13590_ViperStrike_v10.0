@@ -19,7 +19,6 @@ import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -51,6 +50,7 @@ public class RobotHardware {
     displayed by sendTelemetry()
      */
     public ElapsedTime runtime = new ElapsedTime();
+    public double heading; // yaw of robot
 
     // Rudimentary initialization of variables
     public double drivePower;
@@ -128,9 +128,9 @@ public class RobotHardware {
     public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_FORWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_FORWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_FORWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
     public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
     public double angleConvert(double angle){
         return Math.round((angle) * COUNTS_PER_DEGREE);
@@ -196,11 +196,12 @@ public class RobotHardware {
          hub is pointing. All directions are relative to the robot, and left/right is as-viewed from behind the robot.
          */
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
 
         imu.initialize(parameters);
 
+        heading = imu.getRobotYawPitchRollAngles().getYaw();
         /*
          Most robots need the motors on one side to be reversed to drive forward. The motor reversals shown here are
          for a "direct drive" robot (the wheels turn in the same direction as the motor shaft). If your robot has
@@ -311,6 +312,28 @@ public class RobotHardware {
         leftBackDrive.setPower(leftBackWheel);
         rightFrontDrive.setPower(rightFrontWheel);
         rightBackDrive.setPower(rightBackWheel);
+    }
+
+    public void turnUntil(double angle) {
+        heading = imu.getRobotYawPitchRollAngles().getYaw();
+        double goal = angle - heading;
+        if (goal > 180) {
+            goal -= 360;
+        }
+        if (goal < -180) {
+            goal += 360;
+        }
+
+        if (heading != goal) {
+            driveFieldCentric(0,0,(goal/Math.abs(goal) * 0.5));
+        }
+
+        while (heading != goal) {
+            heading = Math.round(imu.getRobotYawPitchRollAngles().getYaw() * 10.0) / 10.0;
+            myOpMode.telemetry.addData("HEADING:", heading);
+            myOpMode.telemetry.update();
+        }
+        driveFieldCentric(0,0,0);
     }
 
 

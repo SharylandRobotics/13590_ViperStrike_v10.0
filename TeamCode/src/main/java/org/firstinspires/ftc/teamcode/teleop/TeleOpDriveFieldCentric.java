@@ -115,9 +115,9 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             if (gamepad2.dpad_up) {
                 elbowPos = robot.ELBOW_PERPENDICULAR;
             } else if (gamepad2.dpad_right) {
-                elbowPos = robot.ELBOW_FORWARD_ANGLED;
+                elbowPos = robot.ELBOW_BACKWARD_ANGLED;
             } else if (gamepad2.dpad_down) {
-                elbowPos = robot.ELBOW_FORWARD_COLLAPSED;
+                elbowPos = robot.ELBOW_BACKWARD_COLLAPSED;
             } else if (gamepad2.dpad_left) {
                 elbowPos = robot.ELBOW_ANGLED;
             }/* else if (gamepad2.left_stick_button) {
