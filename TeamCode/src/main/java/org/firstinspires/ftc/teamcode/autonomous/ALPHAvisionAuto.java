@@ -26,70 +26,66 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
-import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.teamcode.VisionSoftware;
 import org.opencv.core.Point;
-
-import java.util.List;
 
 @Autonomous(name = "ALPHA auto by Vision", group = "Robot")
 public class ALPHAvisionAuto extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
-
+    VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
 
     @Override
     public void runOpMode() {
 
-        YawPitchRollAngles yawPitchRoll;
-        double heading;
+        double secondsToScan = 0;
         // Initialize all the hardware using the hardware class.
         robot.init();
-        robot.visionInit("BLUE", true, -0.6, 0.6, 0.6, -0.6);
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15)));
+        robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
         robot.driveFieldCentric(0.6,0,0);
-
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.8 ) {
             robot.calibrateClaw(robot.ELBOW_PARALLEL);
         }
-
         robot.driveFieldCentric(0,0,0);
         robot.setClawPosition(robot.pass,0,robot.superposition);
 
         sleep(300);
+
         robot.driveFieldCentric(0.3,0,0);
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60)));
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.2  ) {
-            telemetry.addData("STABILIZING", "...");
+            telemetry.addData("SCORING", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
-        while (robot.elbowDrive.isBusy()) {
+
+        while (robot.elbowDrive.isBusy()) { // check for when to let go of specimen
             robot.setClawPosition(robot.pass,0,robot.superposition);
 
             if (robot.elbowDrive.getCurrentPosition() == (int) (robot.COUNTS_PER_DEGREE * 90) ) {
                 break;
             }
         }
-        robot.setClawPosition(robot.disable,0,robot.pass);
-        telemetry.addData("GIVE ME", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
+        robot.setClawPosition(robot.disable,0,robot.pass); // let go of specimen
+        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
         telemetry.update();
-        sleep(200);
-        robot.setClawPosition(robot.enable,0, robot.pass);
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_COLLAPSED);
 
-        robot.driveFieldCentric(-0.6,0,0);
+        sleep(200);
+
+        robot.setClawPosition(robot.enable,0, robot.pass); // close to not hit bar
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL); // lower to position for pickup
+
+        robot.driveFieldCentric(-0.6,0,0); // back away to not hit arm
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.01) {
             telemetry.addData("BACKING UP", "...");
@@ -98,16 +94,141 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(500);
 
-        robot.driveFieldCentric(-0.8,0.8,0);
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL);
+        robot.setDrivePower(-1.0,1.0,0.43,-0.43); // strafe to OZ
+        robot.setClawPosition(robot.disable,0,robot.pass);
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.6) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
+
         sleep(3000);
-        robot.turnUntil(179.9);
+
+        robot.turnUntil(179.9); // turn around
+        /* in case this doesn't work ^
+        robot.driveFieldCentric(0,0,-1.0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 1.5) {
+            telemetry.addData("TURNING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+        */
+        sleep(10000); // TEST THIS BEFORE MOVING ON  ^^^^^^^^^
+
+        colorDetector.visionInit("BLUE",true, colorDetector.colorLocator, -1,0.75,0.5,-0.25); // scan for the specimen
+        robot.driveFieldCentric(0,-0.25,0); // USE THIS SAME SPEED FOR secondsToScan
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 1) {
+            robot.calibrateClaw(robot.ELBOW_PARALLEL);
+            secondsToScan = runtime.seconds();
+            colorDetector.detectR(new Point(480,810), new Point(1440,270), "PRIMARY");
+            if (!colorDetector.blobS.isEmpty()) {
+                robot.driveFieldCentric(0,0,0);
+                secondsToScan = runtime.seconds();
+                break;
+            }
+        }
+
+        sleep(300);
+
+        robot.driveFieldCentric(0,0.25,0); // REVERSE THE DRIVING FROM ABOVE ^^^
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < secondsToScan) {
+            telemetry.addData("MOVING BACK", "...");
+            telemetry.update();
+        }
+
+        robot.driveFieldCentric(0.25,0,0); // move up to grab specimen
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.2) {
+            telemetry.addData("DOCKING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+
+        sleep(200);
+
+        robot.setClawPosition(robot.enable,0,robot.enable); // grab specimen
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR + robot.angleConvert(15))); // lift arm
+        robot.setDrivePower(1.0,-1.0,-0.43,0.43); // strafe back to rung
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.6) {
+            telemetry.addData("STRAFING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+
+        sleep(200);
+
+        robot.driveFieldCentric(0.6,0,0); // move up/reverse of back away
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.01) {
+            telemetry.addData("MOVING UP", "...");
+            telemetry.update();
+        }
+
+        robot.driveFieldCentric(0.3,0,0); // hook onto rung/score
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR + robot.angleConvert(60)));
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.2  ) {
+            telemetry.addData("SCORING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+
+        while (robot.elbowDrive.isBusy()) { // check for when to let go of specimen
+            robot.setClawPosition(robot.pass,0,robot.superposition);
+
+            if (robot.elbowDrive.getCurrentPosition() == (int) (robot.COUNTS_PER_DEGREE * 180) ) {// test and edit this #
+                break;
+            }
+        }
+        robot.setClawPosition(robot.disable,0,robot.pass); // let go of specimen
+        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
+        telemetry.update();
+
+        /*
+        // bring arm down and perpendicularize claw before this, also assume that this is after your FIRST/PRELOADED specimen
+        robot.visionInit("BLUE", false, -0.2,1,1,-0.2); // go right until time or scan
+        robot.driveFieldCentric(0,1.0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.2) {
+            robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
+            robot.detectR(new Point(480,810), new Point(1440,270));
+            if (!robot.blobS.isEmpty()) {
+                robot.driveFieldCentric(0,0,0);
+                break;
+            }
+        }
+
+        sleep(200);
+
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(20))); // lower to pickup
+        sleep(200);
+        robot.setClawPosition(robot.enable,0,robot.pass); // pick up
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_BACKWARD_PARALLEL); // turn sample around
+        robot.driveFieldCentric(0,0.4,0); // strafe to next sample while arm turns
+        runtime.reset();
+        while (opModeIsActive() && robot.elbowDrive.isBusy()) {
+            telemetry.addData("WAITING FOR ARM", "...");
+            telemetry.update();
+            if (runtime.seconds() >= 0.2) {
+                robot.driveFieldCentric(0,0,0);
+            }
+        }
+        robot.setClawPosition(robot.disable,0,robot.superposition); // drop sample
+
+        sleep(200);
+
+        // repeat from lower to pick up
+
+         */
+
+
+
+
 
         telemetry.addData("DONE","!!");
 

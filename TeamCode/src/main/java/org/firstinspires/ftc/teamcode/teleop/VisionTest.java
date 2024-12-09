@@ -31,7 +31,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.teamcode.VisionSoftware;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvWebcam;
@@ -41,7 +41,7 @@ public class VisionTest extends LinearOpMode {
     @SuppressLint("DefaultLocale")
 
     RobotHardware robot = new RobotHardware(this);
-
+    VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
     ElapsedTime runtime = new ElapsedTime();
 
     @SuppressLint("DefaultLocale")
@@ -51,7 +51,7 @@ public class VisionTest extends LinearOpMode {
         YawPitchRollAngles  yawAngles;
 
 
-        robot.visionInit("BLUE", true,-0.6,0.6,0.6,-0.6);
+        colorDetector.visionInit("BLUE", true, colorDetector.colorLocator, -0.6,0.6,0.6,-0.6);
         robot.init();
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -62,7 +62,7 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             telemetry.addData("check preview, initialized", "... Camera Stream");
             telemetry.addData("current orientation", String.valueOf(yawAngles));
-            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
+            colorDetector.detectR(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
 
         }
 
@@ -81,9 +81,9 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // Check out the waters
 
             telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
-            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
+            colorDetector.detectR(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
             telemetry.update();
-            if(robot.blobS != null ) {
+            if(colorDetector.blobS != null ) {
                 telemetry.addData("RUNG SPOTTED", "!!!!");
             }
             sleep(50);

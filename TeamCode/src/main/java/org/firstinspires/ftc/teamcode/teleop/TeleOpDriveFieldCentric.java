@@ -15,6 +15,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
     // to access this class.
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
+    //VisionSoftware vision = new VisionSoftware(this);
 
     @Override
     public void runOpMode() {

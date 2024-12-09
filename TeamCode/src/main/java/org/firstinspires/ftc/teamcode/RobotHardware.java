@@ -8,27 +8,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-// camera imports
-import android.annotation.SuppressLint;
-import android.util.Size;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
-import org.firstinspires.ftc.vision.opencv.ColorRange;
-import org.firstinspires.ftc.vision.opencv.ImageRegion;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.RotatedRect;
-import org.opencv.imgproc.Imgproc;
-
-import java.util.ArrayList;
-import java.util.List;
-
-
 public class RobotHardware {
 
     // Declare OpMode members
-    private final LinearOpMode myOpMode; // gain access to methods in the calling OpMode.
+    protected final LinearOpMode myOpMode; // gain access to methods in the calling OpMode.
 
     // Define Motor and Servo objects (Make them private so that they CANT be accessed externally)
     private DcMotor leftFrontDrive = null;
@@ -315,7 +298,7 @@ public class RobotHardware {
     }
 
     public void turnUntil(double angle) {
-        heading = imu.getRobotYawPitchRollAngles().getYaw();
+        heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         double goal = angle - heading;
         if (goal > 180) {
             goal -= 360;
@@ -413,17 +396,18 @@ public class RobotHardware {
 
     // init vision variables
 
-    public ColorBlobLocatorProcessor colorLocator;
-    public VisionPortal portal;
-    public List<ColorBlobLocatorProcessor.Blob> blobS;
+    //public ColorBlobLocatorProcessor colorLocator;
+    //public VisionPortal portal;
+    //public List<ColorBlobLocatorProcessor.Blob> blobS;
 
-    /**
-     *
-     * @param leftUp Top Left Point of the ROI you wish to set
+    /*
+
+      @param leftUp Top Left Point of the ROI you wish to set
      * @param rightDown Bottom Right Point of the ROI you wish to set
      *                  These Points can only make shapes with all perpendicular angles (only squares/rectangles)
      * @param blobList Pass the list (blob list) you wish to filter
      */
+    /*
     public void filterBySetROI(Point leftUp, Point rightDown, List<ColorBlobLocatorProcessor.Blob> blobList) {
         ArrayList<ColorBlobLocatorProcessor.Blob> toRemove = new ArrayList<>();
 
@@ -449,15 +433,16 @@ public class RobotHardware {
         blobList.removeAll(toRemove);
     }
 
-    /**
-     *
-     * @param color What color you want (IN STRING VALUE), BLUE, RED, or YELLOW
+    /*
+
+      @param color What color you want (IN STRING VALUE), BLUE, RED, or YELLOW
      * @param portalQ If you want to reset the {@link VisionPortal} or not, true is yes, false is no
      * @param left How far left from the center the border should be, range of 1,-1
      * @param top How far up from the center the border should be, range of 1,-1
      * @param right How far right from the center the border should be, range of 1,-1
      * @param bottom How far down from the center the border should be, range of 1,-1
      */
+    /*
     public void visionInit (String color, boolean portalQ, double left, double top, double right, double bottom) {
         switch (color) { // CUTTING EDGE CODE!!!!
             case "BLUE":
@@ -501,7 +486,7 @@ public class RobotHardware {
         }
 
     }
-
+    /*
     @SuppressLint("DefaultLocale")
     public void detectR (Point topLeft, Point bottomRight) {
         /* ----- USE THIS FUNC LIKE SO... -----
@@ -527,7 +512,7 @@ public class RobotHardware {
 
                                 (action); // action is then performed
 
-         */
+
 
 
         myOpMode.telemetry.addData("wakey wakey...", "\n" + // init message :D
@@ -557,6 +542,7 @@ public class RobotHardware {
         myOpMode.sleep(50);
 
     }
+    */
 
 
 }
