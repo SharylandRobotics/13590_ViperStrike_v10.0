@@ -28,12 +28,12 @@ public class VisionSoftware extends RobotHardware{
 
         // init vision variables
 
-        public ColorBlobLocatorProcessor colorLocator;
-        public List<ColorBlobLocatorProcessor.Blob> blobS;
+        //public ColorBlobLocatorProcessor colorLocator;
+        //public List<ColorBlobLocatorProcessor.Blob> blobS;
 
-        public ColorBlobLocatorProcessor secondaryColorLocator;
-        public List<ColorBlobLocatorProcessor.Blob> secondaryBlobS;
-        public VisionPortal portal;
+        //public ColorBlobLocatorProcessor secondaryColorLocator;
+        //public List<ColorBlobLocatorProcessor.Blob> secondaryBlobS;
+        //public VisionPortal portal;
 
 
         /**
@@ -83,7 +83,7 @@ public class VisionSoftware extends RobotHardware{
 
             switch (color) { // CUTTING EDGE CODE!!!!
                 case "BLUE":
-                    locatorVersion = new ColorBlobLocatorProcessor.Builder()
+                    colorLocator = new ColorBlobLocatorProcessor.Builder()
                             .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
                             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                             .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
@@ -92,7 +92,7 @@ public class VisionSoftware extends RobotHardware{
                             .build();
                     break;
                 case "RED":
-                    locatorVersion = new ColorBlobLocatorProcessor.Builder()
+                    colorLocator = new ColorBlobLocatorProcessor.Builder()
                             .setTargetColorRange(ColorRange.RED)         // use a predefined color match
                             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                             .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
@@ -101,7 +101,7 @@ public class VisionSoftware extends RobotHardware{
                             .build();
                     break;
                 case "YELLOW":
-                    locatorVersion = new ColorBlobLocatorProcessor.Builder()
+                    colorLocator = new ColorBlobLocatorProcessor.Builder()
                             .setRoiColor(Color.rgb(0,255,0))
                             .setBoxFitColor(Color.rgb(0,0,0))
                             .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
@@ -114,7 +114,7 @@ public class VisionSoftware extends RobotHardware{
             }
 
             if (portalQ) {
-                VisionPortal portal = new VisionPortal.Builder()
+                 portal = new VisionPortal.Builder()
                         .addProcessor(locatorVersion)
                         .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                         .setCameraResolution(new Size(1920, 1080))
@@ -197,14 +197,14 @@ public class VisionSoftware extends RobotHardware{
                     myOpMode.telemetry.addData("SCANNING", "...\n" +
                             " SECONDARY CAMERA PORTAL ACTIVE");
 
-                    secondaryBlobS = secondaryColorLocator.getBlobs(); // set list to whatever the camera found
+                    blobS = colorLocator.getBlobs(); // set list to whatever the camera found
 
-                    filterBySetROI(topLeft, bottomRight, secondaryBlobS); // filter by area of interest
+                    filterBySetROI(topLeft, bottomRight, blobS); // filter by area of interest
 
-                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, secondaryBlobS);  // filter out very small blobs.
+                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, blobS);  // filter out very small blobs.
 
                     // Display the size (area) and center location for each Blob.
-                    for(ColorBlobLocatorProcessor.Blob b : secondaryBlobS) // telemetry the blobs found
+                    for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found
                     {
                         RotatedRect boxFit = b.getBoxFit();
                         myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",

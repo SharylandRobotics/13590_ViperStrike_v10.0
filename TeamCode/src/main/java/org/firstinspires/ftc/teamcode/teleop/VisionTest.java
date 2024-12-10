@@ -41,7 +41,7 @@ public class VisionTest extends LinearOpMode {
     @SuppressLint("DefaultLocale")
 
     RobotHardware robot = new RobotHardware(this);
-    VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
+    //VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
     ElapsedTime runtime = new ElapsedTime();
 
     @SuppressLint("DefaultLocale")
@@ -51,7 +51,7 @@ public class VisionTest extends LinearOpMode {
         YawPitchRollAngles  yawAngles;
 
 
-        colorDetector.visionInit("BLUE", true, colorDetector.colorLocator, -0.6,0.6,0.6,-0.6);
+        robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
         robot.init();
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -62,7 +62,7 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             telemetry.addData("check preview, initialized", "... Camera Stream");
             telemetry.addData("current orientation", String.valueOf(yawAngles));
-            colorDetector.detectR(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
+            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
 
         }
 
@@ -81,9 +81,9 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // Check out the waters
 
             telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
-            colorDetector.detectR(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
+            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
             telemetry.update();
-            if(colorDetector.blobS != null ) {
+            if(robot.blobS != null ) {
                 telemetry.addData("RUNG SPOTTED", "!!!!");
             }
             sleep(50);

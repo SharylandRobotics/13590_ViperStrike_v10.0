@@ -1,12 +1,26 @@
 package org.firstinspires.ftc.teamcode;
 
 // hardware & class imports
+import android.annotation.SuppressLint;
+import android.util.Size;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RobotHardware {
 
@@ -22,7 +36,7 @@ public class RobotHardware {
     public DcMotor extensionDrive = null;
     public WebcamName myEyes = null; // CAMERA!! remember to change the type of this var if not available on Dhub
     public Servo clawPinch = null;
-    private CRServo clawYaw = null;
+    public Servo clawYaw = null;
     public Servo clawAxial = null;
 
     // Define Sensor objects (Make them private so that they CANT be accessed externally)
@@ -57,6 +71,9 @@ public class RobotHardware {
     public double CLAW_UP;
     public double CLAW_IN;
     public double CLAW_OUT;
+    public double YAW_MID;
+    public double YAW_LEFT;
+    public double YAW_RIGHT;
 
     // End of Rudimentary inits...
 
@@ -81,7 +98,7 @@ public class RobotHardware {
             * ( (((1+ (46.0/17.0))) * (1+ (46.0/11.0))) ) // times internal gearing (aka gear ratio formula)
             * (1.0) // external gearing, 60 to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
-    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * 60) - 1; // the other number is how many revs
+    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (26 - 0.5)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
@@ -142,7 +159,7 @@ public class RobotHardware {
         elbowDrive = myOpMode.hardwareMap.get(DcMotor.class, "elbow_drive"); // Stuff on EH
         extensionDrive = myOpMode.hardwareMap.get(DcMotor.class, "extension_drive");
         clawPinch = myOpMode.hardwareMap.get(Servo.class, "claw_pinch");
-        clawYaw = myOpMode.hardwareMap.get(CRServo.class, "claw_yaw");
+        clawYaw = myOpMode.hardwareMap.get(Servo.class, "claw_yaw");
         clawAxial = myOpMode.hardwareMap.get(Servo.class, "claw_axial");
 
         myEyes = myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1");
@@ -158,6 +175,10 @@ public class RobotHardware {
         CLAW_DOWN = 0.92; // MAXIMUM, not playable position
         CLAW_MID = 0.51; // playable position
         CLAW_UP = 0.08; // MAXIMUM, not playable position
+
+        YAW_LEFT = 1.0;
+        YAW_MID = 0.5;
+        YAW_RIGHT = 0.0;
 
         /*
             Playable positions, initialize them if you feel the need to do so in the future:
@@ -309,7 +330,7 @@ public class RobotHardware {
         }
 
         if (heading != goal) {
-            driveFieldCentric(0,0,(goal/Math.abs(goal) * 0.5));
+            driveFieldCentric(0,0,(goal/Math.abs(goal) * 0.2));
         }
 
         while (heading != goal) {
@@ -322,7 +343,7 @@ public class RobotHardware {
 
 
 
-    public void setClawPosition(statesOfBeing pinch, float yaw, statesOfBeing axial) {
+    public void setClawPosition(statesOfBeing pinch, statesOfBeing yaw, statesOfBeing axial) {
 
         //noinspection StatementWithEmptyBody
         if (pinch == pass){ // here to make sure it doesn't waste processing power
@@ -343,7 +364,17 @@ public class RobotHardware {
 
         }
 
-        clawYaw.setPower(yaw); // Rotates the claw based on trigger value
+        //noinspection StatementWithEmptyBody
+        if (axial == pass) { // here to make sure it doesn't waste processing power
+
+        } else if (axial == enable) { clawAxial.setPosition(YAW_LEFT); // Raises Claw:
+
+        } else if (axial == disable) { clawAxial.setPosition(YAW_RIGHT); // Lowers Claw:
+
+        } else if (axial == superposition) { clawAxial.setPosition(YAW_MID); // Parallels Claw to floor:
+
+        }
+
     }
     // to stop the claw from switching back and forth while in perpendicular position
         /* more specifically, it stops the elbow from having a preferred side to turn to when at 149 deg
@@ -397,18 +428,17 @@ public class RobotHardware {
 
     // init vision variables
 
-    //public ColorBlobLocatorProcessor colorLocator;
-    //public VisionPortal portal;
-    //public List<ColorBlobLocatorProcessor.Blob> blobS;
+    public ColorBlobLocatorProcessor colorLocator;
+    public VisionPortal portal;
+    public List<ColorBlobLocatorProcessor.Blob> blobS;
 
-    /*
+    /**
 
       @param leftUp Top Left Point of the ROI you wish to set
      * @param rightDown Bottom Right Point of the ROI you wish to set
      *                  These Points can only make shapes with all perpendicular angles (only squares/rectangles)
      * @param blobList Pass the list (blob list) you wish to filter
      */
-    /*
     public void filterBySetROI(Point leftUp, Point rightDown, List<ColorBlobLocatorProcessor.Blob> blobList) {
         ArrayList<ColorBlobLocatorProcessor.Blob> toRemove = new ArrayList<>();
 
@@ -434,7 +464,7 @@ public class RobotHardware {
         blobList.removeAll(toRemove);
     }
 
-    /*
+    /**
 
       @param color What color you want (IN STRING VALUE), BLUE, RED, or YELLOW
      * @param portalQ If you want to reset the {@link VisionPortal} or not, true is yes, false is no
@@ -443,7 +473,6 @@ public class RobotHardware {
      * @param right How far right from the center the border should be, range of 1,-1
      * @param bottom How far down from the center the border should be, range of 1,-1
      */
-    /*
     public void visionInit (String color, boolean portalQ, double left, double top, double right, double bottom) {
         switch (color) { // CUTTING EDGE CODE!!!!
             case "BLUE":
@@ -487,7 +516,7 @@ public class RobotHardware {
         }
 
     }
-    /*
+
     @SuppressLint("DefaultLocale")
     public void detectR (Point topLeft, Point bottomRight) {
         /* ----- USE THIS FUNC LIKE SO... -----
@@ -513,7 +542,7 @@ public class RobotHardware {
 
                                 (action); // action is then performed
 
-
+*/
 
 
         myOpMode.telemetry.addData("wakey wakey...", "\n" + // init message :D
@@ -543,7 +572,7 @@ public class RobotHardware {
         myOpMode.sleep(50);
 
     }
-    */
+
 
 
 }

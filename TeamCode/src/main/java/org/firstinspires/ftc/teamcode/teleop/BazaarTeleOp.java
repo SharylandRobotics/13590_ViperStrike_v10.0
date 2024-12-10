@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
 
 @TeleOp(name = "BazaarTeleOp", group = "Robot")
-@Disabled
 public class BazaarTeleOp extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
@@ -40,7 +39,7 @@ public class BazaarTeleOp extends LinearOpMode{
         runtime.reset();
 
         while (opModeIsActive()){
-            drive = gamepad1.left_stick_y;
+            drive = -gamepad1.left_stick_y;
             strafe = -gamepad1.left_stick_x * 1.1;
             turn = gamepad1.right_stick_x;
 

@@ -20,6 +20,10 @@ public class Tester extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        double drive;
+        double strafe;
+        double turn;
+
         YawPitchRollAngles yawPitchRoll;
         double heading;
         // Initialize all the hardware using the hardware class.
@@ -29,17 +33,20 @@ public class Tester extends LinearOpMode {
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
+        //robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
 
         /*
         robot.elbowDrive.setTargetPosition((int) robot.ELBOW_ANTI_COLLAPSED);
         robot.elbowDrive.setPower(0.3);
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.clawAxial.setPosition(0.3);
-
          */
+
+
+
         while (opModeIsActive() ) {
-            robot.calibrateClaw(robot.ELBOW_PERPENDICULAR); // FIXME
+            //robot.calibrateClaw(robot.ELBOW_PERPENDICULAR); // FIXME
+            robot.clawYaw.setPosition(robot.YAW_LEFT);
             yawPitchRoll = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             heading = yawPitchRoll.getYaw(); // set Yaw angle
             telemetry.addData("current orientation", String.valueOf(yawPitchRoll));
@@ -48,6 +55,11 @@ public class Tester extends LinearOpMode {
             telemetry.addData("Elbow Angle:", Math.round(robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE));
             telemetry.addData("Axial Pos:", robot.clawAxial.getPosition());
             telemetry.update();
+            drive = -gamepad1.left_stick_y;
+            strafe = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            turn = gamepad1.right_stick_x;
+            robot.driveFieldCentric(drive, strafe,turn);
+
         }
         // FIXME
         /*

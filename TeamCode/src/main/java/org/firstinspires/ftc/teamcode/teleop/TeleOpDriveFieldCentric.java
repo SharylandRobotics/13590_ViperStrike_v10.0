@@ -56,16 +56,16 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
 
             // Close and Open Claw
             if (gamepad2.x) {
-                robot.setClawPosition(robot.enable,0,robot.pass);
+                robot.setClawPosition(robot.enable,robot.pass,robot.pass);
             } else if (gamepad2.b) {
-                robot.setClawPosition(robot.disable,0,robot.pass);
+                robot.setClawPosition(robot.disable,robot.pass,robot.pass);
             }
 
             // Raise and Lower Claw
             if (gamepad2.left_bumper) {
-                robot.setClawPosition(robot.pass,0,robot.enable);
+                robot.setClawPosition(robot.pass,robot.pass,robot.enable);
             } else if (gamepad2.right_bumper) {
-                robot.setClawPosition(robot.pass,0,robot.disable);
+                robot.setClawPosition(robot.pass,robot.pass,robot.disable);
             }
 
             // Rotate Claw here
