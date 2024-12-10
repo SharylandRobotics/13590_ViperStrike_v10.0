@@ -85,16 +85,17 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.setClawPosition(robot.enable,0, robot.pass); // close to not hit bar
         robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL); // lower to position for pickup
 
-        robot.driveFieldCentric(-0.6,0,0); // back away to not hit arm
+        robot.driveFieldCentric(-0.4,0,0); // back away to not hit arm
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.01) {
+        while (opModeIsActive() && runtime.seconds() < 0.2) {
             telemetry.addData("BACKING UP", "...");
             telemetry.update();
         }
 
         sleep(500);
-
-        robot.setDrivePower(-1.0,1.0,0.43,-0.43); // strafe to OZ
+        /*
+        robot.setDrivePower(0.43,-1.0,-1.0,0.43); // strafe to OZ
         robot.setClawPosition(robot.disable,0,robot.pass);
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.6) {
@@ -105,8 +106,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(3000);
 
-        robot.turnUntil(179.9); // turn around
-        /* in case this doesn't work ^
         robot.driveFieldCentric(0,0,-1.0);
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 1.5) {
@@ -114,7 +113,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
-        */
+
         sleep(10000); // TEST THIS BEFORE MOVING ON  ^^^^^^^^^
 
         colorDetector.visionInit("BLUE",true, colorDetector.colorLocator, -1,0.75,0.5,-0.25); // scan for the specimen
@@ -189,15 +188,16 @@ public class ALPHAvisionAuto extends LinearOpMode{
         telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
         telemetry.update();
 
-        /*
+        */
         // bring arm down and perpendicularize claw before this, also assume that this is after your FIRST/PRELOADED specimen
-        robot.visionInit("BLUE", false, -0.2,1,1,-0.2); // go right until time or scan
+        colorDetector.visionInit("BLUE", false, colorDetector.colorLocator, -0.2,1,1,-0.2); // go right until time or scan
         robot.driveFieldCentric(0,1.0,0);
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL - robot.angleConvert(30)));
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.2) {
             robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-            robot.detectR(new Point(480,810), new Point(1440,270));
-            if (!robot.blobS.isEmpty()) {
+            colorDetector.detectR(new Point(480,810), new Point(1440,270), "PRIMARY");
+            if (!colorDetector.blobS.isEmpty()) {
                 robot.driveFieldCentric(0,0,0);
                 break;
             }
@@ -223,8 +223,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
         sleep(200);
 
         // repeat from lower to pick up
-
-         */
 
 
 

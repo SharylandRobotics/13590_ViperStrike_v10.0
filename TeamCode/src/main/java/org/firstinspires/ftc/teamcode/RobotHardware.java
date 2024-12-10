@@ -14,10 +14,10 @@ public class RobotHardware {
     protected final LinearOpMode myOpMode; // gain access to methods in the calling OpMode.
 
     // Define Motor and Servo objects (Make them private so that they CANT be accessed externally)
-    private DcMotor leftFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor rightBackDrive = null;
+    public DcMotor leftFrontDrive = null;
+    public DcMotor leftBackDrive = null;
+    public DcMotor rightFrontDrive = null;
+    public DcMotor rightBackDrive = null;
     public DcMotor elbowDrive = null;
     public DcMotor extensionDrive = null;
     public WebcamName myEyes = null; // CAMERA!! remember to change the type of this var if not available on Dhub
@@ -83,6 +83,7 @@ public class RobotHardware {
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
     public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * 60) - 1; // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
+    public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
 
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!

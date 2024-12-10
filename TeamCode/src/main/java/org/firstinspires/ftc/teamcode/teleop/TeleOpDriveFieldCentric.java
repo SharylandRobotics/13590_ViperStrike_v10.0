@@ -45,7 +45,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             // Field Centric Mode use the left joystick to go forward & strafe,
             // and the right joystick to rotate from the perspective of the driver
             drive = -gamepad1.left_stick_y;
-            strafe = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            strafe = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
 
             // Find out how to use left_stick_y for extension movement FIXME
