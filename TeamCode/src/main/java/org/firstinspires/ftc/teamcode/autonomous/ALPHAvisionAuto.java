@@ -27,7 +27,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.teamcode.VisionSoftware;
 import org.opencv.core.Point;
 
 @Autonomous(name = "ALPHA auto by Vision", group = "Robot")
@@ -35,7 +34,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
-    VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
 
     @Override
     public void runOpMode() {
@@ -211,10 +209,10 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(200);
 
-        robot.setDrivePower(0,-1,-1,0);
+        robot.driveFieldCentric(0,1.0,0.4);
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.4){
-            telemetry.addData("DIAGONAL", "...");
+            telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
@@ -243,7 +241,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(0,1.0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.2) {
+        while (opModeIsActive() && runtime.seconds() < 0.4) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -273,7 +271,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(0,0.3,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.1) {
+        while (opModeIsActive() && runtime.seconds() < 0.3) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -288,6 +286,40 @@ public class ALPHAvisionAuto extends LinearOpMode{
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
+
+        // scoring time!
+
+        robot.driveFor(runtime, 0.3,-1.0,0,0, "BACKING UP");
+        robot.driveFieldCentric(0,0,0);
+        sleep(200);
+
+        robot.driveFieldCentric(0,-0.5,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 2.0) {
+            robot.detectR(new Point(480,810), new Point(1440,270));
+            if (!robot.blobS.isEmpty()) {
+                robot.driveFieldCentric(0,0,0);
+                telemetry.addData("SPECIMEN FOUND", "");
+                telemetry.update();
+                break;
+            }
+            telemetry.addData("SCANNING", "...");
+            telemetry.update();
+        }
+
+        robot.driveFieldCentric(-0.4,0,0);
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL + robot.angleConvert(30)));
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.6) {
+            if (robot.elbowDrive.isBusy()) {
+                robot.calibrateClaw(robot.ELBOW_PARALLEL);
+            }
+        }
+        robot.driveFieldCentric(0,0,0);
+        robot.setClawPosition(robot.enable, robot.pass, robot.pass);
+        sleep(400);
+        robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
+
 
         telemetry.addData("DONE","!!");
 

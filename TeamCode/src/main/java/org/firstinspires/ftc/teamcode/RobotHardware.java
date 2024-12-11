@@ -319,6 +319,15 @@ public class RobotHardware {
         rightBackDrive.setPower(rightBackWheel);
     }
 
+    public void driveFor(ElapsedTime runtimeVar, double time, double drive, double strafe, double turn, String teleMSG) {
+        driveFieldCentric(drive,strafe,turn);
+        runtimeVar.reset();
+        while (myOpMode.opModeIsActive() && this.runtime.seconds() < time) {
+            myOpMode.telemetry.addData(teleMSG, "...");
+            myOpMode.telemetry.update();
+        }
+    }
+
     public void turnUntil(double angle) {
         heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         double goal = angle - heading;
@@ -333,10 +342,18 @@ public class RobotHardware {
             driveFieldCentric(0,0,(goal/Math.abs(goal) * 0.2));
         }
 
-        while (heading != goal) {
-            heading = Math.round(imu.getRobotYawPitchRollAngles().getYaw() * 10.0) / 10.0;
+        while (heading != goal && myOpMode.opModeIsActive()) {
+            heading = Math.round(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) * 10.0) / 10.0;
             myOpMode.telemetry.addData("HEADING:", heading);
             myOpMode.telemetry.update();
+            if (heading == goal) {
+                myOpMode.telemetry.addData("MET GOAL", "...");
+                break;
+            }
+            if (heading == 90) {
+                myOpMode.telemetry.addData("AT 90 DEG", "");
+                break;
+            }
         }
         driveFieldCentric(0,0,0);
     }
@@ -365,13 +382,13 @@ public class RobotHardware {
         }
 
         //noinspection StatementWithEmptyBody
-        if (axial == pass) { // here to make sure it doesn't waste processing power
+        if (yaw == pass) { // here to make sure it doesn't waste processing power
 
-        } else if (axial == enable) { clawAxial.setPosition(YAW_LEFT); // Raises Claw:
+        } else if (yaw == enable) { clawAxial.setPosition(YAW_LEFT); // Raises Claw:
 
-        } else if (axial == disable) { clawAxial.setPosition(YAW_RIGHT); // Lowers Claw:
+        } else if (yaw == disable) { clawAxial.setPosition(YAW_RIGHT); // Lowers Claw:
 
-        } else if (axial == superposition) { clawAxial.setPosition(YAW_MID); // Parallels Claw to floor:
+        } else if (yaw == superposition) { clawAxial.setPosition(YAW_MID); // Parallels Claw to floor:
 
         }
 
@@ -427,11 +444,12 @@ public class RobotHardware {
      */
 
     // init vision variables
-
     public ColorBlobLocatorProcessor colorLocator;
     public VisionPortal portal;
     public List<ColorBlobLocatorProcessor.Blob> blobS;
 
+    public ColorBlobLocatorProcessor secondaryColorLocator;
+    public List<ColorBlobLocatorProcessor.Blob> secondaryBlobS;
     /**
 
       @param leftUp Top Left Point of the ROI you wish to set
@@ -494,13 +512,22 @@ public class RobotHardware {
                         .build();
                 break;
             case "YELLOW":
-                colorLocator = new ColorBlobLocatorProcessor.Builder()
+                secondaryColorLocator = new ColorBlobLocatorProcessor.Builder()
                         .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
                         .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                         .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
                         .setDrawContours(true)                        // Show contours on the Stream Preview
                         .setBlurSize(5)                               // Smooth the transitions between different colors in image
                         .build();
+
+                VisionPortal secondPortal = new VisionPortal.Builder()
+                        .addProcessor(secondaryColorLocator)
+                        .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                        .setCameraResolution(new Size(1920,1080))
+                        .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
+                        .build();
+                myOpMode.telemetry.setMsTransmissionInterval(50);
+                myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
                 break;
         }
 
@@ -556,7 +583,7 @@ public class RobotHardware {
 
         filterBySetROI(topLeft, bottomRight, blobS);
 
-        ColorBlobLocatorProcessor.Util.filterByArea(200, 20000, blobS);  // filter out very small blobs.
+        ColorBlobLocatorProcessor.Util.filterByArea(800, 20000, blobS);  // filter out very small blobs.
 
         myOpMode.telemetry.addLine(" Area Density Aspect  Center");
 
@@ -571,6 +598,34 @@ public class RobotHardware {
         myOpMode.telemetry.update();
         myOpMode.sleep(50);
 
+    }
+
+    @SuppressLint("DefaultLocale")
+    public void teleOpdetectR (Point topLeft, Point bottomRight) {
+        myOpMode.telemetry.addData("SCANNER IS", "SCANNING");
+
+        blobS = colorLocator.getBlobs(); filterBySetROI(topLeft, bottomRight, blobS);
+        secondaryBlobS = secondaryColorLocator.getBlobs(); filterBySetROI(topLeft, bottomRight, secondaryBlobS);
+
+        ColorBlobLocatorProcessor.Util.filterByArea(800, 20000, blobS);
+        ColorBlobLocatorProcessor.Util.filterByArea(800, 20000, secondaryBlobS);
+
+        myOpMode.telemetry.addLine("Area Density Aspect Center");
+        for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found; primary
+        {
+            RotatedRect boxFit = b.getBoxFit();
+            myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
+                    b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+        }
+        myOpMode.telemetry.addLine("Area Density Aspect Center 2");
+        for(ColorBlobLocatorProcessor.Blob b : secondaryBlobS) // telemetry the blobs found; secondary
+        {
+            RotatedRect boxFit = b.getBoxFit();
+            myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
+                    b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+        }
+        myOpMode.telemetry.update();
+        myOpMode.sleep(50);
     }
 
 
