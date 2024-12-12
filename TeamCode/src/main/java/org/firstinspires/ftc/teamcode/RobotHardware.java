@@ -328,7 +328,7 @@ public class RobotHardware {
         }
     }
 
-    public void turnUntil(double angle) {
+    public double turnDirection(double angle) { // put the ACTUAL angle you want to turn to here. Use this func to set the turn power
         heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         double goal = angle - heading;
         if (goal > 180) {
@@ -337,26 +337,31 @@ public class RobotHardware {
         if (goal < -180) {
             goal += 360;
         }
-
         if (heading != goal) {
-            driveFieldCentric(0,0,(goal/Math.abs(goal) * 0.2));
+            return (goal / Math.abs(goal) * 0.4);
+        } else {
+            return 0.0;
         }
-
+    }
+/*
         while (heading != goal && myOpMode.opModeIsActive()) {
-            heading = Math.round(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) * 10.0) / 10.0;
-            myOpMode.telemetry.addData("HEADING:", heading);
-            myOpMode.telemetry.update();
+            heading = Math.round(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/2.5 ) * 2.5;
             if (heading == goal) {
                 myOpMode.telemetry.addData("MET GOAL", "...");
                 break;
             }
-            if (heading == 90) {
+            if (heading == 67.5) { // go 22.5 under your target
                 myOpMode.telemetry.addData("AT 90 DEG", "");
                 break;
             }
+            myOpMode.telemetry.addData("HEADING:", heading);
+            myOpMode.telemetry.update();
+
         }
         driveFieldCentric(0,0,0);
     }
+
+ */
 
 
 

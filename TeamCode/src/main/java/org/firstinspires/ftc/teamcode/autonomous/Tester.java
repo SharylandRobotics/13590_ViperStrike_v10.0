@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
@@ -19,7 +20,7 @@ public class Tester extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-
+        double claw;
         double drive;
         double strafe;
         double turn;
@@ -43,10 +44,10 @@ public class Tester extends LinearOpMode {
          */
 
 
-
         while (opModeIsActive() ) {
             //robot.calibrateClaw(robot.ELBOW_PERPENDICULAR); // FIXME
-            robot.clawYaw.setPosition(robot.YAW_LEFT);
+
+
             yawPitchRoll = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             heading = yawPitchRoll.getYaw(); // set Yaw angle
             telemetry.addData("current orientation", String.valueOf(yawPitchRoll));
@@ -54,12 +55,32 @@ public class Tester extends LinearOpMode {
             telemetry.addData("Elbow Pos:", robot.elbowDrive.getCurrentPosition());
             telemetry.addData("Elbow Angle:", Math.round(robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE));
             telemetry.addData("Axial Pos:", robot.clawAxial.getPosition());
+            telemetry.addData("Extension Pos:", robot.extensionDrive.getCurrentPosition());
             telemetry.update();
             drive = -gamepad1.left_stick_y;
             strafe = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
             robot.driveFieldCentric(drive, strafe,turn);
 
+            if (gamepad2.y) {
+                claw = (robot.clawAxial.getPosition() + 0.05);
+            } else if (gamepad2.a) {
+                claw = (robot.clawAxial.getPosition() - 0.05);
+            }
+
+            if (gamepad2.left_trigger != 0) {
+                robot.extensionDrive.setPower(1.0);
+            } else if (gamepad2.right_trigger != 0) {
+                robot.extensionDrive.setPower(-1.0);
+            } else {
+                robot.extensionDrive.setPower(0);
+            }
+
+            if (robot.elbowDrive.getCurrentPosition() == robot.ELBOW_COLLAPSED) {
+
+            }
+
+            sleep(75);
         }
         // FIXME
         /*

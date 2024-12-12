@@ -55,21 +55,22 @@ public class BazaarTeleOp extends LinearOpMode{
 
         while (opModeIsActive()){
             drive = -gamepad1.left_stick_y;
-            strafe = -gamepad1.left_stick_x * 1.1;
+            strafe = gamepad1.left_stick_x * 1.1;
             turn = gamepad1.right_stick_x;
 
             if (gamepad1.a){
                 contorller1Mode = !contorller1Mode;
+                telemetry.addData("MODE SWITCHED","");
             }
 
             if (contorller1Mode) {
-                if (gamepad1.right_trigger > 0) { // slow down driving
+                if (gamepad1.right_trigger != 0) { // slow down driving
                     double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
                     drive = gamepad1.left_stick_y * multiplier;
                     strafe = (-gamepad1.left_stick_x * 1.1) * multiplier;
                     turn = gamepad1.right_stick_x * multiplier;
                 }
-                if (gamepad1.left_trigger > 0) { // release friction
+                if (gamepad1.left_trigger != 0) { // release friction
                     robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                     robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                     robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -82,10 +83,10 @@ public class BazaarTeleOp extends LinearOpMode{
                 }
             }
             if (!contorller1Mode) {
-                if (gamepad1.right_trigger > 0) {
+                if (gamepad1.right_trigger != 0) {
                     extendFactor = gamepad1.right_trigger * robot.EXTENSION_FUDGE_FACTOR;
                     robot.extensionDrive.setTargetPosition((int) (robot.extensionDrive.getCurrentPosition() + extendFactor));
-                } else if (gamepad1.right_trigger > 0) {
+                } else if (gamepad1.right_trigger != 0) {
                     extendFactor = -gamepad1.left_trigger * robot.EXTENSION_FUDGE_FACTOR;
                     robot.extensionDrive.setTargetPosition((int) (robot.extensionDrive.getCurrentPosition() + extendFactor));
                 }
