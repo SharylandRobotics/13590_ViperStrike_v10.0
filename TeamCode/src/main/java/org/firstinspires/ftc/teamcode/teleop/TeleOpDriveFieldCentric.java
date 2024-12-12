@@ -128,7 +128,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             */
 
             // Call setTargetPosition for elbow, ensure input is int
-            robot.elbowDrive.setTargetPosition((int) elbowPos + (int) elbowFactor);
+            robot.elbowDrive.setTargetPosition((int) (elbowPos + (int) elbowFactor));
 
 
             // Check to calibrate the claw
@@ -145,8 +145,6 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             telemetry.addData("ELBOW POSITION: ", String.valueOf(robot.elbowDrive.getCurrentPosition()));
             telemetry.addData("EXTENSION POSITION: ", String.valueOf(robot.extensionDrive.getCurrentPosition()));
             telemetry.update();
-
-
             // Place this loop so hands move at a reasonable speed
             sleep(50);
         }

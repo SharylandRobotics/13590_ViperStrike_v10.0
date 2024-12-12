@@ -22,6 +22,9 @@ public class BazaarTeleOp extends LinearOpMode{
     private boolean yellowFound;
     @Override
     public void runOpMode() {
+        // timers
+        int gpad2Timer = 0;
+        int timesRan = 0;
         // sounds
         int coloredSoundID = hardwareMap.appContext.getResources().getIdentifier("colored", "raw", hardwareMap.appContext.getPackageName());
         int yellowSoundID   = hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", hardwareMap.appContext.getPackageName());
@@ -35,8 +38,9 @@ public class BazaarTeleOp extends LinearOpMode{
         double drive;
         double strafe;
         double turn;
-        double elbowPos = 0; // just here to keep intelliJ quiet
+        double NEWelbowPos = robot.elbowDrive.getCurrentPosition(); // just here to keep intelliJ quiet
         double elbowFactor;
+        double extendPos = 0;
         double extendFactor;
 
         boolean calibrateParallel = false;
@@ -48,6 +52,12 @@ public class BazaarTeleOp extends LinearOpMode{
 
         robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
         robot.init();
+        // extension encoder setup
+        robot.extensionDrive.setTargetPosition(0);
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
         waitForStart();
@@ -58,46 +68,48 @@ public class BazaarTeleOp extends LinearOpMode{
             strafe = gamepad1.left_stick_x * 1.1;
             turn = gamepad1.right_stick_x;
 
-            if (gamepad1.a){
-                contorller1Mode = !contorller1Mode;
-                telemetry.addData("MODE SWITCHED","");
+            extendFactor = gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
+
+            while (gamepad1.dpad_left && gamepad1.dpad_right) {
+                timesRan = timesRan + 1;
+                if (timesRan >= 200) {
+                    robot.init();
+                    timesRan = 0;
+                    break;
+                }
+                sleep(50);
             }
 
-            if (contorller1Mode) {
-                if (gamepad1.right_trigger != 0) { // slow down driving
+            if (gamepad1.right_trigger != 0) { // slow down driving
                     double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
                     drive = gamepad1.left_stick_y * multiplier;
                     strafe = (-gamepad1.left_stick_x * 1.1) * multiplier;
                     turn = gamepad1.right_stick_x * multiplier;
-                }
-                if (gamepad1.left_trigger != 0) { // release friction
-                    robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                    robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                    robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                    robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                } else {
-                    robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                }
             }
-            if (!contorller1Mode) {
-                if (gamepad1.right_trigger != 0) {
-                    extendFactor = gamepad1.right_trigger * robot.EXTENSION_FUDGE_FACTOR;
-                    robot.extensionDrive.setTargetPosition((int) (robot.extensionDrive.getCurrentPosition() + extendFactor));
-                } else if (gamepad1.right_trigger != 0) {
-                    extendFactor = -gamepad1.left_trigger * robot.EXTENSION_FUDGE_FACTOR;
-                    robot.extensionDrive.setTargetPosition((int) (robot.extensionDrive.getCurrentPosition() + extendFactor));
-                }
+            if (gamepad1.left_trigger != 0) { // release friction
+                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            } else {
+                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
+
             robot.driveFieldCentric(drive,strafe,turn);
 
 
             // gamepad 2
-            if (gamepad2.a && gamepad2.dpad_down) {
-                controller2Mode = !controller2Mode;
+            if (gamepad2.right_bumper) {
+                if (gpad2Timer > 200) {
+                    controller2Mode = !controller2Mode;
+                    gpad2Timer = 0;
+                }
             }
+
+
 
             if (gamepad2.left_stick_button) { // set claw parallel to floor
                 calibrateParallel = !calibrateParallel;
@@ -121,29 +133,35 @@ public class BazaarTeleOp extends LinearOpMode{
                 cameraMode = false;
 
                 if (gamepad2.dpad_right) {
-                    robot.elbowDrive.setTargetPosition((int)  robot.ELBOW_PARALLEL);
+                    NEWelbowPos = ((int)  robot.ELBOW_PARALLEL);
                 } else if (gamepad2.dpad_left) {
-                    robot.elbowDrive.setTargetPosition((int) robot.ELBOW_BACKWARD_PARALLEL);
+                    NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
                 } else if (gamepad2.dpad_down) {
-                    robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_COLLAPSED + robot.angleConvert(30)));
-                }
+                    NEWelbowPos = ((int) robot.ELBOW_COLLAPSED);
+                } else {NEWelbowPos = robot.elbowDrive.getCurrentPosition();}
             }
-            if (!controller2Mode) { // controller mode alternative
+            if (!controller2Mode) { // controller 2 mode alternative
                 if (gamepad2.dpad_down) {
                     cameraMode = !cameraMode;
-                } else if (gamepad2.dpad_left) {
-                    robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() - (int) robot.angleConvert(2));
-                } else if (gamepad2.dpad_right) {
-                    robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() + (int) robot.angleConvert(2));
                 }
+                if (gamepad2.dpad_left) { // move elbow down
+                    NEWelbowPos = (robot.elbowDrive.getCurrentPosition() - (int) robot.angleConvert(2));
+                } else if (gamepad2.dpad_right) { // move elbow up
+                    NEWelbowPos = (robot.elbowDrive.getCurrentPosition() + (int) robot.angleConvert(2));
+                } else {NEWelbowPos = robot.elbowDrive.getCurrentPosition();}
             }
+
+            // drive extension
+            robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extendFactor);
+            // drive arm
+            robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
 
             if (calibrateParallel) { // actually calibrate the claw
                 robot.calibrateClaw(robot.ELBOW_PARALLEL);
             } else if (calibratePerpendicular) {
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
             }
-            if (cameraMode) { // play sounds if color founds
+            if (cameraMode) { // play sounds if colors found
                 robot.teleOpdetectR(new Point(480,810), new Point(1440,270));
                 if (!robot.blobS.isEmpty()){
                     SoundPlayer.getInstance().stopPlayingAll();
@@ -162,6 +180,18 @@ public class BazaarTeleOp extends LinearOpMode{
             telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition()/robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Claw Calibration", "Parallel, Perpendicular", calibrateParallel, calibratePerpendicular);
             telemetry.update();
+            switch ((int) runtime.seconds()){
+                case 30:
+                case 90:
+                    gamepad1.rumble(0.2, 0.2,200);
+                    break;
+                case 120:
+                    gamepad1.rumble(0.5,0.5, 300);
+                case 135:
+                    gamepad1.rumble(1.0,1.0,200);
+            }
+            gpad2Timer++;
+            sleep(50);
         }
 
 

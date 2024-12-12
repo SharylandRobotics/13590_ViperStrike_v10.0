@@ -20,10 +20,12 @@ public class Tester extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        double claw;
         double drive;
         double strafe;
         double turn;
+        double extend;
+        double elbowFactor = 0;
+        boolean calibrate = false;
 
         YawPitchRollAngles yawPitchRoll;
         double heading;
@@ -34,113 +36,39 @@ public class Tester extends LinearOpMode {
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
-        //robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
-
-        /*
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_ANTI_COLLAPSED);
-        robot.elbowDrive.setPower(0.3);
-        robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.clawAxial.setPosition(0.3);
-         */
-
 
         while (opModeIsActive() ) {
-            //robot.calibrateClaw(robot.ELBOW_PERPENDICULAR); // FIXME
-
-
+             // FIXME
             yawPitchRoll = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             heading = yawPitchRoll.getYaw(); // set Yaw angle
             telemetry.addData("current orientation", String.valueOf(yawPitchRoll));
             telemetry.addData("current yaw", String.valueOf(heading));
-            telemetry.addData("Elbow Pos:", robot.elbowDrive.getCurrentPosition());
-            telemetry.addData("Elbow Angle:", Math.round(robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE));
-            telemetry.addData("Axial Pos:", robot.clawAxial.getPosition());
+            telemetry.addData("Elbow Angle:", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE);
+            telemetry.addData("Extension Pos:", robot.extensionDrive.getCurrentPosition()/robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Extension Pos:", robot.extensionDrive.getCurrentPosition());
+            telemetry.addData("Elbow Pos:", robot.elbowDrive.getCurrentPosition());
             telemetry.update();
             drive = -gamepad1.left_stick_y;
             strafe = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             turn = gamepad1.right_stick_x;
             robot.driveFieldCentric(drive, strafe,turn);
 
-            if (gamepad2.y) {
-                claw = (robot.clawAxial.getPosition() + 0.05);
-            } else if (gamepad2.a) {
-                claw = (robot.clawAxial.getPosition() - 0.05);
+            if (gamepad2.left_stick_button) {
+                calibrate = !calibrate;
             }
+            if (calibrate){robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);}
+
+            extend = gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
+            robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extend);
 
             if (gamepad2.left_trigger != 0) {
-                robot.extensionDrive.setPower(1.0);
+                elbowFactor = gamepad2.left_trigger * -robot.ELBOW_FUDGE_FACTOR;
             } else if (gamepad2.right_trigger != 0) {
-                robot.extensionDrive.setPower(-1.0);
-            } else {
-                robot.extensionDrive.setPower(0);
-            }
+                elbowFactor = gamepad2.right_trigger * robot.ELBOW_FUDGE_FACTOR;
+            } else { elbowFactor = 0;}
+            robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
 
-            if (robot.elbowDrive.getCurrentPosition() == robot.ELBOW_COLLAPSED) {
-
-            }
-
-            sleep(75);
+            sleep(50);
         }
-        // FIXME
-        /*
-        // Step through each let of the path, ensuring that the Autonomous mode has not been stopped along the way
-        robot.setClawPosition(robot.enable, 0, robot.enable, 0);
-
-        sleep(800);
-
-        // Drive forward for 3 seconds
-        robot.driveFieldCentric(robot.DRIVE_SPEED, 0, 0);
-        robot.encoderLift(robot.LIFT_SPEED,15,13);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.4)) {
-            telemetry.addData("Path", "Leg 1: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-            robot.encoderLiftFinish(false);
-        }
-        robot.encoderLiftFinish(true);
-
-        sleep(500);
-
-        robot.encoderLift(robot.LIFT_SPEED,-4,4);
-
-
-        robot.setClawPosition(robot.pass, 0,robot.disable,0);
-        sleep(800);
-        robot.setClawPosition(robot.disable,0,robot.pass,0);
-
-        robot.encoderLiftFinish(true);
-
-        sleep(500);
-
-        robot.encoderLift(robot.LIFT_SPEED,-11, 10);
-        // Drive backward for 1 second
-        robot.driveFieldCentric(-robot.DRIVE_SPEED, 0, 0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.4)) {
-            telemetry.addData("Path", "Leg 2: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-            robot.encoderLiftFinish(false);
-        }
-        robot.encoderLiftFinish(true);
-
-        sleep(500);
-
-        robot.driveFieldCentric(0, robot.STRAFE_SPEED,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.8)) {
-            telemetry.addData("Path", "Leg 3: %4.1f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-        // Stop
-        robot.driveFieldCentric(0, 0, 0);
-        runtime.reset();
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-
-         */
-        sleep(1000);
-
-
     }
 }

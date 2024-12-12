@@ -98,6 +98,9 @@ public class RobotHardware {
             * ( (((1+ (46.0/17.0))) * (1+ (46.0/11.0))) ) // times internal gearing (aka gear ratio formula)
             * (1.0) // external gearing, 60 to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
+
+    public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
+            // by the distance traveled
     public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (26 - 0.5)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
@@ -135,6 +138,12 @@ public class RobotHardware {
     public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
     public double angleConvert(double angle){
         return Math.round((angle) * COUNTS_PER_DEGREE);
+    }
+    public double armByExtender() { // this sould be a positive slope: as extender goes up arm goes up
+        return (extensionDrive.getCurrentPosition());// slope goes here: initial position of extension, arm ; final position of extension, arm
+    }
+    public double extenderByArm() { // this should be a negative slope: as arm goes up extender goes down
+        return (elbowDrive.getCurrentPosition());// slope goes here
     }
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
