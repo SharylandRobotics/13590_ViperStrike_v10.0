@@ -51,6 +51,24 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             // Find out how to use left_stick_y for extension movement FIXME
             extend = gamepad2.left_stick_y;
 
+            if (gamepad1.right_trigger != 0) { // slow down driving
+                double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
+                drive = gamepad1.left_stick_y * multiplier;
+                strafe = (-gamepad1.left_stick_x * 1.1) * multiplier;
+                turn = gamepad1.right_stick_x * multiplier;
+            }
+            if (gamepad1.left_trigger != 0) { // release friction
+                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            } else {
+                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            }
+
             // Combine drive, strafe, and turn for blended motion. Use RobotHardware class
             robot.driveFieldCentric(drive, strafe, turn);
 

@@ -40,7 +40,6 @@ public class VisionTest extends LinearOpMode {
     @SuppressLint("DefaultLocale")
 
     RobotHardware robot = new RobotHardware(this);
-    //VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
     ElapsedTime runtime = new ElapsedTime();
 
     @SuppressLint("DefaultLocale")
@@ -50,7 +49,7 @@ public class VisionTest extends LinearOpMode {
         YawPitchRollAngles  yawAngles;
 
 
-        robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
+        robot.visionInit("BLUE", true, -0.6,0.5,0.25,-0.5);
         robot.init();
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);

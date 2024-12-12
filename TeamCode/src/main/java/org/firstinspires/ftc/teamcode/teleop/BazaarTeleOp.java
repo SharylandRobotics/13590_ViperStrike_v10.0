@@ -47,7 +47,7 @@ public class BazaarTeleOp extends LinearOpMode{
         boolean calibratePerpendicular = false;
         boolean cameraMode = false;
 
-        boolean contorller1Mode = true; // true will be basic/default, false will be alternative (for both gamepads)
+        // true will be basic/default, false will be alternative (for both gamepads)
         boolean controller2Mode = true;
 
         robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
@@ -124,6 +124,10 @@ public class BazaarTeleOp extends LinearOpMode{
             } else if (gamepad2.b) { // open claw
                 robot.setClawPosition(robot.disable, robot.pass, robot.pass);
             }
+            if (gamepad2.a) { // mid claw
+                robot.clawAxial.setPosition(robot.CLAW_MID);
+            }
+
 
             if (gamepad2.dpad_up) {
                 robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
@@ -181,9 +185,8 @@ public class BazaarTeleOp extends LinearOpMode{
             telemetry.addData("Claw Calibration", "Parallel, Perpendicular", calibrateParallel, calibratePerpendicular);
             telemetry.update();
             switch ((int) runtime.seconds()){
-                case 30:
                 case 90:
-                    gamepad1.rumble(0.2, 0.2,200);
+                    gamepad1.rumble(0.1, 0.1,200);
                     break;
                 case 120:
                     gamepad1.rumble(0.5,0.5, 300);

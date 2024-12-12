@@ -143,7 +143,7 @@ public class RobotHardware {
         return (extensionDrive.getCurrentPosition());// slope goes here: initial position of extension, arm ; final position of extension, arm
     }
     public double extenderByArm() { // this should be a negative slope: as arm goes up extender goes down
-        return (elbowDrive.getCurrentPosition());// slope goes here
+        return (elbowDrive.getCurrentPosition());// slope goes here: initial position of arm (parallel), extend (0) ; final position (up or down)
     }
 
     // Define a constructor that allows the OpMode to pass a reference to itself.

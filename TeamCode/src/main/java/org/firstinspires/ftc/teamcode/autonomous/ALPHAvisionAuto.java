@@ -41,7 +41,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         double heading;
         double secondsToScan = 0;
         // Initialize all the hardware using the hardware class.
-        robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
+        robot.visionInit("BLUE", true, -0.6,0.5,0.25,-0.5);
         robot.init();
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
@@ -356,7 +356,15 @@ public class ALPHAvisionAuto extends LinearOpMode{
         sleep(400);
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
 
+        sleep(3000);
 
+        robot.setDrivePower(-0.43,1.0,1.0,-0.43); // strafe from OZ
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.6) {
+            telemetry.addData("STRAFING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
         telemetry.addData("DONE","!!");
 
     }

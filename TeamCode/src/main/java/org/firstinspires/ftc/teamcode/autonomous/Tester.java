@@ -15,7 +15,6 @@ public class Tester extends LinearOpMode {
     // Create a RobotHardware object to be used to access robot hardware. Prefix any hardware function with "robot." to
     // access this class.
     RobotHardware robot = new RobotHardware(this);
-
     ElapsedTime runtime = new ElapsedTime();
 
     @Override
