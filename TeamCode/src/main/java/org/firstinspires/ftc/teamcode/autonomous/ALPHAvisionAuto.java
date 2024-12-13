@@ -72,7 +72,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         while (robot.elbowDrive.isBusy()) { // check for when to let go of specimen
             robot.setClawPosition(robot.pass,robot.pass,robot.superposition);
 
-            if (robot.elbowDrive.getCurrentPosition() == (int) (robot.COUNTS_PER_DEGREE * 90) ) {
+            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.COUNTS_PER_DEGREE * 100) ) {
                 break;
             }
         }
@@ -360,17 +360,18 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(3000);
 
+        // pick up loop starts here?
         robot.driveFieldCentric(-0.4,0,0);
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL));
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.75) {
+        while (opModeIsActive() && runtime.seconds() < 0.65) {
             if (robot.elbowDrive.isBusy()) {
                 robot.calibrateClaw(robot.ELBOW_PARALLEL);
             }
         }
         robot.calibrateClaw(robot.ELBOW_PARALLEL);
         robot.driveFieldCentric(0,0,0);
-        robot.setClawPosition(robot.enable, robot.pass, robot.pass);
+        robot.setClawPosition(robot.enable, robot.pass, robot.pass); // pick up specimen
         sleep(400);
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
 
@@ -383,6 +384,45 @@ public class ALPHAvisionAuto extends LinearOpMode{
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
+
+        runtime.reset();
+        robot.driveFor(runtime, 0.3, 0.5,0,0,"MOVING UP"); // move up to bar
+        robot.driveFieldCentric(0,0,0);
+
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
+        runtime.reset();
+        robot.driveFor(runtime,0.35,0.3,0,0,"SCORING");
+        robot.driveFieldCentric(0,0,0);
+
+        while (robot.elbowDrive.isBusy()) { // check for when to let go of specimen
+            robot.setClawPosition(robot.pass,robot.pass,robot.superposition);
+
+            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.COUNTS_PER_DEGREE * 100) ) {
+                break;
+            }
+        }
+        robot.setClawPosition(robot.disable,robot.pass ,robot.pass); // let go of specimen
+        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
+        telemetry.update();
+
+        sleep(200);
+
+        robot.setClawPosition(robot.enable,robot.pass, robot.pass); // close to not hit bar
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_BACKWARD_PARALLEL); // lower to position for pickup
+
+        runtime.reset();
+        robot.driveFor(runtime,0.3,-0.5,0,0,"BACKING UP"); // back away to not hit arm
+        robot.driveFieldCentric(0,0,0);
+
+        sleep(500);
+
+        robot.setDrivePower(0.43,-1.0,-1.0,0.43); // strafe to OZ
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.6) {
+            telemetry.addData("STRAFING", "...");
+            telemetry.update();
+        }
+
         telemetry.addData("DONE","!!");
 
     }

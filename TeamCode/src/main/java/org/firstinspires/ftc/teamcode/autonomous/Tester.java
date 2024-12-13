@@ -69,7 +69,7 @@ public class Tester extends LinearOpMode {
 
 
             extend = -gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
-            if (robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT){extend = 0;}
+            if (robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT && extend >= 0){extend = 0;}
             robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extend);
 
             if (gamepad2.left_trigger != 0) {

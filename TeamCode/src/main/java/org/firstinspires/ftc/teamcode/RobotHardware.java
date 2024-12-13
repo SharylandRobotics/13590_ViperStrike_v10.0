@@ -139,8 +139,9 @@ public class RobotHardware {
     public double angleConvert(double angle){
         return Math.round((angle) * COUNTS_PER_DEGREE);
     }
-    public double armByExtender() { // this sould be a positive slope: as extender goes up arm goes up
-        return (extensionDrive.getCurrentPosition());// slope goes here: initial position of 0, 22 ; 25, 35
+    public double armByExtender() { // returns elbow pos for extension pos; this sould be a positive slope: as extender goes up arm goes up
+        // 13x/25 + 22 = y  ; x = extension pos, y = elbow pos
+        return (((((extensionDrive.getCurrentPosition()/EXTENSION_COUNTS_PER_REV)*13)/25) + 22) * COUNTS_PER_DEGREE);// slope goes here: initial position of 0, 22 ; 25, 35
     }
     public double extenderByArm() { // this should be a negative slope: as arm goes up extender goes down
         return (elbowDrive.getCurrentPosition());// slope goes here: initial position of arm (parallel), extend (0) ; final position (up or down)
@@ -447,7 +448,7 @@ public class RobotHardware {
                 elbowDirection = disable; // elbow is facing backwards
             }
         }
-
+        if (elbowDegTRUE == 0){targetClawPos = 0.75;} // pass submersible clearance
         clawAxial.setPosition(targetClawPos);
     }
 

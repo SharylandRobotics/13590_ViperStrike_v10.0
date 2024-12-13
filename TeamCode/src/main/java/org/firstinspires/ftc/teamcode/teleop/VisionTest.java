@@ -23,17 +23,13 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.opencv.core.Point;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvWebcam;
 
 @TeleOp(name = "Vision: test", group = "Robot")
 public class VisionTest extends LinearOpMode {
@@ -48,12 +44,8 @@ public class VisionTest extends LinearOpMode {
     {
         YawPitchRollAngles  yawAngles;
 
-
-        robot.visionInit("BLUE", true, -0.6,0.5,0.25,-0.5);
         robot.init();
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        FtcDashboard.getInstance().startCameraStream(camera, 30);
+        robot.visionInit("BLUE", true, -0.6,0.5,0.25,-0.5);
         // WARNING:  To be able to view the stream preview on the Driver Station, this code runs in INIT mode.
         while (opModeInInit())
         {
@@ -67,7 +59,6 @@ public class VisionTest extends LinearOpMode {
         waitForStart();
         robot.imu.resetYaw(); // reset orientation
         runtime.reset();
-
 
         while (opModeIsActive()) { // once in play, print orientation
 
