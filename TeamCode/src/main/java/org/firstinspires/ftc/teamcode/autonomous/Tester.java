@@ -31,7 +31,16 @@ public class Tester extends LinearOpMode {
         // Initialize all the hardware using the hardware class.
         robot.init();
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.elbowDrive.setPower(0.25);
+        robot.elbowDrive.setPower(1.0);
+
+        robot.extensionDrive.setTargetPosition(0);
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.extensionDrive.setPower(1.0);
+
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -43,7 +52,7 @@ public class Tester extends LinearOpMode {
             telemetry.addData("current orientation", String.valueOf(yawPitchRoll));
             telemetry.addData("current yaw", String.valueOf(heading));
             telemetry.addData("Elbow Angle:", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE);
-            telemetry.addData("Extension Pos:", robot.extensionDrive.getCurrentPosition()/robot.EXTENSION_COUNTS_PER_REV);
+            telemetry.addData("Extension Rev:", robot.extensionDrive.getCurrentPosition()/robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Extension Pos:", robot.extensionDrive.getCurrentPosition());
             telemetry.addData("Elbow Pos:", robot.elbowDrive.getCurrentPosition());
             telemetry.update();
@@ -57,7 +66,10 @@ public class Tester extends LinearOpMode {
             }
             if (calibrate){robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);}
 
-            extend = gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
+
+
+            extend = -gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
+            if (robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT){extend = 0;}
             robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extend);
 
             if (gamepad2.left_trigger != 0) {
@@ -66,7 +78,7 @@ public class Tester extends LinearOpMode {
                 elbowFactor = gamepad2.right_trigger * robot.ELBOW_FUDGE_FACTOR;
             } else { elbowFactor = 0;}
             robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
-
+            if (gamepad2.dpad_left) {robot.extensionDrive.setTargetPosition((int) robot.EXTENSION_COUNTS_PER_REV*12);}
             sleep(50);
         }
     }

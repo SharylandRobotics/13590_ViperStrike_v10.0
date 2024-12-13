@@ -41,7 +41,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         double heading;
         double secondsToScan = 0;
         // Initialize all the hardware using the hardware class.
-        robot.visionInit("BLUE", true, -0.6,0.5,0.25,-0.5);
+        robot.visionInit("BLUE", true, -0.6,0.5,0.35,-0.5);
         robot.init();
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
@@ -63,7 +63,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.driveFieldCentric(0.3,0,0);
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.3  ) {
+        while (opModeIsActive() && runtime.seconds() < 0.35  ) {
             telemetry.addData("SCORING", "...");
             telemetry.update();
         }
@@ -203,7 +203,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(1.0,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.35) {
+        while (opModeIsActive() && runtime.seconds() < 0.4) {
             telemetry.addData("DRIVING", "...");
             telemetry.update();
         }
@@ -245,7 +245,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(-1.0,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.72) {
+        while (opModeIsActive() && runtime.seconds() < 0.9) {
             telemetry.addData("DRIVING BACK", "...");
             telemetry.update();
         }
@@ -273,17 +273,17 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(1.0,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.72) {
+        while (opModeIsActive() && runtime.seconds() < 0.9) {
             telemetry.addData("DRIVING", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
-
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL));
         sleep(200);
 
         robot.driveFieldCentric(0,1.0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.4) {
+        while (opModeIsActive() && runtime.seconds() < 0.35) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -291,15 +291,32 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(200);
 
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL + robot.angleConvert(20)));
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+
+        if (opModeIsActive() && robot.heading !=0) {
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
+        }
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+        while (opModeIsActive() && robot.heading != 0){
+            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/1.5 ) * 1.5;
+            if (heading == 0) { // go 20 under your target
+                robot.driveFieldCentric(0,0,0);
+                telemetry.addData("AT 180 DEG", "");
+                break;
+            }
+            telemetry.addData("HEADING:", heading);
+            telemetry.update();
+        }
+        sleep(200);
 
         robot.driveFieldCentric(-1,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.72) {
+        while (opModeIsActive() && runtime.seconds() < 0.75) {
             telemetry.addData("DRIVING BACK", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
+
 
         sleep(200);
 
@@ -327,9 +344,9 @@ public class ALPHAvisionAuto extends LinearOpMode{
         }
         sleep(200);
 
-        robot.driveFieldCentric(0,-0.3,0);
+        robot.driveFieldCentric(0,-0.2,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 1.0) {
+        while (opModeIsActive() && runtime.seconds() < 1.2) {
             robot.detectR(new Point(480,810), new Point(1440,270));
             if (!robot.blobS.isEmpty()) {
                 robot.driveFieldCentric(0,0,0);
@@ -344,13 +361,14 @@ public class ALPHAvisionAuto extends LinearOpMode{
         sleep(3000);
 
         robot.driveFieldCentric(-0.4,0,0);
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL + robot.angleConvert(5)));
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL));
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.75) {
             if (robot.elbowDrive.isBusy()) {
                 robot.calibrateClaw(robot.ELBOW_PARALLEL);
             }
         }
+        robot.calibrateClaw(robot.ELBOW_PARALLEL);
         robot.driveFieldCentric(0,0,0);
         robot.setClawPosition(robot.enable, robot.pass, robot.pass);
         sleep(400);

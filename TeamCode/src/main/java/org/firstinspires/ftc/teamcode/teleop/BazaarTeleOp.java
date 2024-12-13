@@ -38,7 +38,6 @@ public class BazaarTeleOp extends LinearOpMode{
         double drive;
         double strafe;
         double turn;
-        double NEWelbowPos = robot.elbowDrive.getCurrentPosition(); // just here to keep intelliJ quiet
         double elbowFactor;
         double extendPos = 0;
         double extendFactor;
@@ -52,6 +51,8 @@ public class BazaarTeleOp extends LinearOpMode{
 
         robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
         robot.init();
+        double NEWelbowPos = robot.elbowDrive.getCurrentPosition(); // just here to keep intelliJ quiet
+
         // extension encoder setup
         robot.extensionDrive.setTargetPosition(0);
         robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -63,14 +64,14 @@ public class BazaarTeleOp extends LinearOpMode{
         waitForStart();
         runtime.reset();
 
-        while (opModeIsActive()){
+        while (opModeIsActive()) {
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1;
             turn = gamepad1.right_stick_x;
 
-            extendFactor = gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
+            extendFactor = -gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
 
-            while (gamepad1.dpad_left && gamepad1.dpad_right) {
+            while (gamepad1.dpad_left && gamepad1.dpad_right) { // reset init
                 timesRan = timesRan + 1;
                 if (timesRan >= 200) {
                     robot.init();
@@ -81,10 +82,10 @@ public class BazaarTeleOp extends LinearOpMode{
             }
 
             if (gamepad1.right_trigger != 0) { // slow down driving
-                    double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
-                    drive = gamepad1.left_stick_y * multiplier;
-                    strafe = (-gamepad1.left_stick_x * 1.1) * multiplier;
-                    turn = gamepad1.right_stick_x * multiplier;
+                double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
+                drive = -gamepad1.left_stick_y * multiplier;
+                strafe = (gamepad1.left_stick_x * 1.1) * multiplier;
+                turn = gamepad1.right_stick_x * multiplier;
             }
             if (gamepad1.left_trigger != 0) { // release friction
                 robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -98,18 +99,16 @@ public class BazaarTeleOp extends LinearOpMode{
                 robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
 
-            robot.driveFieldCentric(drive,strafe,turn);
+            robot.driveFieldCentric(drive, strafe, turn);
 
 
             // gamepad 2
-            if (gamepad2.right_bumper) {
+            if (gamepad2.right_bumper) { // swap modes
                 if (gpad2Timer > 200) {
                     controller2Mode = !controller2Mode;
                     gpad2Timer = 0;
                 }
             }
-
-
 
             if (gamepad2.left_stick_button) { // set claw parallel to floor
                 calibrateParallel = !calibrateParallel;
@@ -128,21 +127,28 @@ public class BazaarTeleOp extends LinearOpMode{
                 robot.clawAxial.setPosition(robot.CLAW_MID);
             }
 
-
             if (gamepad2.dpad_up) {
                 robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
             }
 
-            if (controller2Mode){ // controller mode default
+            if (gamepad2.left_trigger != 0) {
+                extendFactor = -gamepad2.left_trigger * robot.EXTENSION_FUDGE_FACTOR;
+            } else if (gamepad2.right_trigger != 0) {
+                extendFactor = gamepad2.left_trigger * robot.EXTENSION_FUDGE_FACTOR;
+            }
+
+            if (controller2Mode) { // controller mode default
                 cameraMode = false;
 
                 if (gamepad2.dpad_right) {
-                    NEWelbowPos = ((int)  robot.ELBOW_PARALLEL);
+                    NEWelbowPos = ((int) robot.ELBOW_PARALLEL);
                 } else if (gamepad2.dpad_left) {
                     NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
                 } else if (gamepad2.dpad_down) {
                     NEWelbowPos = ((int) robot.ELBOW_COLLAPSED);
-                } else {NEWelbowPos = robot.elbowDrive.getCurrentPosition();}
+                } else {
+                    NEWelbowPos = robot.elbowDrive.getCurrentPosition();
+                }
             }
             if (!controller2Mode) { // controller 2 mode alternative
                 if (gamepad2.dpad_down) {
@@ -152,9 +158,12 @@ public class BazaarTeleOp extends LinearOpMode{
                     NEWelbowPos = (robot.elbowDrive.getCurrentPosition() - (int) robot.angleConvert(2));
                 } else if (gamepad2.dpad_right) { // move elbow up
                     NEWelbowPos = (robot.elbowDrive.getCurrentPosition() + (int) robot.angleConvert(2));
-                } else {NEWelbowPos = robot.elbowDrive.getCurrentPosition();}
+                } else {
+                    NEWelbowPos = robot.elbowDrive.getCurrentPosition();// keep from creating a loop}
+                }
             }
 
+            // MISC/ACTION code
             // drive extension
             robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extendFactor);
             // drive arm
@@ -166,12 +175,12 @@ public class BazaarTeleOp extends LinearOpMode{
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
             }
             if (cameraMode) { // play sounds if colors found
-                robot.teleOpdetectR(new Point(480,810), new Point(1440,270));
-                if (!robot.blobS.isEmpty()){
+                robot.teleOpdetectR(new Point(480, 810), new Point(1440, 270));
+                if (!robot.blobS.isEmpty()) {
                     SoundPlayer.getInstance().stopPlayingAll();
                     SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, coloredSoundID);
                 }
-                if (!robot.secondaryBlobS.isEmpty()){
+                if (!robot.secondaryBlobS.isEmpty()) {
                     SoundPlayer.getInstance().stopPlayingAll();
                     SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, yellowSoundID);
                 }
@@ -180,24 +189,21 @@ public class BazaarTeleOp extends LinearOpMode{
             // telemetry
             telemetry.addData("Heading", robot.heading);
             telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE);
-            telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition()/robot.EXTENSION_COUNTS_PER_REV);
+            telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.COUNTS_PER_DEGREE);
+            telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition() / robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Claw Calibration", "Parallel, Perpendicular", calibrateParallel, calibratePerpendicular);
             telemetry.update();
-            switch ((int) runtime.seconds()){
+            switch ((int) runtime.seconds()) {
                 case 90:
-                    gamepad1.rumble(0.1, 0.1,200);
+                    gamepad1.rumble(0.1, 0.1, 200);
                     break;
                 case 120:
-                    gamepad1.rumble(0.5,0.5, 300);
+                    gamepad1.rumble(0.5, 0.5, 300);
                 case 135:
-                    gamepad1.rumble(1.0,1.0,200);
-            }
+                    gamepad1.rumble(1.0, 1.0, 200);
+                }
             gpad2Timer++;
             sleep(50);
         }
-
-
-
     }
 }

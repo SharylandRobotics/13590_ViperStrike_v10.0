@@ -101,7 +101,7 @@ public class RobotHardware {
 
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
             // by the distance traveled
-    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (26 - 0.5)); // the other number is how many revs
+    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (26 - 1)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
@@ -140,7 +140,7 @@ public class RobotHardware {
         return Math.round((angle) * COUNTS_PER_DEGREE);
     }
     public double armByExtender() { // this sould be a positive slope: as extender goes up arm goes up
-        return (extensionDrive.getCurrentPosition());// slope goes here: initial position of extension, arm ; final position of extension, arm
+        return (extensionDrive.getCurrentPosition());// slope goes here: initial position of 0, 22 ; 25, 35
     }
     public double extenderByArm() { // this should be a negative slope: as arm goes up extender goes down
         return (elbowDrive.getCurrentPosition());// slope goes here: initial position of arm (parallel), extend (0) ; final position (up or down)
@@ -231,7 +231,7 @@ public class RobotHardware {
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
         elbowDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        extensionDrive.setDirection(DcMotorSimple.Direction.FORWARD);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -439,10 +439,10 @@ public class RobotHardware {
         at the floor.
          */
         if (orientation == ELBOW_PERPENDICULAR){ // change position to perpendicular to floor
-            if (elbowDegTRUE < 267 && elbowDegTRUE > 210) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
+            if (elbowDegTRUE < 267.00 && elbowDegTRUE > 210.00) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
                 targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
                 elbowDirection = enable; // elbow is facing forward
-            } else if (elbowDegTRUE > 23 && elbowDegTRUE < 80){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+            } else if (elbowDegTRUE > 22.00 && elbowDegTRUE < 80.00){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
                 targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
                 elbowDirection = disable; // elbow is facing backwards
             }

@@ -49,12 +49,12 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
             turn = gamepad1.right_stick_x;
 
             // Find out how to use left_stick_y for extension movement FIXME
-            extend = gamepad2.left_stick_y;
+            extend = -gamepad2.left_stick_y;
 
             if (gamepad1.right_trigger != 0) { // slow down driving
                 double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
                 drive = gamepad1.left_stick_y * multiplier;
-                strafe = (-gamepad1.left_stick_x * 1.1) * multiplier;
+                strafe = (gamepad1.left_stick_x * 1.1) * multiplier;
                 turn = gamepad1.right_stick_x * multiplier;
             }
             if (gamepad1.left_trigger != 0) { // release friction
@@ -137,6 +137,7 @@ public class TeleOpDriveFieldCentric extends LinearOpMode {
                 elbowPos = robot.ELBOW_BACKWARD_ANGLED;
             } else if (gamepad2.dpad_down) {
                 elbowPos = robot.ELBOW_BACKWARD_COLLAPSED;
+                robot.clawAxial.setPosition(robot.CLAW_UP);
             } else if (gamepad2.dpad_left) {
                 elbowPos = robot.ELBOW_ANGLED;
             }/* else if (gamepad2.left_stick_button) {
