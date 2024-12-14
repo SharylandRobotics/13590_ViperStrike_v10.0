@@ -527,23 +527,13 @@ public class RobotHardware {
                         .build();
                 break;
             case "YELLOW":
-                secondaryColorLocator = new ColorBlobLocatorProcessor.Builder()
+                colorLocator = new ColorBlobLocatorProcessor.Builder()
                         .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
                         .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                         .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
                         .setDrawContours(true)                        // Show contours on the Stream Preview
                         .setBlurSize(5)                               // Smooth the transitions between different colors in image
                         .build();
-
-                VisionPortal secondPortal = new VisionPortal.Builder()
-                        .addProcessor(secondaryColorLocator)
-                        .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                        .setCameraResolution(new Size(1920,1080))
-                        .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
-                        .build();
-                myOpMode.telemetry.setMsTransmissionInterval(50);
-                myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
-                break;
         }
 
         if (portalQ) {
@@ -598,7 +588,7 @@ public class RobotHardware {
 
         filterBySetROI(topLeft, bottomRight, blobS);
 
-        ColorBlobLocatorProcessor.Util.filterByArea(800, 20000, blobS);  // filter out very small blobs.
+        ColorBlobLocatorProcessor.Util.filterByArea(300, 20000, blobS);  // filter out very small blobs.
 
         myOpMode.telemetry.addLine(" Area Density Aspect  Center");
 

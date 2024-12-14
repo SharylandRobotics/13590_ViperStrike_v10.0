@@ -63,7 +63,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.driveFieldCentric(0.3,0,0);
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.35  ) {
+        while (opModeIsActive() && runtime.seconds() < 0.45  ) {
             telemetry.addData("SCORING", "...");
             telemetry.update();
         }
@@ -229,7 +229,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
             heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/1.5 ) * 1.5;
-            if (heading == 0) { // go 20 under your target
+            if (heading == 3) { // go 20 under your target
                 robot.driveFieldCentric(0,0,0);
                 telemetry.addData("AT 180 DEG", "");
                 break;
@@ -238,20 +238,15 @@ public class ALPHAvisionAuto extends LinearOpMode{
             telemetry.update();
         }
 
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_COLLAPSED);
-
-
         sleep(1000);
 
         robot.driveFieldCentric(-1.0,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.9) {
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
             telemetry.addData("DRIVING BACK", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
-
-        sleep(200);
 
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
 
@@ -261,7 +256,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
             heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/1.5 ) * 1.5;
-            if (heading == 0) { // go 20 under your target
+            if (heading == 3) { // go 20 under your target
                 robot.driveFieldCentric(0,0,0);
                 telemetry.addData("AT 180 DEG", "");
                 break;
@@ -269,21 +264,22 @@ public class ALPHAvisionAuto extends LinearOpMode{
             telemetry.addData("HEADING:", heading);
             telemetry.update();
         }
+
         sleep(200);
 
         robot.driveFieldCentric(1.0,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.9) {
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
             telemetry.addData("DRIVING", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL));
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_COLLAPSED));
         sleep(200);
 
         robot.driveFieldCentric(0,1.0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.35) {
+        while (opModeIsActive() && runtime.seconds() < 0.35 ) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -299,7 +295,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
             heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/1.5 ) * 1.5;
-            if (heading == 0) { // go 20 under your target
+            if (heading == -3) { // go 20 under your target
                 robot.driveFieldCentric(0,0,0);
                 telemetry.addData("AT 180 DEG", "");
                 break;
@@ -311,117 +307,15 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(-1,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.75) {
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
             telemetry.addData("DRIVING BACK", "...");
             telemetry.update();
         }
         robot.driveFieldCentric(0,0,0);
 
-
         sleep(200);
-
 
         // scoring time!
-
-        robot.driveFor(runtime, 0.8,-1.0,0,0, "BACKING UP");
-        robot.driveFieldCentric(0,0,0);
-
-        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
-
-        if (opModeIsActive() && robot.heading !=0) {
-            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
-        }
-        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
-        while (opModeIsActive() && robot.heading != 0){
-            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/1.5 ) * 1.5;
-            if (heading == 0) { // go 20 under your target
-                robot.driveFieldCentric(0,0,0);
-                telemetry.addData("AT 180 DEG", "");
-                break;
-            }
-            telemetry.addData("HEADING:", heading);
-            telemetry.update();
-        }
-        sleep(200);
-
-        robot.driveFieldCentric(0,-0.2,0);
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 1.2) {
-            robot.detectR(new Point(480,810), new Point(1440,270));
-            if (!robot.blobS.isEmpty()) {
-                robot.driveFieldCentric(0,0,0);
-                telemetry.addData("SPECIMEN FOUND", "");
-                telemetry.update();
-                break;
-            }
-            telemetry.addData("SCANNING", "...");
-            telemetry.update();
-        }
-
-        sleep(3000);
-
-        // pick up loop starts here?
-        robot.driveFieldCentric(-0.4,0,0);
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL));
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.65) {
-            if (robot.elbowDrive.isBusy()) {
-                robot.calibrateClaw(robot.ELBOW_PARALLEL);
-            }
-        }
-        robot.calibrateClaw(robot.ELBOW_PARALLEL);
-        robot.driveFieldCentric(0,0,0);
-        robot.setClawPosition(robot.enable, robot.pass, robot.pass); // pick up specimen
-        sleep(400);
-        robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
-
-        sleep(3000);
-
-        robot.setDrivePower(-0.43,1.0,1.0,-0.43); // strafe from OZ
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.6) {
-            telemetry.addData("STRAFING", "...");
-            telemetry.update();
-        }
-        robot.driveFieldCentric(0,0,0);
-
-        runtime.reset();
-        robot.driveFor(runtime, 0.3, 0.5,0,0,"MOVING UP"); // move up to bar
-        robot.driveFieldCentric(0,0,0);
-
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
-        runtime.reset();
-        robot.driveFor(runtime,0.35,0.3,0,0,"SCORING");
-        robot.driveFieldCentric(0,0,0);
-
-        while (robot.elbowDrive.isBusy()) { // check for when to let go of specimen
-            robot.setClawPosition(robot.pass,robot.pass,robot.superposition);
-
-            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.COUNTS_PER_DEGREE * 100) ) {
-                break;
-            }
-        }
-        robot.setClawPosition(robot.disable,robot.pass ,robot.pass); // let go of specimen
-        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
-        telemetry.update();
-
-        sleep(200);
-
-        robot.setClawPosition(robot.enable,robot.pass, robot.pass); // close to not hit bar
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_BACKWARD_PARALLEL); // lower to position for pickup
-
-        runtime.reset();
-        robot.driveFor(runtime,0.3,-0.5,0,0,"BACKING UP"); // back away to not hit arm
-        robot.driveFieldCentric(0,0,0);
-
-        sleep(500);
-
-        robot.setDrivePower(0.43,-1.0,-1.0,0.43); // strafe to OZ
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.6) {
-            telemetry.addData("STRAFING", "...");
-            telemetry.update();
-        }
 
         telemetry.addData("DONE","!!");
 
