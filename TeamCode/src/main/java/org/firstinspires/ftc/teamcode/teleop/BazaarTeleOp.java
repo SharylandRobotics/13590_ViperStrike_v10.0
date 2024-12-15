@@ -24,7 +24,6 @@ public class BazaarTeleOp extends LinearOpMode{
     public void runOpMode() {
         // timers
         int leftBumperTimer = 0;
-        int gpad2Timer = 0;
         int timesRan = 0;
         // sounds
         int coloredSoundID = hardwareMap.appContext.getResources().getIdentifier("colored", "raw", hardwareMap.appContext.getPackageName());
@@ -47,9 +46,6 @@ public class BazaarTeleOp extends LinearOpMode{
         boolean elbowByExtender = false;
         boolean calibrateParallel = false;
         boolean calibratePerpendicular = false;
-
-        // true will be basic/default, false will be alternative (for both gamepads)
-        boolean controller2Mode = true;
 
         robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
         robot.init();
@@ -111,14 +107,6 @@ public class BazaarTeleOp extends LinearOpMode{
 
 
             // gamepad 2
-            if (gamepad2.right_bumper) { // swap modes
-                if (gpad2Timer > 20) {
-                    controller2Mode = !controller2Mode;
-                    gpad2Timer = 0;
-                }
-            }
-
-
 
             if (gamepad2.right_stick_button) { // set claw parallel to floor
                 calibrateParallel = !calibrateParallel;
@@ -135,38 +123,28 @@ public class BazaarTeleOp extends LinearOpMode{
             }
             if (gamepad2.a) { // mid claw
                 robot.clawAxial.setPosition(robot.CLAW_MID);
+                calibrateParallel = false;
+                calibratePerpendicular = false;
             }
 
             if (gamepad2.dpad_up) {
                 robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
+            } else if (gamepad2.dpad_right) {
+                NEWelbowPos = ((int) robot.ELBOW_PARALLEL);
+                robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
+            } else if (gamepad2.dpad_left) {
+                NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
+                robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
+            } else if (gamepad2.dpad_down) {
+                NEWelbowPos = ((int) robot.ELBOW_COLLAPSED);
+                robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
+            } else {
+                NEWelbowPos = robot.elbowDrive.getCurrentPosition();
+                robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
             }
 
-            if (controller2Mode) { // controller mode default
-                if (gamepad2.dpad_right) {
-                    NEWelbowPos = ((int) robot.ELBOW_PARALLEL);
-                    robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-                } else if (gamepad2.dpad_left) {
-                    NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
-                    robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-                } else if (gamepad2.dpad_down) {
-                    NEWelbowPos = ((int) robot.ELBOW_COLLAPSED);
-                    robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-                } else {
-                    NEWelbowPos = robot.elbowDrive.getCurrentPosition();
-                    robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-                }
-            }
-            if (!controller2Mode) { // controller 2 mode alternative
-                if (gamepad2.dpad_left) { // move elbow down
-                    NEWelbowPos = (robot.elbowDrive.getCurrentPosition() - (int) robot.angleConvert(2));
-                    robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-                } else if (gamepad2.dpad_right) { // move elbow up
-                    NEWelbowPos = (robot.elbowDrive.getCurrentPosition() + (int) robot.angleConvert(2));
-                    robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-                } else {
-                    NEWelbowPos = robot.elbowDrive.getCurrentPosition();// keep from creating a loop
-                    robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-                }
+            if (gamepad2.right_bumper) {
+                robot.setClawPosition(robot.enable, robot.pass, robot.pass);
             }
 
             // MISC/ACTION code
@@ -206,7 +184,6 @@ public class BazaarTeleOp extends LinearOpMode{
             telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.COUNTS_PER_DEGREE);
             telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition() / robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Claw Calibration", "Parallel, Perpendicular", calibrateParallel, calibratePerpendicular);
-            telemetry.addData("GamePad2 Mode:", controller2Mode ? "Default/Positional" : "Alternative/Incremental");
             telemetry.addData("Elbow Mode:", elbowByExtender ? "Extender Based" : "Free Range");
             telemetry.update();
             switch ((int) runtime.seconds()) {
@@ -218,7 +195,6 @@ public class BazaarTeleOp extends LinearOpMode{
                 case 135:
                     gamepad2.rumble(0.5, 0.5, 200);
                 }
-            gpad2Timer++;
             leftBumperTimer++;
             sleep(50);
         }

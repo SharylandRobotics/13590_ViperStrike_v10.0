@@ -66,6 +66,8 @@ public class ALPHAvisionAuto extends LinearOpMode{
         while (opModeIsActive() && runtime.seconds() < 0.45  ) {
             telemetry.addData("SCORING", "...");
             telemetry.update();
+            robot.setClawPosition(robot.pass,robot.superposition,robot.superposition);
+
         }
         robot.driveFieldCentric(0,0,0);
 
@@ -193,7 +195,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         // bring arm down and perpendicularize claw before this, also assume that this is after your FIRST/PRELOADED specimen
         robot.driveFieldCentric(0,1.0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.65) {
+        while (opModeIsActive() && runtime.seconds() < 0.55) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -211,7 +213,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(200);
 
-        robot.driveFieldCentric(0,1.0,0.4);
+        robot.driveFieldCentric(0,1.0,0.);
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.42){
             telemetry.addData("STRAFING", "...");
@@ -228,8 +230,8 @@ public class ALPHAvisionAuto extends LinearOpMode{
         }
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
-            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/1.5 ) * 1.5;
-            if (heading == 3) { // go 20 under your target
+            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/10 ) * 10;
+            if (heading == 0) { // go 20 under your target
                 robot.driveFieldCentric(0,0,0);
                 telemetry.addData("AT 180 DEG", "");
                 break;
@@ -255,8 +257,8 @@ public class ALPHAvisionAuto extends LinearOpMode{
         }
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
-            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/1.5 ) * 1.5;
-            if (heading == 3) { // go 20 under your target
+            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/10) * 10;
+            if (heading == 0) { // go 20 under your target
                 robot.driveFieldCentric(0,0,0);
                 telemetry.addData("AT 180 DEG", "");
                 break;
@@ -279,7 +281,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(0,1.0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.35 ) {
+        while (opModeIsActive() && runtime.seconds() < 0.5 ) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -307,7 +309,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         robot.driveFieldCentric(-1,0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.7) {
+        while (opModeIsActive() && runtime.seconds() < 0.775) {
             telemetry.addData("DRIVING BACK", "...");
             telemetry.update();
         }
@@ -315,6 +317,33 @@ public class ALPHAvisionAuto extends LinearOpMode{
 
         sleep(200);
 
+        robot.driveFieldCentric(-0.2,0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.2) {
+            telemetry.addData("DRIVING FORWARD", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+
+        sleep(200);
+
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+
+        if (opModeIsActive() && robot.heading !=0) {
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0) * 0.3); // ADJUST ANGLE
+        }
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+        while (opModeIsActive() && robot.heading != 0){
+            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/10 ) * 10;
+            if (heading == 0) { // go 20 under your target
+                robot.driveFieldCentric(0,0,0);
+                telemetry.addData("AT 180 DEG", "");
+                break;
+            }
+            telemetry.addData("HEADING:", heading);
+            telemetry.update();
+        }
+        sleep(200);
         // scoring time!
 
         telemetry.addData("DONE","!!");
