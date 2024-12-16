@@ -27,14 +27,13 @@ public class VisionSoftware extends RobotHardware{
         public colorDetector(LinearOpMode opmode) {super(opmode);}
 
         // init vision variables
+        public ColorBlobLocatorProcessor primaryColorProcessor;
+        public ColorBlobLocatorProcessor secondaryColorProcessor;
 
-        //public ColorBlobLocatorProcessor colorLocator;
-        //public List<ColorBlobLocatorProcessor.Blob> blobS;
+        public List<ColorBlobLocatorProcessor.Blob> primaryBlobList;
+        public List<ColorBlobLocatorProcessor.Blob> secondaryBlobList;
 
-        //public ColorBlobLocatorProcessor secondaryColorLocator;
-        //public List<ColorBlobLocatorProcessor.Blob> secondaryBlobS;
-        //public VisionPortal portal;
-
+        public VisionPortal portal;
 
         /**
          *
@@ -71,19 +70,18 @@ public class VisionSoftware extends RobotHardware{
         /**
          *
          * @param color What color you want (IN STRING VALUE), BLUE, RED, or YELLOW
-         * @param portalQ If you want to reset the {@link VisionPortal} or not, true is yes, false is no
-         * @param locatorVersion Which locator you want to set up. ONLY 2 EXIST
+         * @param doublePortal If you want to reset the {@link VisionPortal} or not, true is yes, false is no
          * @param left How far left from the center the border should be, range of 1,-1
          * @param top How far up from the center the border should be, range of 1,-1
          * @param right How far right from the center the border should be, range of 1,-1
          * @param bottom How far down from the center the border should be, range of 1,-1
          */
-        public void visionInit (String color, boolean portalQ, ColorBlobLocatorProcessor locatorVersion,
+        public void visionInit (String color, boolean doublePortal,
                                 double left, double top, double right, double bottom) {
 
             switch (color) { // CUTTING EDGE CODE!!!!
                 case "BLUE":
-                    colorLocator = new ColorBlobLocatorProcessor.Builder()
+                    primaryColorProcessor = new ColorBlobLocatorProcessor.Builder()
                             .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
                             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                             .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
@@ -92,7 +90,7 @@ public class VisionSoftware extends RobotHardware{
                             .build();
                     break;
                 case "RED":
-                    colorLocator = new ColorBlobLocatorProcessor.Builder()
+                    primaryColorProcessor = new ColorBlobLocatorProcessor.Builder()
                             .setTargetColorRange(ColorRange.RED)         // use a predefined color match
                             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                             .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
@@ -100,73 +98,55 @@ public class VisionSoftware extends RobotHardware{
                             .setBlurSize(5)                               // Smooth the transitions between different colors in image
                             .build();
                     break;
-                case "YELLOW":
-                    colorLocator = new ColorBlobLocatorProcessor.Builder()
-                            .setRoiColor(Color.rgb(0,255,0))
-                            .setBoxFitColor(Color.rgb(0,0,0))
-                            .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
-                            .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
-                            .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
-                            .setDrawContours(true)                        // Show contours on the Stream Preview
-                            .setBlurSize(5)                               // Smooth the transitions between different colors in image
-                            .build();
-                    break;
             }
+            secondaryColorProcessor = new ColorBlobLocatorProcessor.Builder()
+                    .setRoiColor(Color.rgb(0,255,0))
+                    .setBoxFitColor(Color.rgb(255,255,60))
+                    .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
+                    .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                    .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                    .setDrawContours(true)                        // Show contours on the Stream Preview
+                    .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                    .build();
 
-            if (portalQ) {
+
+            if (doublePortal) {
                  portal = new VisionPortal.Builder()
-                        .addProcessor(locatorVersion)
+                        .addProcessors(primaryColorProcessor, secondaryColorProcessor)
                         .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                         .setCameraResolution(new Size(1920, 1080))
                         .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
                         .build();
-                myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
-                myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
-            }
 
+            } else {
+                portal = new VisionPortal.Builder()
+                    .addProcessor(primaryColorProcessor)
+                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                    .setCameraResolution(new Size(1920, 1080))
+                    .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .build();
+            }
+            myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
+            myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
         }
 
         @SuppressLint("DefaultLocale")
-        public void detectR (Point topLeft, Point bottomRight, String locator) {
-        /* ----- USE THIS FUNC LIKE SO... -----
-                                while (condition)
-                                {
-                                    robot.detectR();  // analyzes camera feed and puts blobs it finds into a list
+        public void activeDetector(Point topLeft, Point bottomRight, String processors) {
 
-                                    if (blobs (operator) (condition)) {  // blobs is the list mentioned above...
-                                        (action)
-                                    } // this checks if the list of blobs (condition) and if it is met it executes (action)
-                                }
-
-                                OR
-
-                                while (true)
-                                {
-                                    robot.detectR();  // analyzes camera feed and puts blobs it finds into a list
-
-                                    if (blobs (operator) (condition)) {  // blobs is the list mentioned above...
-                                        break;
-                                    } // this checks if the list of blobs (condition) and if it is met it breaks out the loop
-                                }
-
-                                (action); // action is then performed
-
-         */
-
-            switch (locator) {
+            switch (processors) {
                 case "PRIMARY":
                     myOpMode.telemetry.addData("SCANNING", "...\n" +
-                            " PRIMARY CAMERA PORTAL ACTIVE");
+                            " --------------PRIMARY CAMERA PORTAL ACTIVE--------------");
 
-                    blobS = colorLocator.getBlobs(); // set list to whatever the camera found
+                    primaryBlobList = primaryColorProcessor.getBlobs(); // set list to whatever the camera found
 
-                    filterBySetROI(topLeft, bottomRight, blobS);
+                    filterBySetROI(topLeft, bottomRight, primaryBlobList);
 
-                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, blobS);  // filter out very small blobs.
+                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, primaryBlobList);  // filter out very small blobs.
                     myOpMode.telemetry.addLine(" Area Density Aspect  Center");
 
                     // Display the size (area) and center location for each Blob.
-                    for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found
+                    for(ColorBlobLocatorProcessor.Blob b : primaryBlobList) // telemetry the blobs found
                     {
                         RotatedRect boxFit = b.getBoxFit();
                         myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
@@ -175,44 +155,49 @@ public class VisionSoftware extends RobotHardware{
                     myOpMode.telemetry.update();
                     myOpMode.sleep(50);
                     break;
-                case "BOTH": // This case will fall through into the secondary. The code here is identical to PRIMARY's
+                case "BOTH":
                     myOpMode.telemetry.addData("SCANNING", "...\n" +
-                            " PRIMARY CAMERA PORTAL ACTIVE");
+                            " --------------PRIMARY CAMERA PORTAL ACTIVE--------------");
 
-                    blobS = colorLocator.getBlobs(); // set list to whatever the camera found
+                    primaryBlobList = primaryColorProcessor.getBlobs(); // set list to whatever the camera found
+                    secondaryBlobList = secondaryColorProcessor.getBlobs();
 
-                    filterBySetROI(topLeft, bottomRight, blobS); // filter by area of interest
+                    filterBySetROI(topLeft, bottomRight, primaryBlobList);
+                    filterBySetROI(topLeft, bottomRight, secondaryBlobList);
 
-                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, blobS);  // filter out very small blobs.
-                    myOpMode.telemetry.addLine(" Area Density Aspect  Center");
+                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, primaryBlobList);  // filter out very small blobs.
+                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, secondaryBlobList);
+                    myOpMode.telemetry.addLine(" Primary Area, Density, Aspect,  Center, Angle");
 
                     // Display the size (area) and center location for each Blob.
-                    for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found
+                    for(ColorBlobLocatorProcessor.Blob b : primaryBlobList) // telemetry the blobs found
                     {
                         RotatedRect boxFit = b.getBoxFit();
                         myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
                                 b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+                        myOpMode.telemetry.addData("Angle", String.valueOf(boxFit.angle));
                     }
-                case "SECONDARY":
-                    myOpMode.telemetry.addData("SCANNING", "...\n" +
-                            " SECONDARY CAMERA PORTAL ACTIVE");
 
-                    blobS = colorLocator.getBlobs(); // set list to whatever the camera found
-
-                    filterBySetROI(topLeft, bottomRight, blobS); // filter by area of interest
-
-                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, blobS);  // filter out very small blobs.
+                    myOpMode.telemetry.addLine(" Secondary Area, Density, Aspect,  Center, Angle");
 
                     // Display the size (area) and center location for each Blob.
-                    for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found
+                    for(ColorBlobLocatorProcessor.Blob b : secondaryBlobList) // telemetry the blobs found
                     {
                         RotatedRect boxFit = b.getBoxFit();
                         myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
                                 b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+                        myOpMode.telemetry.addData("Angle", String.valueOf(boxFit.angle));
                     }
+                    myOpMode.telemetry.update();
+                    myOpMode.sleep(50);
                     break;
-
             }
         }
+    }
+
+    public static class aptDetector extends VisionSoftware{
+        public aptDetector(LinearOpMode opmode) {super(opmode);}
+
+
     }
 }

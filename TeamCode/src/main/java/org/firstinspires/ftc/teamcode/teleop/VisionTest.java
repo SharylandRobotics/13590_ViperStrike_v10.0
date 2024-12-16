@@ -23,16 +23,13 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import android.annotation.SuppressLint;
 
-import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.teamcode.VisionSoftware;
 import org.opencv.core.Point;
 
 @TeleOp(name = "Vision: test", group = "Robot")
@@ -40,6 +37,7 @@ public class VisionTest extends LinearOpMode {
     @SuppressLint("DefaultLocale")
 
     RobotHardware robot = new RobotHardware(this);
+    VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
     ElapsedTime runtime = new ElapsedTime();
 
     @SuppressLint("DefaultLocale")
@@ -49,22 +47,14 @@ public class VisionTest extends LinearOpMode {
         YawPitchRollAngles  yawAngles;
 
         robot.init();
-        robot.visionInit("BLUE", false, -0.5, 0.5, 0.5, -0.5);
-        VisionPortal portal = new VisionPortal.Builder()
-                .addProcessor(robot.colorLocator)
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setCameraResolution(new Size(1920, 1080))
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .build();
-        telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
-        telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+        colorDetector.visionInit("BLUE", false, -0.5, 0.5, 0.5, -0.5);
         // WARNING:  To be able to view the stream preview on the Driver Station, this code runs in INIT mode.
         while (opModeInInit())
         {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             telemetry.addData("check preview, initialized", "... Camera Stream");
             telemetry.addData("current orientation", String.valueOf(yawAngles));
-            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
+            colorDetector.activeDetector(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
 
         }
 
@@ -82,9 +72,9 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // Check out the waters
 
             telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
-            robot.detectR(new Point(480,810), new Point(1440,270)); // run camera
+            colorDetector.activeDetector(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
             telemetry.update();
-            if(!robot.blobS.isEmpty() ) {
+            if(!colorDetector.primaryBlobList.isEmpty() ) {
                 telemetry.addData("RUNG SPOTTED", "!!!!");
             }
             sleep(50);

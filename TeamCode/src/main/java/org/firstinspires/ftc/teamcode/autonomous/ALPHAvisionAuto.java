@@ -28,7 +28,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.opencv.core.Point;
 
 @Autonomous(name = "ALPHA auto by Vision", group = "Robot")
 public class ALPHAvisionAuto extends LinearOpMode{
@@ -41,7 +40,6 @@ public class ALPHAvisionAuto extends LinearOpMode{
         double heading;
         double secondsToScan = 0;
         // Initialize all the hardware using the hardware class.
-        robot.visionInit("BLUE", true, -0.6,0.5,0.35,-0.5);
         robot.init();
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
@@ -125,7 +123,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         while (opModeIsActive() && runtime.seconds() < 1) {
             robot.calibrateClaw(robot.ELBOW_PARALLEL);
             secondsToScan = runtime.seconds();
-            colorDetector.detectR(new Point(480,810), new Point(1440,270), "PRIMARY");
+            colorDetector.activeDetector(new Point(480,810), new Point(1440,270), "PRIMARY");
             if (!colorDetector.blobS.isEmpty()) {
                 robot.driveFieldCentric(0,0,0);
                 secondsToScan = runtime.seconds();

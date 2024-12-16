@@ -6,14 +6,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.teamcode.VisionSoftware;
-import org.opencv.core.Point;
 
 @TeleOp(name = "BazaarTeleOp", group = "Robot")
 public class BazaarTeleOp extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
-    VisionSoftware.colorDetector colorDetector = new VisionSoftware.colorDetector(this);
     ElapsedTime runtime = new ElapsedTime();
 
 
@@ -47,7 +44,6 @@ public class BazaarTeleOp extends LinearOpMode{
         boolean calibrateParallel = false;
         boolean calibratePerpendicular = false;
 
-        robot.visionInit("BLUE", true, -0.6,0.6,0.6,-0.6);
         robot.init();
         double NEWelbowPos = robot.elbowDrive.getCurrentPosition(); // just here to keep intelliJ quiet
 
