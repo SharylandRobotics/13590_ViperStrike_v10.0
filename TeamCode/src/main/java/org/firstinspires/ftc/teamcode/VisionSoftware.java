@@ -124,7 +124,7 @@ public class VisionSoftware extends RobotHardware{
                         .setCameraResolution(new Size(1920, 1080))
                         .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
                         .build();
-
+                portalColor.setProcessorEnabled(secondaryColorProcessor, false);
             } else {
                 portalColor = new VisionPortal.Builder()
                     .addProcessor(primaryColorProcessor)
@@ -134,7 +134,6 @@ public class VisionSoftware extends RobotHardware{
                     .build();
             }
             portalColor.setProcessorEnabled(primaryColorProcessor, false);
-            portalColor.setProcessorEnabled(secondaryColorProcessor, false);
             myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
             myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
         }
@@ -211,7 +210,7 @@ public class VisionSoftware extends RobotHardware{
         public VisionPortal portalAPT;
 
         public boolean targetFound = false;
-        private AprilTagDetection detectedTag = null;
+        public AprilTagDetection detectedTag = null;
 
         public Position cameraPosition = new Position(DistanceUnit.INCH,
                 0,0,0,0);
@@ -238,6 +237,8 @@ public class VisionSoftware extends RobotHardware{
                     .setCameraResolution(new Size(1920, 1080))
                     .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
                     .build();
+
+
 
             portalAPT.setProcessorEnabled(APTprocessor, false);
         }
@@ -268,7 +269,7 @@ public class VisionSoftware extends RobotHardware{
 
             // Telemetry what is found
             if (targetFound) {
-                myOpMode.telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
+                myOpMode.telemetry.addData("\n>","Target Found!!!\n");
                 myOpMode.telemetry.addData("Found", "ID %d (%s)", detectedTag.id, detectedTag.metadata.name);
                 myOpMode.telemetry.addData("Range",  "%5.1f inches", detectedTag.ftcPose.range);
                 myOpMode.telemetry.addData("Bearing","%3.0f degrees", detectedTag.ftcPose.bearing);
