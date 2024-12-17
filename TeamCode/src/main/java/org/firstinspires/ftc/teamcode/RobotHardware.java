@@ -92,9 +92,9 @@ public class RobotHardware {
 
     // Declare Extender Encoder Variables
     public final double EXTENSION_COUNTS_PER_REV =
-        28 // counts for bare motor revolution
-            * ( (((1+ (46.0/17.0))) * (1+ (46.0/11.0))) ) // times internal gearing (aka gear ratio formula)
-            * (1.0) // external gearing, 60 to 60 teeth
+        28 // counts for bare motor revolution (aka int number at the end of the *encoder resolution formula*
+            * (   (1+(46./17.))   ) // times internal gearing (aka *gear ratio formula*)
+            * (100. / 20.) // external gearing, 20 (drive) to 100 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
 
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
@@ -431,33 +431,5 @@ public class RobotHardware {
         }
         if (elbowDegTRUE == 0){targetClawPos = 0.75;} // pass submersible clearance
         clawAxial.setPosition(targetClawPos);
-    }
-
-    private boolean rampUp = true;
-    private double position = 0.5;
-    private final double INCREMENT = 0.01;
-
-    public void scanConTower(){
-        // slew the servo, according to the rampUp (direction) variable.
-        if (rampUp) {
-            // Keep stepping up until we hit the max value.
-            position += INCREMENT;
-            if (position >= 1.0 ) {
-                position = 1.0;
-                rampUp = !rampUp;   // Switch ramp direction
-            }
-        }
-        else {
-            // Keep stepping down until we hit the min value.
-            position -= INCREMENT;
-            if (position <= 0.0 ) {
-                position = 0.0;
-                rampUp = !rampUp;  // Switch ramp direction
-            }
-        }
-
-        // Display the current value
-        myOpMode.telemetry.addData("Servo Position", "%5.2f", position);
-        //conTower.setPosition(position);
     }
 }

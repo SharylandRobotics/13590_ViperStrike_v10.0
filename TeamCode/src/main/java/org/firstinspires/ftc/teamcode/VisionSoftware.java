@@ -228,7 +228,7 @@ public class VisionSoftware extends RobotHardware{
                     .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                     .setTagLibrary(AprilTagGameDatabase.getIntoTheDeepTagLibrary())
                     .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-                    //.setLensIntrinsics()
+                    .setLensIntrinsics(1130.80338323, 1130.80338323, 1280.21111078, 368.731101737)
                     .setCameraPose(cameraPosition, cameraOrientation)
                     .build();
 

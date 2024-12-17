@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
-@Autonomous(name= "Bucket Side Auto", group ="Robot")
+@Autonomous(name= "BUCKET Side Auto", group ="Robot")
 public class BucketSideAuto extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
