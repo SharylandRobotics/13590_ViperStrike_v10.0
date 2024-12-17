@@ -96,9 +96,77 @@ public class BucketSideAuto extends LinearOpMode {
 
         sleep(200);
 
-        robot.driveFieldCentric(0,1.0,0);
+        robot.driveFieldCentric(0,-1.0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.5) {
+        while (opModeIsActive() && runtime.seconds() < 0.4) {
+            telemetry.addData("STRAFING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+
+        sleep(200);
+
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+
+        if (opModeIsActive() && robot.heading !=0) {
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
+        }
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+        while (opModeIsActive() && robot.heading != 0){
+            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/10 ) * 10;
+            if (heading == 0) { // go 20 under your target
+                robot.driveFieldCentric(0,0,0);
+                telemetry.addData("AT 180 DEG", "");
+                break;
+            }
+            telemetry.addData("HEADING:", heading);
+            telemetry.update();
+        }
+
+        sleep(1000);
+
+        robot.driveFieldCentric(-1.0,0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
+            telemetry.addData("DRIVING BACK", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+
+        if (opModeIsActive() && robot.heading !=0) {
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
+        }
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+        while (opModeIsActive() && robot.heading != 0){
+            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/10) * 10;
+            if (heading == 0) { // go 20 under your target
+                robot.driveFieldCentric(0,0,0);
+                telemetry.addData("AT 180 DEG", "");
+                break;
+            }
+            telemetry.addData("HEADING:", heading);
+            telemetry.update();
+        }
+
+        sleep(200);
+
+        robot.driveFieldCentric(1.0,0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
+            telemetry.addData("DRIVING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_COLLAPSED));
+        sleep(200);
+
+        // strafe to sub zone
+
+        robot.driveFieldCentric(0,-1.0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.4) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -126,6 +194,52 @@ public class BucketSideAuto extends LinearOpMode {
         }
 
         sleep(5000);
+
+        robot.driveFieldCentric(-1.0,0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
+            telemetry.addData("DRIVING BACK", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+
+        if (opModeIsActive() && robot.heading !=0) {
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
+        }
+        robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+        while (opModeIsActive() && robot.heading != 0){
+            heading = Math.round(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/10) * 10;
+            if (heading == 0) { // go 20 under your target
+                robot.driveFieldCentric(0,0,0);
+                telemetry.addData("AT 180 DEG", "");
+                break;
+            }
+            telemetry.addData("HEADING:", heading);
+            telemetry.update();
+        }
+
+        sleep(200);
+
+        robot.driveFieldCentric(1.0,0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
+            telemetry.addData("DRIVING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_COLLAPSED));
+
+        sleep(200);
+
+        robot.driveFieldCentric(0,1.0,0);
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() < 0.8) {
+            telemetry.addData("DRIVING", "...");
+            telemetry.update();
+        }
+        robot.driveFieldCentric(0,0,0);
 
         telemetry.addData("DONE","!!");
     }

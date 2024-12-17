@@ -49,6 +49,7 @@ public class VisionTest extends LinearOpMode {
         robot.init();
         colorDetector.visionInit("BLUE", false, -0.5, 0.5, 0.5, -0.5);
         // WARNING:  To be able to view the stream preview on the Driver Station, this code runs in INIT mode.
+        colorDetector.portalColor.setProcessorEnabled(colorDetector.primaryColorProcessor, true);
         while (opModeInInit())
         {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // set orientation

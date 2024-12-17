@@ -6,7 +6,14 @@ import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
@@ -33,7 +40,7 @@ public class VisionSoftware extends RobotHardware{
         public List<ColorBlobLocatorProcessor.Blob> primaryBlobList;
         public List<ColorBlobLocatorProcessor.Blob> secondaryBlobList;
 
-        public VisionPortal portal;
+        public VisionPortal portalColor;
 
         /**
          *
@@ -111,7 +118,7 @@ public class VisionSoftware extends RobotHardware{
 
 
             if (doublePortal) {
-                 portal = new VisionPortal.Builder()
+                 portalColor = new VisionPortal.Builder()
                         .addProcessors(primaryColorProcessor, secondaryColorProcessor)
                         .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                         .setCameraResolution(new Size(1920, 1080))
@@ -119,13 +126,15 @@ public class VisionSoftware extends RobotHardware{
                         .build();
 
             } else {
-                portal = new VisionPortal.Builder()
+                portalColor = new VisionPortal.Builder()
                     .addProcessor(primaryColorProcessor)
                     .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                     .setCameraResolution(new Size(1920, 1080))
                     .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
                     .build();
             }
+            portalColor.setProcessorEnabled(primaryColorProcessor, false);
+            portalColor.setProcessorEnabled(secondaryColorProcessor, false);
             myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
             myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
         }
@@ -198,6 +207,92 @@ public class VisionSoftware extends RobotHardware{
     public static class aptDetector extends VisionSoftware{
         public aptDetector(LinearOpMode opmode) {super(opmode);}
 
+        public AprilTagProcessor APTprocessor;
+        public VisionPortal portalAPT;
+
+        public boolean targetFound = false;
+        private AprilTagDetection detectedTag = null;
+
+        public Position cameraPosition = new Position(DistanceUnit.INCH,
+                0,0,0,0);
+        public YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
+                0, -90, 0,0);
+        public void visionInit(){
+            /* set up processor; only one camera will use the APT detector, also there is no need to detect different
+                types of APT like in the colorDetector. (what im saying is there is no need for the switch cases like before)
+             */
+            APTprocessor = new AprilTagProcessor.Builder()
+                    .setDrawAxes(false)
+                    .setDrawCubeProjection(false)
+                    .setDrawTagOutline(true)
+                    .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                    .setTagLibrary(AprilTagGameDatabase.getIntoTheDeepTagLibrary())
+                    .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+                    //.setLensIntrinsics()
+                    .setCameraPose(cameraPosition, cameraOrientation)
+                    .build();
+
+            portalAPT = new VisionPortal.Builder()
+                    .addProcessor(APTprocessor)
+                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                    .setCameraResolution(new Size(1920, 1080))
+                    .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .build();
+
+            portalAPT.setProcessorEnabled(APTprocessor, false);
+        }
+
+        @SuppressLint("DefaultLocale")
+        public void activeAPTscanner(int DESIRED_TAG_ID) {
+            List<AprilTagDetection> currentDetections = APTprocessor.getDetections();
+            if (!currentDetections.isEmpty()) { // Check if you see an APT
+                for (AprilTagDetection detection : currentDetections) {
+                    // Look to see if we have size info on this tag.
+                    if (detection.metadata != null) {
+                        //  Check to see if we want to track towards this tag.
+                        if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
+                            // Yes, we want to use this tag.
+                            targetFound = true;
+                            detectedTag = detection;
+                            break;  // don't look any further.
+                        } else {
+                            // This tag is in the library, but we do not want to track it right now.
+                            myOpMode.telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                        }
+                    } else {
+                        // This tag is NOT in the library, so we don't have enough information to track to it.
+                        myOpMode.telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
+                    }
+                }
+            } else { targetFound = false; }// Communicate that there is no APT in view; the previously detected APT will stay in detectedTag
+
+            // Telemetry what is found
+            if (targetFound) {
+                myOpMode.telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
+                myOpMode.telemetry.addData("Found", "ID %d (%s)", detectedTag.id, detectedTag.metadata.name);
+                myOpMode.telemetry.addData("Range",  "%5.1f inches", detectedTag.ftcPose.range);
+                myOpMode.telemetry.addData("Bearing","%3.0f degrees", detectedTag.ftcPose.bearing);
+                myOpMode.telemetry.addData("Yaw","%3.0f degrees", detectedTag.ftcPose.yaw);
+                // Display the coordinate position for the APT detected
+                myOpMode.telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detectedTag.ftcPose.x, detectedTag.ftcPose.y, detectedTag.ftcPose.z));
+            } else {
+                myOpMode.telemetry.addData("\n>","No Target Found...\n");
+                //scanConTower();
+            }
+            // the following telemetry messages are for troubleshooting...
+            // Display the PRY (pitch, roll, yaw) for the robot
+            if (detectedTag != null) {
+                myOpMode.telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
+                        detectedTag.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
+                        detectedTag.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
+                        detectedTag.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+                // Display the coordinate position for the robot
+                myOpMode.telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
+                        detectedTag.robotPose.getPosition().x,
+                        detectedTag.robotPose.getPosition().y,
+                        detectedTag.robotPose.getPosition().z));
+            }
+        }
 
     }
 }

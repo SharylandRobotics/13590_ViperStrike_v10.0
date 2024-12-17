@@ -60,6 +60,18 @@ public class RobotHardware {
     public double YAW_MID;
     public double YAW_LEFT;
     public double YAW_RIGHT;
+    /**
+     * Angle 0 for CON TOWER
+     */
+    public double TOWER_MIN;
+    /**
+     * Angle 320 for CON TOWER
+     */
+    public double TOWER_MAx;
+    /**
+     * Angle 160 for CON TOWER
+     */
+    public double TOWER_MID;
 
     // End of Rudimentary inits...
 
@@ -175,6 +187,10 @@ public class RobotHardware {
         YAW_LEFT = 1.0;
         YAW_MID = 0.5;
         YAW_RIGHT = 0.0;
+
+        TOWER_MIN = 0.0;
+        TOWER_MID = 0.5;
+        TOWER_MAx = 1.0;
 
         /*
             Playable positions, initialize them if you feel the need to do so in the future:
@@ -339,27 +355,6 @@ public class RobotHardware {
             return 0.0;
         }
     }
-/*
-        while (heading != goal && myOpMode.opModeIsActive()) {
-            heading = Math.round(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/2.5 ) * 2.5;
-            if (heading == goal) {
-                myOpMode.telemetry.addData("MET GOAL", "...");
-                break;
-            }
-            if (heading == 67.5) { // go 22.5 under your target
-                myOpMode.telemetry.addData("AT 90 DEG", "");
-                break;
-            }
-            myOpMode.telemetry.addData("HEADING:", heading);
-            myOpMode.telemetry.update();
-
-        }
-        driveFieldCentric(0,0,0);
-    }
-
- */
-
-
 
     public void setClawPosition(statesOfBeing pinch, statesOfBeing yaw, statesOfBeing axial) {
 
@@ -436,5 +431,33 @@ public class RobotHardware {
         }
         if (elbowDegTRUE == 0){targetClawPos = 0.75;} // pass submersible clearance
         clawAxial.setPosition(targetClawPos);
+    }
+
+    private boolean rampUp = true;
+    private double position = 0.5;
+    private final double INCREMENT = 0.01;
+
+    public void scanConTower(){
+        // slew the servo, according to the rampUp (direction) variable.
+        if (rampUp) {
+            // Keep stepping up until we hit the max value.
+            position += INCREMENT;
+            if (position >= 1.0 ) {
+                position = 1.0;
+                rampUp = !rampUp;   // Switch ramp direction
+            }
+        }
+        else {
+            // Keep stepping down until we hit the min value.
+            position -= INCREMENT;
+            if (position <= 0.0 ) {
+                position = 0.0;
+                rampUp = !rampUp;  // Switch ramp direction
+            }
+        }
+
+        // Display the current value
+        myOpMode.telemetry.addData("Servo Position", "%5.2f", position);
+        //conTower.setPosition(position);
     }
 }
