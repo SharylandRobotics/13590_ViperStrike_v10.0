@@ -109,7 +109,7 @@ public class BucketSideAuto extends LinearOpMode {
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
 
         if (opModeIsActive() && robot.heading !=0) {
-            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0, true)); // ADJUST ANGLE
         }
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
@@ -136,7 +136,7 @@ public class BucketSideAuto extends LinearOpMode {
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
 
         if (opModeIsActive() && robot.heading !=0) {
-            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0, true)); // ADJUST ANGLE
         }
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
@@ -179,7 +179,7 @@ public class BucketSideAuto extends LinearOpMode {
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
 
         if (opModeIsActive() && robot.heading !=0) {
-            robot.driveFieldCentric(0, 0, robot.turnDirection(0) ); // ADJUST ANGLE
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0, true) ); // ADJUST ANGLE
         }
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){
@@ -206,7 +206,7 @@ public class BucketSideAuto extends LinearOpMode {
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
 
         if (opModeIsActive() && robot.heading !=0) {
-            robot.driveFieldCentric(0, 0, robot.turnDirection(0)); // ADJUST ANGLE
+            robot.driveFieldCentric(0, 0, robot.turnDirection(0, true)); // ADJUST ANGLE
         }
         robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
         while (opModeIsActive() && robot.heading != 0){

@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
 
-@Autonomous(name = "PlayBack Auto", group = "Robot")
-public class PlaybackAuto extends LinearOpMode {
+@Autonomous(name = "PlayBack Auto ALPHA", group = "Robot")
+public class PlaybackAutoALPHA extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
     VisionSoftware.aptDetector aptDetector = new VisionSoftware.aptDetector(this);

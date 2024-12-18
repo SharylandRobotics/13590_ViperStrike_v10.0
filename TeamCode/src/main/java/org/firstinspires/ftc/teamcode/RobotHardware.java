@@ -254,14 +254,16 @@ public class RobotHardware {
         imu.resetYaw();
 
         // Wait for the game to start (Display Gyro value while waiting)
-        while (myOpMode.opModeInInit()) {
+        /*while (myOpMode.opModeInInit()) {
             myOpMode.telemetry.addData("Status", "Hardware Initialized");
             myOpMode.telemetry.addData("Wheels starting at", "%7d :%7d :%7d :%7d",
                     leftFrontDrive.getCurrentPosition(), leftBackDrive.getCurrentPosition(),
                     rightFrontDrive.getCurrentPosition(), rightBackDrive.getCurrentPosition());
             myOpMode.telemetry.addData("Starting Elbow Pos:", elbowDrive.getCurrentPosition());
             myOpMode.telemetry.update();
-        }
+
+         */
+        //}
     }
 
     /**
@@ -340,8 +342,8 @@ public class RobotHardware {
         }
     }
 
-    public double turnDirection(double angle) { // put the ACTUAL angle you want to turn to here. Use this func to set the turn power
-        heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+    public double turnDirection(double angle, boolean returnPower) { // put the ACTUAL angle you want to turn to here. Use this func to set the turn power
+        heading = imu.getRobotYawPitchRollAngles().getYaw();
         double goal = angle - heading;
         if (goal > 180) {
             goal -= 360;
@@ -349,6 +351,8 @@ public class RobotHardware {
         if (goal < -180) {
             goal += 360;
         }
+
+        if (!returnPower) { return goal;}
         if (heading != goal) {
             return (goal / Math.abs(goal) * 0.4);
         } else {
