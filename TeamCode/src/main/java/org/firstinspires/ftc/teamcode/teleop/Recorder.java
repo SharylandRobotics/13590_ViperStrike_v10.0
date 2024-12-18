@@ -105,6 +105,7 @@ public class Recorder extends LinearOpMode {
 
 
             telemetry.addData("Action: ", actionCounter);
+            telemetry.update();
 
             try {
                 writer.write(drive +", " + strafe +", " + turn+", " + armPos+", " + clawPos+", "+ axialPos+", " + (APTempty ? "-1, " : APTobject.ftcPose.range+ ", "));

@@ -22,6 +22,7 @@ public class BazaarTeleOp extends LinearOpMode{
         // timers
         int leftBumperTimer = 0;
         int timesRan = 0;
+        int timesCounted = 0;
         // sounds
         int coloredSoundID = hardwareMap.appContext.getResources().getIdentifier("colored", "raw", hardwareMap.appContext.getPackageName());
         int yellowSoundID   = hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", hardwareMap.appContext.getPackageName());
@@ -44,6 +45,8 @@ public class BazaarTeleOp extends LinearOpMode{
         boolean calibrateParallel = false;
         boolean calibratePerpendicular = false;
 
+        double prevElbowPos;
+
         robot.init();
         double NEWelbowPos = robot.elbowDrive.getCurrentPosition(); // just here to keep intelliJ quiet
 
@@ -62,6 +65,8 @@ public class BazaarTeleOp extends LinearOpMode{
         runtime.reset();
 
         while (opModeIsActive()) {
+            prevElbowPos = robot.elbowDrive.getCurrentPosition();
+
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1;
             turn = gamepad1.right_stick_x;
@@ -190,7 +195,17 @@ public class BazaarTeleOp extends LinearOpMode{
                     gamepad2.rumble(0.5, 0.5, 200);
                 case 135:
                     gamepad2.rumble(0.5, 0.5, 200);
+            }
+            // check for elbow stalls
+            if (prevElbowPos == robot.elbowDrive.getCurrentPosition() && robot.elbowDrive.getPower() >= 1.0){
+                if (Math.abs(robot.elbowDrive.getCurrentPosition() - robot.elbowDrive.getTargetPosition()) > 4) {
+                    timesCounted++;
+                    if (timesCounted >= 10) {
+                        SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, coloredSoundID);
+                    }
                 }
+            }
+
             leftBumperTimer++;
             sleep(50);
         }
