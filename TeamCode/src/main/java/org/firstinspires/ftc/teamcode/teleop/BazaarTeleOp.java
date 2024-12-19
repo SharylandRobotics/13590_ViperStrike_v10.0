@@ -28,7 +28,7 @@ public class BazaarTeleOp extends LinearOpMode{
         int yellowSoundID   = hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", hardwareMap.appContext.getPackageName());
         // preload sounds
         if (coloredSoundID != 0){ coloredFound = SoundPlayer.getInstance().preload(hardwareMap.appContext, coloredSoundID); }
-        if (coloredSoundID != 0){ yellowFound = SoundPlayer.getInstance().preload(hardwareMap.appContext, yellowSoundID); }
+        if (yellowSoundID != 0){ yellowFound = SoundPlayer.getInstance().preload(hardwareMap.appContext, yellowSoundID); }
         telemetry.addData("gold resource",   coloredFound ?   "Found" : "NOT found\n Add colored.wav to /src/main/res/raw" );
         telemetry.addData("silver resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw" );
         SoundPlayer.getInstance().setMasterVolume(2);
@@ -149,11 +149,11 @@ public class BazaarTeleOp extends LinearOpMode{
             }
 
             // MISC/ACTION code
-            if (gamepad2.left_trigger != 0) {
-                elbowFactor = gamepad2.left_trigger * -robot.ELBOW_FUDGE_FACTOR;
-            } else if (gamepad2.right_trigger != 0) {
-                elbowFactor = gamepad2.right_trigger * robot.ELBOW_FUDGE_FACTOR;
-            } else { elbowFactor = 0;}
+            if (gamepad2.left_trigger > 0.5) {
+                elbowFactor = Math.pow(5*gamepad2.left_trigger, 3) * -robot.ELBOW_FUDGE_FACTOR;
+            } else if (gamepad2.right_trigger > 0.5) {
+                elbowFactor = Math.pow(5*gamepad2.right_trigger, 3) * robot.ELBOW_FUDGE_FACTOR;
+            } else { elbowFactor = robot.ELBOW_FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));}
             robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
             // drive extension
             // ensure you don't hit the extender limit!!

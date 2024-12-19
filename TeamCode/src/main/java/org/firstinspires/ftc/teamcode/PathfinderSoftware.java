@@ -1,32 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import org.opencv.core.Mat;
-
-import java.util.Objects;
 
 public class PathfinderSoftware extends RobotHardware{
     public PathfinderSoftware(LinearOpMode opmode) {super(opmode);}
 
     public static class pathFinder extends PathfinderSoftware{
-
         public pathFinder(LinearOpMode opmode) {
             super(opmode);
         }
-        public double solveTurn(double x1, double x2, double y1, double y2, double targetHeading, double CurrentHeading) {
+        public double solveTurn(double x1, double x2, double y1, double y2, double targetHeading) {
             // pythagorean theorem
             double distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-            double goal = targetHeading - CurrentHeading;
-            if (goal > 180) {
-                goal -= 360;
-            }
-            if (goal < -180) {
-                goal += 360;
-            }
+            double deltaHeading = turnDirection(targetHeading, false);
 
-
-
-            return Math.abs(distance) / goal;
+            return Math.abs(distance)/deltaHeading;
         }
 
         public double solveDrive(double y1, double y2) {
@@ -50,8 +38,8 @@ public class PathfinderSoftware extends RobotHardware{
          * @param y2 target y position
          * @param targetHeading target heading
          */
-        public void pathFind(double x1, double x2, double y1, double y2, double targetHeading, double currentHeading){
-            driveFieldCentric(y2-y1,x2-x1, solveTurn(x1, x2, y1, y2, targetHeading, currentHeading));
+        public void pathFind(double x1, double x2, double y1, double y2, double targetHeading){
+            driveFieldCentric(y2-y1,x2-x1, solveTurn(x1, x2, y1, y2, targetHeading));
         }
 
         /**

@@ -148,6 +148,7 @@ public class RobotHardware {
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
         myOpMode = opmode;
+        imu = myOpMode.hardwareMap.get(IMU.class, "imu");
     }
 
     /**

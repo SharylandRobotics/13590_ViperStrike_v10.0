@@ -6,6 +6,7 @@ import java.io.IOException;
 //https://www.youtube.com/watch?v=OFX96ONRU18
 
 import android.os.Environment;
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,15 +23,26 @@ public class RecorderXY extends LinearOpMode {
 
     VisionSoftware.aptDetector aptDetector = new VisionSoftware.aptDetector(this);
     ElapsedTime runtime = new ElapsedTime();
-    String logFilePath = String.format("%s/FIRST/recordlog.txt", Environment.getExternalStorageDirectory().getAbsolutePath());
+    String logFilePath = String.format("%s/FIRST/xyrecordlog.txt", Environment.getExternalStorageDirectory().getAbsolutePath());
     FileWriter writer = new FileWriter(logFilePath);
 
     public RecorderXY() throws IOException {
     }
 
+    public void record(double x, double y, double heading, double armPos, double clawPos, double axialPos, boolean APTempty, AprilTagDetection APTobject){
+        try {
+            writer.write(x + ", " + y + ", " + heading + ", " + armPos + ", " + clawPos + ", " + axialPos + ", " + (APTempty ? "-1, " : APTobject.ftcPose.bearing + ", "));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void runOpMode() {
+        boolean coloredFound =false;
+        boolean yellowFound = false;
+        boolean notificationFound = false;
+
         double drive;
         double strafe;
         double turn;
@@ -45,11 +57,28 @@ public class RecorderXY extends LinearOpMode {
         double heading = 0;
 
         int actionCounter = 0;
+        int burstCounter = 0;
+        int permaCounter = 0;
 
         AprilTagDetection APTobject;
         double robotPosX = 0;
         double robotPosY = 0;
         boolean APTempty;
+
+        boolean burstMode = false;
+        boolean permaMode = false;
+
+        int coloredSoundID = hardwareMap.appContext.getResources().getIdentifier("colored", "raw", hardwareMap.appContext.getPackageName());
+        int yellowSoundID   = hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", hardwareMap.appContext.getPackageName());
+        int notificationID = hardwareMap.appContext.getResources().getIdentifier("notification", "raw", hardwareMap.appContext.getPackageName());
+        // preload sounds
+        if (notificationID != 0){ notificationFound = SoundPlayer.getInstance().preload(hardwareMap.appContext, notificationID);}
+        if (coloredSoundID != 0){ coloredFound = SoundPlayer.getInstance().preload(hardwareMap.appContext, coloredSoundID); }
+        if (yellowSoundID != 0){ yellowFound = SoundPlayer.getInstance().preload(hardwareMap.appContext, yellowSoundID); }
+        telemetry.addData("color resource",   coloredFound ?   "Found" : "NOT found\n Add colored.wav to /src/main/res/raw" );
+        telemetry.addData("yellow resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw" );
+        telemetry.addData("notification resource", notificationFound ? "Found" : "Not found\n Add notification.wav to /src/main/res/raw" );
+        SoundPlayer.getInstance().setMasterVolume(2);
 
         aptDetector.visionInit();
         robot.init();
@@ -102,7 +131,11 @@ public class RecorderXY extends LinearOpMode {
 
             if (gamepad1.dpad_down) {
                 calibrateParallel = !calibrateParallel; calibratePerpendicular = false;
-            } else if (gamepad1.dpad_right) { calibratePerpendicular = !calibratePerpendicular; calibrateParallel = false;}
+            } else if (gamepad1.dpad_right) {
+                calibratePerpendicular = !calibratePerpendicular; calibrateParallel = false;
+            } else if (gamepad1.a) {
+                calibrateParallel = false; calibratePerpendicular = false; robot.clawAxial.setPosition(0.5);
+            }
 
             if (calibrateParallel) { // actually calibrate the claw
                 robot.calibrateClaw(robot.ELBOW_PARALLEL);
@@ -116,12 +149,52 @@ public class RecorderXY extends LinearOpMode {
             telemetry.addData("Action: ", actionCounter);
             telemetry.update();
 
-            try {
-                writer.write( robotPosX+", " + robotPosY +", " + heading+", " + armPos+", " + clawPos+", "+ axialPos+", " + (APTempty ? "-1, " : APTobject.ftcPose.bearing+ ", "));
-                actionCounter++;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if (gamepad2.right_bumper) {
+                burstMode = !burstMode;
+                permaMode = false;
+            } else if (gamepad2.dpad_down) {
+                permaMode = !permaMode;
+                burstMode = false;
             }
+
+            if (burstMode) {
+                permaMode = false;
+                burstCounter++;
+                if (burstCounter == 400){
+                    record(robotPosX, robotPosY, heading, armPos, clawPos, axialPos, APTempty, APTobject);
+                    actionCounter++;
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, notificationID);
+                } else if (burstCounter == 600) {
+                    record(robotPosX, robotPosY, heading, armPos, clawPos, axialPos, APTempty, APTobject);
+                    actionCounter++;
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, notificationID);
+                } else if (burstCounter == 800) {
+                    record(robotPosX, robotPosY, heading, armPos, clawPos, axialPos, APTempty, APTobject);
+                    actionCounter++;
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, notificationID);
+                } else if (burstCounter == 1000) {
+                    record(robotPosX, robotPosY, heading, armPos, clawPos, axialPos, APTempty, APTobject);
+                    actionCounter++;
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, notificationID);
+                } else if (burstCounter == 1200) {
+                    record(robotPosX, robotPosY, heading, armPos, clawPos, axialPos, APTempty, APTobject);
+                    actionCounter++;
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, notificationID);
+                }else {
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, yellowSoundID);
+                }
+            } else if (permaMode) {
+                record(robotPosX, robotPosY, heading, armPos, clawPos, axialPos, APTempty, APTobject);
+                actionCounter++;
+                burstMode = false;
+            } else if (gamepad2.left_bumper) {
+                record(robotPosX, robotPosY, heading, armPos, clawPos, axialPos, APTempty, APTobject);
+                actionCounter++;
+                burstMode = false;
+                permaMode = false;
+            }
+
+
 
             sleep(50);
         }

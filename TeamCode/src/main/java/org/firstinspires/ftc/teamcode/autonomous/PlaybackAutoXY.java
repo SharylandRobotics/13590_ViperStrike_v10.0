@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
@@ -54,7 +52,7 @@ public class PlaybackAutoXY extends LinearOpMode {
             telemetry.addData(String.valueOf(i), "-th action");
             robot.heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
             // go towards target
-            ptFinder.pathFind(posX1, posX2, posY1, posY2, dataTable[(i*indexSkip)+2], robot.heading);
+            ptFinder.pathFind(posX1, posX2, posY1, posY2, dataTable[(i*indexSkip)+2]);
 
             // drive until you reach your target ...
             while (opModeIsActive() && !ptFinder.atTargetPos(posX1, posX2, posY1, posY2)) {
