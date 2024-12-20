@@ -158,7 +158,8 @@ public class BazaarTeleOp extends LinearOpMode{
             // drive extension
             // ensure you don't hit the extender limit!!
             extendFactor = -gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
-            if (robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT && extendFactor >= 0){extendFactor = 0;}
+            if ((robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT) && extendFactor >= 0) {extendFactor = 0;}
+            if ((robot.extensionDrive.getCurrentPosition() <= 0) && extendFactor <= 0) {extendFactor = 0;}
             robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extendFactor);
             // drive arm
             if (gamepad2.left_bumper) {

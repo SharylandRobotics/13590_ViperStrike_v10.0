@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.VisionSoftware;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "RecorderXY/debug", group = "Robot")
-public class RecorderXY extends LinearOpMode {
+public class   RecorderXY extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
 

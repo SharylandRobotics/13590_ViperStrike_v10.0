@@ -99,7 +99,7 @@ public class RobotHardware {
 
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
             // by the distance traveled
-    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (26 - 1)); // the other number is how many revs
+    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (26 - 0.5)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
@@ -148,7 +148,6 @@ public class RobotHardware {
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
         myOpMode = opmode;
-        imu = myOpMode.hardwareMap.get(IMU.class, "imu");
     }
 
     /**
@@ -317,6 +316,31 @@ public class RobotHardware {
         setDrivePower(leftFrontPower, leftBackPower, rightFrontPower, rightBackPower);
     }
 
+    public void driveRobotCentric(double drive, double strafe, double turn){
+        double max;
+
+        // Combine drive and Turn for blended motion.
+        double leftFPower = drive + strafe + turn;
+        double leftBPower = drive - strafe + turn;
+        double rightFPower = drive - strafe -turn;
+        double rightBPower = drive + strafe -turn;
+
+        // Scale the values so neither exceed +/- 1.0
+        max = Math.max(Math.abs(leftFPower) , Math.abs(leftBPower));
+        max = Math.max(max, Math.abs(rightFPower));
+        max= Math.max(max, Math.abs(rightBPower));
+
+        if (max > 1.0){
+            leftFPower /= max;
+            leftBPower /= max;
+            rightFPower /= max;
+            rightBPower /= max;
+        }
+
+        //Use existing function to drive both wheels.
+        setDrivePower (leftFPower, leftBPower, rightFPower, rightBPower);
+    }
+
     /**
      * Pass the requested wheel motor power to the appropriate hardware drive motors.
      *
@@ -404,6 +428,7 @@ public class RobotHardware {
                                                     // relative to the elbow's position
         // returns the current angle without the offset
         double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / COUNTS_PER_DEGREE));
+        double extensionRevs = Math.round((extensionDrive.getCurrentPosition() / EXTENSION_COUNTS_PER_REV) / 0.1) *0.1;
         double targetClawPos; // used to avoid changing the claw position too many times in here
 
         if (elbowDegTRUE > ELBOW_TRUE_OFFSET) { // sets function to normal/forwards facing FIXME
@@ -429,7 +454,7 @@ public class RobotHardware {
             if (elbowDegTRUE < 267.00 && elbowDegTRUE > 210.00) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
                 targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
                 elbowDirection = enable; // elbow is facing forward
-            } else if (elbowDegTRUE > 22.00 && elbowDegTRUE < 80.00){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+            } else if ((elbowDegTRUE > 22.00 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
                 targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
                 elbowDirection = disable; // elbow is facing backwards
             }

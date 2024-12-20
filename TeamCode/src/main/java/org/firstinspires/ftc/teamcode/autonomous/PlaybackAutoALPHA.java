@@ -22,7 +22,8 @@ public class PlaybackAutoALPHA extends LinearOpMode {
     @Override
     public void runOpMode() {
         double heading;
-        double secondsToScan = 0;
+        double rangeToAPT;
+        double ancRangeToAPT;
         // Initialize all the hardware using the hardware class.
         robot.init();
         aptDetector.visionInit();
@@ -40,17 +41,19 @@ public class PlaybackAutoALPHA extends LinearOpMode {
             robot.clawPinch.setPosition(dataTable[(i * 7) + 4]);
             robot.clawAxial.setPosition(dataTable[(i * 7) + 5]);
             aptDetector.activeAPTscanner(-1);
+            rangeToAPT = aptDetector.detectedTag.ftcPose.range;
+            ancRangeToAPT = dataTable[(i * 7) + 6];
             if (aptDetector.targetFound) {
-                if (Math.round(aptDetector.detectedTag.ftcPose.range) == Math.round(dataTable[(i * 7) + 6])) {
+                if (Math.round(rangeToAPT / 0.1) *0.1  == Math.round(ancRangeToAPT /0.1) *0.1) {
                     telemetry.addData("On Track", "...");
                 } else {
-                    telemetry.addData("Off Course", "!!!");
+                    telemetry.addData("Off Course", "!!!\n Off by: " + Math.abs(ancRangeToAPT-rangeToAPT));
                 }
             } else {
-                telemetry.addData("No April Tag detected", "...");
-
-
+                telemetry.addData("No April Tag detected", "...\n Range should be: " + ancRangeToAPT);
             }
+            telemetry.addData("Range to nearest APT:", rangeToAPT);
+            telemetry.addData("Recorded Range to nearest APT:", ancRangeToAPT);
             telemetry.update();
             sleep(50);
         }

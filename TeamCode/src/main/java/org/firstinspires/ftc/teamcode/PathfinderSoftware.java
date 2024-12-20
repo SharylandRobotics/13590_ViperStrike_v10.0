@@ -1,20 +1,26 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.Range;
 
 public class PathfinderSoftware extends RobotHardware{
     public PathfinderSoftware(LinearOpMode opmode) {super(opmode);}
 
-    public static class pathFinder extends PathfinderSoftware{
+    public class pathFinder extends PathfinderSoftware{
         public pathFinder(LinearOpMode opmode) {
             super(opmode);
         }
+
+        public void init() {
+            super.init();
+        }
+
         public double solveTurn(double x1, double x2, double y1, double y2, double targetHeading) {
             // pythagorean theorem
             double distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-            double deltaHeading = turnDirection(targetHeading, false);
+            double deltaHeading = turnDirection(Math.round(targetHeading), false);
 
-            return Math.abs(distance)/deltaHeading;
+            return Math.abs((distance)/deltaHeading)*0.0;
         }
 
         public double solveDrive(double y1, double y2) {
@@ -39,7 +45,13 @@ public class PathfinderSoftware extends RobotHardware{
          * @param targetHeading target heading
          */
         public void pathFind(double x1, double x2, double y1, double y2, double targetHeading){
-            driveFieldCentric(y2-y1,x2-x1, solveTurn(x1, x2, y1, y2, targetHeading));
+            double yDifference = y2-y1;
+            double xDifference = x2-x1;
+
+            yDifference = Range.clip(yDifference, -1, 1);
+            xDifference = Range.clip(xDifference, -1, 1);
+
+            driveFieldCentric(yDifference*0.1,xDifference*0.1, solveTurn(x1, x2, y1, y2, targetHeading));
         }
 
         /**

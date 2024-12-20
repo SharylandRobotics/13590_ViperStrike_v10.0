@@ -215,7 +215,7 @@ public class VisionSoftware extends RobotHardware{
         public Position cameraPosition = new Position(DistanceUnit.INCH,
                 0,0,0,0);
         public YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
-                0, -90, 0,0);
+                180, -90, 0,0);
         public void visionInit(){
             /* set up processor; only one camera will use the APT detector, also there is no need to detect different
                 types of APT like in the colorDetector. (what im saying is there is no need for the switch cases like before)
