@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.SortOrder;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -151,14 +152,15 @@ public class VisionSoftware extends RobotHardware{
                     filterBySetROI(topLeft, bottomRight, primaryBlobList);
 
                     ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, primaryBlobList);  // filter out very small blobs.
+                    ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, primaryBlobList); // have the largest blobs come first in the list
                     myOpMode.telemetry.addLine(" Area Density Aspect  Center");
 
                     // Display the size (area) and center location for each Blob.
                     for(ColorBlobLocatorProcessor.Blob b : primaryBlobList) // telemetry the blobs found
                     {
                         RotatedRect boxFit = b.getBoxFit();
-                        myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
-                                b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+                        myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)  %3.1f",
+                                b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y, boxFit.angle));
                     }
                     myOpMode.telemetry.update();
                     myOpMode.sleep(50);
@@ -174,15 +176,18 @@ public class VisionSoftware extends RobotHardware{
                     filterBySetROI(topLeft, bottomRight, secondaryBlobList);
 
                     ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, primaryBlobList);  // filter out very small blobs.
+                    ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, primaryBlobList); // have the largest blobs come first in the list
                     ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, secondaryBlobList);
+                    ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, secondaryBlobList); // have the largest blobs come first in the list
+
                     myOpMode.telemetry.addLine(" Primary Area, Density, Aspect,  Center, Angle");
 
                     // Display the size (area) and center location for each Blob.
                     for(ColorBlobLocatorProcessor.Blob b : primaryBlobList) // telemetry the blobs found
                     {
                         RotatedRect boxFit = b.getBoxFit();
-                        myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
-                                b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+                        myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d) %3.1f",
+                                b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y, boxFit.angle));
                         myOpMode.telemetry.addData("Angle", String.valueOf(boxFit.angle));
                     }
 
@@ -192,8 +197,8 @@ public class VisionSoftware extends RobotHardware{
                     for(ColorBlobLocatorProcessor.Blob b : secondaryBlobList) // telemetry the blobs found
                     {
                         RotatedRect boxFit = b.getBoxFit();
-                        myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
-                                b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+                        myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d) %3.1f",
+                                b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y, boxFit.angle));
                         myOpMode.telemetry.addData("Angle", String.valueOf(boxFit.angle));
                     }
                     myOpMode.telemetry.update();

@@ -14,8 +14,7 @@ public class PlaybackAutoXY extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
     VisionSoftware.aptDetector aptDetector = new VisionSoftware.aptDetector(this);
-
-
+    PathfinderSoftware.pathFinder ptFinder = new PathfinderSoftware.pathFinder(this);
 
     ElapsedTime runtime = new ElapsedTime();
 
@@ -32,7 +31,7 @@ public class PlaybackAutoXY extends LinearOpMode {
         double posY2;
         // Initialize all the hardware using the hardware class.
         aptDetector.visionInit();
-        robot.init();PathfinderSoftware ptfSoftware = new PathfinderSoftware(this);PathfinderSoftware.pathFinder ptFinder = ptfSoftware.new pathFinder(this);
+        robot.init();
         ptFinder.init();
         ptFinder.imu = this.hardwareMap.get(IMU.class, "imu");
         aptDetector.portalAPT.setProcessorEnabled(aptDetector.APTprocessor, true);

@@ -6,11 +6,14 @@ import com.qualcomm.robotcore.util.Range;
 public class PathfinderSoftware extends RobotHardware{
     public PathfinderSoftware(LinearOpMode opmode) {super(opmode);}
 
-    public class pathFinder extends PathfinderSoftware{
+    public static class pathFinder extends PathfinderSoftware{
         public pathFinder(LinearOpMode opmode) {
             super(opmode);
         }
 
+        /**
+         * CALL THIS FUNCTION OR ELSE IMU WILL TURN UP NULL!!!! (it breaks)
+         */
         public void init() {
             super.init();
         }
@@ -21,19 +24,6 @@ public class PathfinderSoftware extends RobotHardware{
             double deltaHeading = turnDirection(Math.round(targetHeading), false);
 
             return Math.abs((distance)/deltaHeading)*0.0;
-        }
-
-        public double solveDrive(double y1, double y2) {
-            return y1 / y2;
-        }
-
-        public double solveSlope(double x1, double x2, double y1, double y2){
-            double slope = (y2 - y1) / (x2 - x1);
-            return slope;
-        }
-
-        public double solveStrafe(double x1, double x2) {
-            return x1 / x2;
         }
 
         /**

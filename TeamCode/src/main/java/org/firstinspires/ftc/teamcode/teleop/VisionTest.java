@@ -1,24 +1,3 @@
-/*
- * Copyright (c) 2024 Phil Malone
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 package org.firstinspires.ftc.teamcode.teleop;
 
 import android.annotation.SuppressLint;
@@ -31,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
 import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
 
 @TeleOp(name = "Vision: test", group = "Robot")
 public class VisionTest extends LinearOpMode {
@@ -44,6 +24,8 @@ public class VisionTest extends LinearOpMode {
     @Override
     public void runOpMode()
     {
+        RotatedRect boxFit;
+        double relevantAngle;
         YawPitchRollAngles  yawAngles;
 
         robot.init();
@@ -74,10 +56,18 @@ public class VisionTest extends LinearOpMode {
 
             telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
             colorDetector.activeDetector(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
-            telemetry.update();
             if(!colorDetector.primaryBlobList.isEmpty() ) {
-                telemetry.addData("RUNG SPOTTED", "!!!!");
+                telemetry.addData("SAMPLE SPOTTED", "!!!!");
+                // find the RotatedRect class of the largest blob
+                boxFit = colorDetector.primaryBlobList.get(0).getBoxFit();
+                // save that blob's angle
+                relevantAngle = Math.round(boxFit.angle);
+                // assume claw straight ahead is 90 deg; cw is + deg, ccw is - deg; maximum is 300 total deg of freedom
+                // assume 0.0 is ccw and -60 deg, 1.0 is 240 deg cw
+                // slope for angle-to-position
+                robot.clawYaw.setPosition(0.0033333*relevantAngle+0.2);
             }
+            telemetry.update();
             sleep(50);
         }
 
