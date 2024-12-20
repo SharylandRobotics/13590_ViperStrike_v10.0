@@ -2,13 +2,20 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import android.annotation.SuppressLint;
 
+import android.graphics.Color;
+import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 
@@ -37,7 +44,7 @@ public class VisionTest extends LinearOpMode {
             yawAngles = robot.imu.getRobotYawPitchRollAngles(); // set orientation
             telemetry.addData("check preview, initialized", "... Camera Stream");
             telemetry.addData("current orientation", String.valueOf(yawAngles));
-            colorDetector.activeDetector(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
+            colorDetector.activeDetector(new Point(0,0), new Point(10000,10000), "PRIMARY"); // run camera
 
         }
 
@@ -52,12 +59,9 @@ public class VisionTest extends LinearOpMode {
                 The line should move along with the camera: if the robot rotates 30deg ccw, the line will move
                 30deg to the right projected(how it will display in 2d) onto the camera display.
             */
-            yawAngles = robot.imu.getRobotYawPitchRollAngles(); // Check out the waters
+            colorDetector.activeDetector(new Point(0,0), new Point(10000,10000), "PRIMARY"); // run camera
 
-            telemetry.addData("Yaw Angles:", String.valueOf(yawAngles)); // FIXME
-            colorDetector.activeDetector(new Point(480,810), new Point(1440,270), "PRIMARY"); // run camera
             if(!colorDetector.primaryBlobList.isEmpty() ) {
-                telemetry.addData("SAMPLE SPOTTED", "!!!!");
                 // find the RotatedRect class of the largest blob
                 boxFit = colorDetector.primaryBlobList.get(0).getBoxFit();
                 // save that blob's angle

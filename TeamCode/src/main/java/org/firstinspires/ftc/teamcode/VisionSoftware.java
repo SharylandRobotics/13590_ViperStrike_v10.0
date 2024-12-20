@@ -90,6 +90,8 @@ public class VisionSoftware extends RobotHardware{
             switch (color) { // CUTTING EDGE CODE!!!!
                 case "BLUE":
                     primaryColorProcessor = new ColorBlobLocatorProcessor.Builder()
+                            .setBoxFitColor(Color.rgb(255,0,255))
+                            .setContourColor(Color.rgb(0,255,100))
                             .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
                             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
                             .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
@@ -142,32 +144,28 @@ public class VisionSoftware extends RobotHardware{
         @SuppressLint("DefaultLocale")
         public void activeDetector(Point topLeft, Point bottomRight, String processors) {
 
-            switch (processors) {
-                case "PRIMARY":
+            if (processors == "PRIMARY") {
+                myOpMode.telemetry.addData("SCANNING", "...\n" +
+                        " \nPRIMARY CAMERA PORTAL ACTIVE\n");
+
+                primaryBlobList = primaryColorProcessor.getBlobs(); // set list to whatever the camera found
+
+                ColorBlobLocatorProcessor.Util.filterByArea(1000, 20000, primaryBlobList);  // filter out very small blobs.
+                ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, primaryBlobList); // have the largest blobs come first in the list
+                myOpMode.telemetry.addLine(" Area Density Aspect  Center");
+
+                // Display the size (area) and center location for each Blob.
+                for (ColorBlobLocatorProcessor.Blob b : primaryBlobList) // telemetry the blobs found
+                {
+                    RotatedRect boxFit = b.getBoxFit();
+                    myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)  %3.1f",
+                            b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y, boxFit.angle));
+                    myOpMode.telemetry.addData(String.valueOf(primaryBlobList.indexOf(b)), "");
+                }
+                myOpMode.telemetry.update();
+            } else if (processors == "BOTH") {
                     myOpMode.telemetry.addData("SCANNING", "...\n" +
-                            " --------------PRIMARY CAMERA PORTAL ACTIVE--------------");
-
-                    primaryBlobList = primaryColorProcessor.getBlobs(); // set list to whatever the camera found
-
-                    filterBySetROI(topLeft, bottomRight, primaryBlobList);
-
-                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, primaryBlobList);  // filter out very small blobs.
-                    ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, primaryBlobList); // have the largest blobs come first in the list
-                    myOpMode.telemetry.addLine(" Area Density Aspect  Center");
-
-                    // Display the size (area) and center location for each Blob.
-                    for(ColorBlobLocatorProcessor.Blob b : primaryBlobList) // telemetry the blobs found
-                    {
-                        RotatedRect boxFit = b.getBoxFit();
-                        myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)  %3.1f",
-                                b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y, boxFit.angle));
-                    }
-                    myOpMode.telemetry.update();
-                    myOpMode.sleep(50);
-                    break;
-                case "BOTH":
-                    myOpMode.telemetry.addData("SCANNING", "...\n" +
-                            " --------------PRIMARY CAMERA PORTAL ACTIVE--------------");
+                            " \nPRIMARY CAMERA PORTAL ACTIVE\n");
 
                     primaryBlobList = primaryColorProcessor.getBlobs(); // set list to whatever the camera found
                     secondaryBlobList = secondaryColorProcessor.getBlobs();
@@ -175,9 +173,9 @@ public class VisionSoftware extends RobotHardware{
                     filterBySetROI(topLeft, bottomRight, primaryBlobList);
                     filterBySetROI(topLeft, bottomRight, secondaryBlobList);
 
-                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, primaryBlobList);  // filter out very small blobs.
+                    ColorBlobLocatorProcessor.Util.filterByArea(1000, 20000, primaryBlobList);  // filter out very small blobs.
                     ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, primaryBlobList); // have the largest blobs come first in the list
-                    ColorBlobLocatorProcessor.Util.filterByArea(600, 20000, secondaryBlobList);
+                    ColorBlobLocatorProcessor.Util.filterByArea(1000, 20000, secondaryBlobList);
                     ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, secondaryBlobList); // have the largest blobs come first in the list
 
                     myOpMode.telemetry.addLine(" Primary Area, Density, Aspect,  Center, Angle");
@@ -202,8 +200,6 @@ public class VisionSoftware extends RobotHardware{
                         myOpMode.telemetry.addData("Angle", String.valueOf(boxFit.angle));
                     }
                     myOpMode.telemetry.update();
-                    myOpMode.sleep(50);
-                    break;
             }
         }
     }
