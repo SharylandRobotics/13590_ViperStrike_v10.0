@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
 
-@Autonomous(name = "PlayBack XY Auto ALPHA", group = "Robot")
+@Autonomous(name = "PlayBack XY Auto ALPHA", group = "Experimental")
 public class PlaybackAutoXY extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
@@ -18,7 +18,7 @@ public class PlaybackAutoXY extends LinearOpMode {
 
     ElapsedTime runtime = new ElapsedTime();
 
-    // values go like this : drive, strafe, turn, heading, armPos(in deg), apt.range
+    // values go like this : x, y, heading, armPos(in deg), clawPos, axialPos, APT.bearing
     double[] dataTable = {  2, 2, 0, 0, 0.4, 0.5, 3.0,  5,2,0,0,0.4,0.5,1.0,};
     // how many indexes to skip to go to the next action
     int indexSkip = 7; // just the # of things you print in Recorder

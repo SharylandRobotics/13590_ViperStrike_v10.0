@@ -25,6 +25,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class VisionSoftware extends RobotHardware{
 
@@ -137,6 +138,7 @@ public class VisionSoftware extends RobotHardware{
                     .build();
             }
             portalColor.setProcessorEnabled(primaryColorProcessor, false);
+
             myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
             myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
         }
@@ -144,13 +146,13 @@ public class VisionSoftware extends RobotHardware{
         @SuppressLint("DefaultLocale")
         public void activeDetector(Point topLeft, Point bottomRight, String processors) {
 
-            if (processors == "PRIMARY") {
+            if (Objects.equals(processors, "PRIMARY")) {
                 myOpMode.telemetry.addData("SCANNING", "...\n" +
                         " \nPRIMARY CAMERA PORTAL ACTIVE\n");
 
                 primaryBlobList = primaryColorProcessor.getBlobs(); // set list to whatever the camera found
 
-                ColorBlobLocatorProcessor.Util.filterByArea(1000, 20000, primaryBlobList);  // filter out very small blobs.
+                ColorBlobLocatorProcessor.Util.filterByArea(1000, 40000, primaryBlobList);  // filter out very small blobs.
                 ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, primaryBlobList); // have the largest blobs come first in the list
                 myOpMode.telemetry.addLine(" Area Density Aspect  Center");
 
@@ -163,7 +165,7 @@ public class VisionSoftware extends RobotHardware{
                     myOpMode.telemetry.addData(String.valueOf(primaryBlobList.indexOf(b)), "");
                 }
                 myOpMode.telemetry.update();
-            } else if (processors == "BOTH") {
+            } else if (Objects.equals(processors, "BOTH")) {
                     myOpMode.telemetry.addData("SCANNING", "...\n" +
                             " \nPRIMARY CAMERA PORTAL ACTIVE\n");
 
@@ -173,9 +175,9 @@ public class VisionSoftware extends RobotHardware{
                     filterBySetROI(topLeft, bottomRight, primaryBlobList);
                     filterBySetROI(topLeft, bottomRight, secondaryBlobList);
 
-                    ColorBlobLocatorProcessor.Util.filterByArea(1000, 20000, primaryBlobList);  // filter out very small blobs.
+                    ColorBlobLocatorProcessor.Util.filterByArea(1000, 40000, primaryBlobList);  // filter out very small blobs.
                     ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, primaryBlobList); // have the largest blobs come first in the list
-                    ColorBlobLocatorProcessor.Util.filterByArea(1000, 20000, secondaryBlobList);
+                    ColorBlobLocatorProcessor.Util.filterByArea(1000, 40000, secondaryBlobList);
                     ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, secondaryBlobList); // have the largest blobs come first in the list
 
                     myOpMode.telemetry.addLine(" Primary Area, Density, Aspect,  Center, Angle");

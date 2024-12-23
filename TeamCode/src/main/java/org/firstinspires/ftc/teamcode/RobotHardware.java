@@ -94,7 +94,7 @@ public class RobotHardware {
     public final double EXTENSION_COUNTS_PER_REV =
         28 // counts for bare motor revolution (aka int number at the end of the *encoder resolution formula*
             * (   (1+(46./17.))   ) // times internal gearing (aka *gear ratio formula*)
-            * (100. / 20.) // external gearing, 20 (drive) to 100 teeth
+            * (60. / 100.) // external gearing, 100 (drive) to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
 
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
@@ -188,10 +188,6 @@ public class RobotHardware {
         YAW_MID = 0.5;
         YAW_RIGHT = 0.0;
 
-        TOWER_MIN = 0.0;
-        TOWER_MID = 0.5;
-        TOWER_MAx = 1.0;
-
         /*
             Playable positions, initialize them if you feel the need to do so in the future:
             CLAW_BOTTOM = 0.3; // Claw at collapsed position
@@ -254,7 +250,7 @@ public class RobotHardware {
         imu.resetYaw();
 
         // Wait for the game to start (Display Gyro value while waiting)
-        /*while (myOpMode.opModeInInit()) {
+        while (myOpMode.opModeInInit()) {
             myOpMode.telemetry.addData("Status", "Hardware Initialized");
             myOpMode.telemetry.addData("Wheels starting at", "%7d :%7d :%7d :%7d",
                     leftFrontDrive.getCurrentPosition(), leftBackDrive.getCurrentPosition(),
@@ -262,8 +258,8 @@ public class RobotHardware {
             myOpMode.telemetry.addData("Starting Elbow Pos:", elbowDrive.getCurrentPosition());
             myOpMode.telemetry.update();
 
-         */
-        //}
+
+        }
     }
 
     /**

@@ -39,8 +39,13 @@ public class Recorder extends LinearOpMode {
         boolean calibratePerpendicular = false;
 
         double clawPos = 0.4;
-        double axialPos = 0.75;
+        double axialPos;
         double armPos;
+
+        int flEncoderCount;
+        int frEncoderCount;
+        int blEncoderCount;
+        int brEncoderCount;
 
         int actionCounter = 0;
 
@@ -49,6 +54,18 @@ public class Recorder extends LinearOpMode {
 
         aptDetector.visionInit();
         robot.init();
+
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        // make motors track their movements to write them down
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         aptDetector.portalAPT.setProcessorEnabled(aptDetector.APTprocessor, true);
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
@@ -103,12 +120,17 @@ public class Recorder extends LinearOpMode {
             axialPos = robot.clawAxial.getPosition();
             robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
 
+            flEncoderCount = robot.leftFrontDrive.getCurrentPosition();
+            frEncoderCount = robot.rightFrontDrive.getCurrentPosition();
+            blEncoderCount = robot.leftBackDrive.getCurrentPosition();
+            brEncoderCount = robot.rightBackDrive.getCurrentPosition();
 
             telemetry.addData("Action: ", actionCounter);
             telemetry.update();
 
             try {
-                writer.write(drive +", " + strafe +", " + turn+", " + armPos+", " + clawPos+", "+ axialPos+", " + (APTempty ? "-1, " : APTobject.ftcPose.range+ ", "));
+                writer.write(drive +", " + strafe +", " + turn+", " + armPos+", " + clawPos+", "+ axialPos+", " + (APTempty ? "-1, " : APTobject.ftcPose.range+ ", ")
+                + flEncoderCount+", " + frEncoderCount+", "+ blEncoderCount+", " + brEncoderCount+", ");
                 actionCounter++;
             } catch (IOException e) {
                 throw new RuntimeException(e);
