@@ -126,6 +126,7 @@ public class Recorder extends LinearOpMode {
             brEncoderCount = robot.rightBackDrive.getCurrentPosition();
 
             telemetry.addData("Action: ", actionCounter);
+            telemetry.addData(flEncoderCount+", " + frEncoderCount+", " + blEncoderCount+", " + brEncoderCount, "");
             telemetry.update();
 
             try {
