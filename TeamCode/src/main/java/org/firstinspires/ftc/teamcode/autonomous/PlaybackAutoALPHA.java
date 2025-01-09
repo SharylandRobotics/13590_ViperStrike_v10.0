@@ -29,6 +29,11 @@ public class PlaybackAutoALPHA extends LinearOpMode {
         aptDetector.visionInit();
         aptDetector.portalAPT.setProcessorEnabled(aptDetector.APTprocessor, true);
 
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         robot.leftFrontDrive.setTargetPosition(0);
         robot.leftBackDrive.setTargetPosition(0);
         robot.rightFrontDrive.setTargetPosition(0);
@@ -64,8 +69,8 @@ public class PlaybackAutoALPHA extends LinearOpMode {
                 robot.driveFieldCentric(dataTable[i * IS], dataTable[(i * IS) + 1], dataTable[(i * IS) + 2]);
 
                 // set encoder targets
-                robot.leftFrontDrive.setTargetPosition(-(int) dataTable[(i * IS) + 7]);
-                robot.leftBackDrive.setTargetPosition(-(int) dataTable[(i * IS) + 8]);
+                robot.leftFrontDrive.setTargetPosition((int) dataTable[(i * IS) + 7]);
+                robot.leftBackDrive.setTargetPosition((int) dataTable[(i * IS) + 8]);
                 robot.rightFrontDrive.setTargetPosition(-(int) dataTable[(i * IS) + 9]);
                 robot.rightBackDrive.setTargetPosition(-(int) dataTable[(i * IS) + 10]);
 
