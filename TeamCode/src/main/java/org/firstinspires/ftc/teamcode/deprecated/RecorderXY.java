@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleop;
+package org.firstinspires.ftc.teamcode.deprecated;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,15 +7,15 @@ import java.io.IOException;
 
 import android.os.Environment;
 import com.qualcomm.ftccommon.SoundPlayer;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
+@Disabled
 @TeleOp(name = "RecorderXY/debug", group = "Robot")
 public class   RecorderXY extends LinearOpMode {
 

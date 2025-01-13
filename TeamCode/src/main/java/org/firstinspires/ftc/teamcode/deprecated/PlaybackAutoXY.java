@@ -1,6 +1,7 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.deprecated;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -8,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
-
+@Disabled
 @Autonomous(name = "PlayBack XY Auto ALPHA", group = "Experimental")
 public class PlaybackAutoXY extends LinearOpMode {
 
@@ -54,14 +55,14 @@ public class PlaybackAutoXY extends LinearOpMode {
             // go towards target
 
             // drive until you reach your target ...
-            while (opModeIsActive() && !ptFinder.atTargetPos(posX1, posX2, posY1, posY2)) {
+            while (opModeIsActive() && !ptFinder.atTargetPos(posX1, posY1, posX2, posY2)) {
                 aptDetector.activeAPTscanner(-1);
                 if (aptDetector.targetFound) {
                     telemetry.addData("APT found","");
                     posX1 = aptDetector.detectedTag.robotPose.getPosition().x;
                     posY1 = aptDetector.detectedTag.robotPose.getPosition().y;
                 } else {posX1 =0; posY1=0;}
-                ptFinder.pathFind(posX1, posX2, posY1, posY2, dataTable[(i*indexSkip)+2]);
+                //ptFinder.pathFind(posX1, posX2, posY1, posY2, dataTable[(i*indexSkip)+2]);
                 telemetry.addData("driving...", "");
                 telemetry.addData("X to nearest APT:", posX1);
                 telemetry.addData("Y to nearest APT:", posY1);

@@ -278,7 +278,7 @@ public class VisionSoftware extends RobotHardware{
                 myOpMode.telemetry.addData("Bearing","%3.0f degrees", detectedTag.ftcPose.bearing);
                 myOpMode.telemetry.addData("Yaw","%3.0f degrees", detectedTag.ftcPose.yaw);
                 // Display the coordinate position for the APT detected
-                myOpMode.telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detectedTag.ftcPose.x, detectedTag.ftcPose.y, detectedTag.ftcPose.z));
+                myOpMode.telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (APT inch)", detectedTag.ftcPose.x, detectedTag.ftcPose.y, detectedTag.ftcPose.z));
             } else {
                 myOpMode.telemetry.addData("\n>","No Target Found...\n");
                 //scanConTower();
@@ -295,6 +295,8 @@ public class VisionSoftware extends RobotHardware{
                         detectedTag.robotPose.getPosition().x,
                         detectedTag.robotPose.getPosition().y,
                         detectedTag.robotPose.getPosition().z));
+                cameraPosition = detectedTag.robotPose.getPosition();
+                cameraOrientation = detectedTag.robotPose.getOrientation();
             }
         }
 

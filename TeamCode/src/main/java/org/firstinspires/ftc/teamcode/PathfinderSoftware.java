@@ -18,41 +18,44 @@ public class PathfinderSoftware extends RobotHardware{
             super.init();
         }
 
-        public double solveTurn(double x1, double x2, double y1, double y2, double targetHeading) {
-            // pythagorean theorem
-            double distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-            double deltaHeading = turnDirection(Math.round(targetHeading), false);
-
-            return Math.abs((distance)/deltaHeading)*0.0;
-        }
-
+        public double exSlope;
         /**
-         *
          * @param x1 current x position
-         * @param x2 target x position
          * @param y1 current y position
+         * @param x2 target x position
          * @param y2 target y position
-         * @param targetHeading target heading
          */
-        public void pathFind(double x1, double x2, double y1, double y2, double targetHeading){
+        public void linearEncoderMovement(double x1, double y1, double x2, double y2){
             double yDifference = y2-y1;
             double xDifference = x2-x1;
 
-            yDifference = Range.clip(yDifference, -1, 1);
-            xDifference = Range.clip(xDifference, -1, 1);
+            double slope = yDifference/xDifference;
+            exSlope = slope;
 
-            driveFieldCentric(yDifference*0.1,xDifference*0.1, solveTurn(x1, x2, y1, y2, targetHeading));
+            float yVector = (float) ( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
+            float xVector = (float) ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
+
+            driveFieldCentric(yDifference*0.1,-xDifference*0.1, 0);
+        }
+
+        public void bearingCorrection(double bearing){
+            if (bearing > 45 ){
+                driveFieldCentric(drivePower, strafePower, -0.5);
+                myOpMode.telemetry.addData("Bearing over 45 deg, correcting...", "");
+            } else if (bearing < -45) {
+                driveFieldCentric(drivePower, strafePower, 0.5);
+                myOpMode.telemetry.addData("Bearing under -45 deg, correcting...", "");
+            }
         }
 
         /**
-         *
          * @param x1 current x position
-         * @param x2 target x position
          * @param y1 current y position
+         * @param x2 target x position
          * @param y2 target y position
          * @return whether robot has reached the target position. (true means at target pos)
          */
-        public boolean atTargetPos(double x1, double x2, double y1, double y2){
+        public boolean atTargetPos(double x1, double y1, double x2, double y2){
             return ((Math.round(x1) == Math.round(x2)) && (Math.round(y1) == Math.round(y2)));
         }
 
