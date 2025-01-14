@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 // hardware & class imports
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
@@ -27,6 +28,11 @@ public class RobotHardware {
 
     // Define Sensor objects (Make them private so that they CANT be accessed externally)
     public IMU imu = null; // Universal IMU interface
+
+    public int coloredSoundID;
+    public int yellowSoundID;
+    public boolean yellowFound;
+    public boolean coloredFound;
 
     /*
     These variables are declared here (as class members) so they can be updated in various methods, but still be
@@ -248,6 +254,16 @@ public class RobotHardware {
 
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
+
+        // Initialize sound player
+        coloredSoundID = myOpMode.hardwareMap.appContext.getResources().getIdentifier("colored", "raw", myOpMode.hardwareMap.appContext.getPackageName());
+        yellowSoundID   = myOpMode.hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", myOpMode.hardwareMap.appContext.getPackageName());
+        // preload sounds
+        if (coloredSoundID != 0){ coloredFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, coloredSoundID); }
+        if (yellowSoundID != 0){ yellowFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, yellowSoundID); }
+        myOpMode.telemetry.addData("gold resource",   coloredFound ?   "Found" : "NOT found\n Add colored.wav to /src/main/res/raw" );
+        myOpMode.telemetry.addData("silver resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw" );
+        SoundPlayer.getInstance().setMasterVolume(2);
 
         // Wait for the game to start (Display Gyro value while waiting)
         while (myOpMode.opModeInInit()) {

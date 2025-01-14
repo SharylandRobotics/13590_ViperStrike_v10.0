@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,6 +20,10 @@ public class APTive extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+
+        double x = 0;
+        double y = 0;
+        double bearing = 0;
 
         robot.init();
         ptFinder.init();
@@ -70,25 +75,43 @@ public class APTive extends LinearOpMode {
          */
 
         robot.driveFieldCentric(0.2, 0, 0);
-        while (!aptDetector.targetFound) {
+        while (opModeIsActive()) {
             aptDetector.activeAPTscanner(-1);
+            telemetry.update();
+            if (aptDetector.targetFound) {
+                x = aptDetector.detectedTag.robotPose.getPosition().x;
+                y = aptDetector.detectedTag.robotPose.getPosition().y;
+                bearing = aptDetector.detectedTag.ftcPose.bearing;
+                break;
+            }
         }
         robot.driveFieldCentric(0,0,0);
         sleep(200);
 
-        aptDetector.activeAPTscanner(-1);
-        ptFinder.linearEncoderMovement(aptDetector.cameraPosition.x, aptDetector.cameraPosition.y, -50.9, 40);
-        while (!ptFinder.atTargetPos(aptDetector.cameraPosition.x , aptDetector.cameraPosition.y, -50.9, 40)){
+        SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.yellowSoundID);
+        ptFinder.linearEncoderMovement(x, y, -56.6, 36.4);
+        SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.coloredSoundID);
+        telemetry.update();
+        while (!ptFinder.atTargetPos(x , y, -56.6, 36.4)){
+            telemetry.clearAll();
+            SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.yellowSoundID);
             aptDetector.activeAPTscanner(-1);
-            if (Math.round( ((40-aptDetector.cameraPosition.y) / (-50.9-aptDetector.cameraPosition.x)) *100)/100. != Math.round(ptFinder.exSlope*100)/100.){
-                ptFinder.linearEncoderMovement(aptDetector.cameraPosition.x, aptDetector.cameraPosition.y, 2, 20);
-                telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
+            telemetry.speak("no no no no no");
+            x = aptDetector.detectedTag.robotPose.getPosition().x;
+            y = aptDetector.detectedTag.robotPose.getPosition().y;
+            bearing = aptDetector.detectedTag.ftcPose.bearing;
+            if (Math.round( ((36.4-y) / (-56.6-x)) *100)/100. != Math.round(ptFinder.exSlope*100)/100.){
+                ptFinder.linearEncoderMovement(x, y, -56.6, 36.4);
+                telemetry.addLine("Changed course..." + "new slope: " + ptFinder.exSlope);
             }
-            ptFinder.bearingCorrection(aptDetector.detectedTag.ftcPose.bearing);
-            if (!aptDetector.targetFound){
+            if (aptDetector.targetFound){
+                ptFinder.bearingCorrection(bearing);
+            } else {
+                ptFinder.bearingCorrection(404);
                 telemetry.addData("Lost APT!!", "");
-                break;
+                telemetry.update();
             }
+            telemetry.update();
         }
         robot.driveRobotCentric(0,0,0);
 

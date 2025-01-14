@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
@@ -32,19 +33,30 @@ public class PathfinderSoftware extends RobotHardware{
             double slope = yDifference/xDifference;
             exSlope = slope;
 
-            float yVector = (float) ( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
-            float xVector = (float) ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
+            double yVector = ( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
+            double xVector = ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
 
-            driveFieldCentric(yDifference*0.1,-xDifference*0.1, 0);
+            driveFieldCentric(-yVector*0.0,-xVector*0.0, 0);
+            myOpMode.telemetry.addData("slope :", exSlope);
         }
 
-        public void bearingCorrection(double bearing){
-            if (bearing > 45 ){
-                driveFieldCentric(drivePower, strafePower, -0.5);
-                myOpMode.telemetry.addData("Bearing over 45 deg, correcting...", "");
-            } else if (bearing < -45) {
-                driveFieldCentric(drivePower, strafePower, 0.5);
-                myOpMode.telemetry.addData("Bearing under -45 deg, correcting...", "");
+        public void bearingCorrection(double bearing) {
+            if (bearing != 404) {
+                if (bearing > 15) {
+                    driveFieldCentric(drivePower, strafePower, (-bearing / 90) * 0.8);
+                    myOpMode.telemetry.addData("Bearing over 45 deg, correcting...", "");
+                    SoundPlayer.getInstance().startPlaying(myOpMode.hardwareMap.appContext, yellowSoundID);
+                } else if (bearing < -15) {
+                    driveFieldCentric(drivePower, strafePower, (bearing / 90) * 0.8);
+                    myOpMode.telemetry.addData("Bearing under -45 deg, correcting...", "");
+                    SoundPlayer.getInstance().startPlaying(myOpMode.hardwareMap.appContext, yellowSoundID);
+                } else if (bearing <= 4 && bearing >= -4) {
+                    driveFieldCentric(drivePower, strafePower, 0);
+                    myOpMode.telemetry.addData("Bearing corrected...", "");
+
+                }
+            } else {
+                driveFieldCentric(drivePower, strafePower, 0);
             }
         }
 
@@ -56,7 +68,7 @@ public class PathfinderSoftware extends RobotHardware{
          * @return whether robot has reached the target position. (true means at target pos)
          */
         public boolean atTargetPos(double x1, double y1, double x2, double y2){
-            return ((Math.round(x1) == Math.round(x2)) && (Math.round(y1) == Math.round(y2)));
+            return ((Math.round(x1*10)/10 == Math.round(x2*10)/10) && (Math.round(y1*10)/10 == Math.round(y2*10)/10));
         }
 
     }
