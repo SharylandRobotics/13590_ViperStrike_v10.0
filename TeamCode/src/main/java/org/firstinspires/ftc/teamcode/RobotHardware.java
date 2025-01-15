@@ -263,7 +263,7 @@ public class RobotHardware {
         if (yellowSoundID != 0){ yellowFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, yellowSoundID); }
         myOpMode.telemetry.addData("gold resource",   coloredFound ?   "Found" : "NOT found\n Add colored.wav to /src/main/res/raw" );
         myOpMode.telemetry.addData("silver resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw" );
-        SoundPlayer.getInstance().setMasterVolume(2);
+        SoundPlayer.getInstance().setMasterVolume(4);
 
         // Wait for the game to start (Display Gyro value while waiting)
         while (myOpMode.opModeInInit()) {

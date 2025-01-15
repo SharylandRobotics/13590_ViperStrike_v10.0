@@ -24,6 +24,7 @@ public class APTive extends LinearOpMode {
         double x = 0;
         double y = 0;
         double bearing = 0;
+        double slope = 0;
 
         robot.init();
         ptFinder.init();
@@ -90,27 +91,26 @@ public class APTive extends LinearOpMode {
 
         SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.yellowSoundID);
         ptFinder.linearEncoderMovement(x, y, -56.6, 36.4);
+        slope = ptFinder.exSlope;
         SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.coloredSoundID);
         telemetry.update();
-        while (!ptFinder.atTargetPos(x , y, -56.6, 36.4)){
-            telemetry.clearAll();
+        while (!ptFinder.atTargetPos(Math.round(x*100)/100. , Math.round(y*100)/100., -56.6, 36.4)){
             SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.yellowSoundID);
-            aptDetector.activeAPTscanner(-1);
-            telemetry.speak("no no no no no");
+            aptDetector.activeAPTscanner(12);
             x = aptDetector.detectedTag.robotPose.getPosition().x;
             y = aptDetector.detectedTag.robotPose.getPosition().y;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
             if (Math.round( ((36.4-y) / (-56.6-x)) *100)/100. != Math.round(ptFinder.exSlope*100)/100.){
                 ptFinder.linearEncoderMovement(x, y, -56.6, 36.4);
-                telemetry.addLine("Changed course..." + "new slope: " + ptFinder.exSlope);
+                telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
             }
             if (aptDetector.targetFound){
                 ptFinder.bearingCorrection(bearing);
             } else {
                 ptFinder.bearingCorrection(404);
                 telemetry.addData("Lost APT!!", "");
-                telemetry.update();
             }
+            telemetry.addData("original slope: ", slope);
             telemetry.update();
         }
         robot.driveRobotCentric(0,0,0);
