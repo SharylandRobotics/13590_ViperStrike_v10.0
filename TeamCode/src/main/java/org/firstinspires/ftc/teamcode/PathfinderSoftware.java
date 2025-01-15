@@ -20,6 +20,11 @@ public class PathfinderSoftware extends RobotHardware{
         }
 
         public double exSlope;
+        public double exVectorX;
+        public double exVectorY;
+        public double drivePow;
+        public double strafePow;
+
         /**
          * @param x1 current x position
          * @param y1 current y position
@@ -32,12 +37,37 @@ public class PathfinderSoftware extends RobotHardware{
 
             double slope = yDifference/xDifference;
             exSlope = slope;
+            double xVector;
 
             double yVector = ( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
-            double xVector = ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
+            if (xDifference == 0){
+                xVector = 0;
+            } else {xVector = ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));}
+            exVectorX = -xVector*0.12;
+            exVectorY = -yVector*0.12;
 
-            driveFieldCentric(-yVector*0.0,-xVector*0.0, 0);
+            if (Math.abs(xDifference) <= 2.5){
+                driveFieldCentric(-yVector*0.2, -xVector*0.2, turnPower);
+                myOpMode.telemetry.addData("X SLOWED", "");
+            }
+            if (Math.abs(yDifference) <= 2.5){
+                driveFieldCentric(-yVector*0.2, -xVector*0.2, turnPower);
+                myOpMode.telemetry.addData("Y SLOWED","");
+            } else {driveFieldCentric(-yVector,-xVector, turnPower);}
             myOpMode.telemetry.addData("slope :", exSlope);
+        }
+
+        public void checkDistance(double x1, double y1, double x2, double y2) {
+            double yDifference = y2 - y1;
+            double xDifference = x2 - x1;
+
+            if (Math.abs(xDifference) <= 10){
+                driveFieldCentric(drivePower*0.2, strafePower*0.2, turnPower);
+            }
+            if (Math.abs(yDifference) <= 10){
+                driveFieldCentric(drivePower*0.2, strafePower*0.2, turnPower);
+            }
+            myOpMode.telemetry.addData("SLOWED","");
         }
 
         public void bearingCorrection(double bearing) {
@@ -45,12 +75,11 @@ public class PathfinderSoftware extends RobotHardware{
                 if (bearing > 15) {
                     driveFieldCentric(drivePower, strafePower, (-bearing / 90) * 0.8);
                     myOpMode.telemetry.addData("Bearing over 45 deg, correcting...", "");
-                    SoundPlayer.getInstance().startPlaying(myOpMode.hardwareMap.appContext, yellowSoundID);
                 } else if (bearing < -15) {
                     driveFieldCentric(drivePower, strafePower, (bearing / 90) * 0.8);
                     myOpMode.telemetry.addData("Bearing under -45 deg, correcting...", "");
                     SoundPlayer.getInstance().startPlaying(myOpMode.hardwareMap.appContext, yellowSoundID);
-                } else if (bearing <= 4 && bearing >= -4) {
+                } else if (bearing <= 5 && bearing >= -5) {
                     driveFieldCentric(drivePower, strafePower, 0);
                     myOpMode.telemetry.addData("Bearing corrected...", "");
 

@@ -9,6 +9,9 @@ import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Autonomous(name= "APTive", group ="Robot")
 public class APTive extends LinearOpMode {
 
@@ -25,6 +28,8 @@ public class APTive extends LinearOpMode {
         double y = 0;
         double bearing = 0;
         double slope = 0;
+        double exSlopeH = 0;
+        boolean breaker = false;
 
         robot.init();
         ptFinder.init();
@@ -76,32 +81,32 @@ public class APTive extends LinearOpMode {
          */
 
         robot.driveFieldCentric(0.2, 0, 0);
-        while (opModeIsActive()) {
+        while (opModeIsActive() && !breaker) {
             aptDetector.activeAPTscanner(-1);
             telemetry.update();
             if (aptDetector.targetFound) {
                 x = aptDetector.detectedTag.robotPose.getPosition().x;
                 y = aptDetector.detectedTag.robotPose.getPosition().y;
-                bearing = aptDetector.detectedTag.ftcPose.bearing;
-                break;
+                breaker = true;
             }
+            telemetry.addData("check","");
+            sleep(50);
         }
         robot.driveFieldCentric(0,0,0);
         sleep(200);
 
-        SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.yellowSoundID);
-        ptFinder.linearEncoderMovement(x, y, -56.6, 36.4);
+        ptFinder.linearEncoderMovement(x, y, -54.2, 39);
         slope = ptFinder.exSlope;
-        SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.coloredSoundID);
         telemetry.update();
-        while (!ptFinder.atTargetPos(Math.round(x*100)/100. , Math.round(y*100)/100., -56.6, 36.4)){
-            SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, robot.yellowSoundID);
+        while (!ptFinder.atTargetPos(Math.round(x*10)/10. , Math.round(y*10)/10., -54.2, 39) && opModeIsActive()){
             aptDetector.activeAPTscanner(12);
+            ptFinder.checkDistance(x, y, -54.2, 39);
             x = aptDetector.detectedTag.robotPose.getPosition().x;
             y = aptDetector.detectedTag.robotPose.getPosition().y;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            if (Math.round( ((36.4-y) / (-56.6-x)) *100)/100. != Math.round(ptFinder.exSlope*100)/100.){
-                ptFinder.linearEncoderMovement(x, y, -56.6, 36.4);
+            exSlopeH = ptFinder.exSlope;
+            if (Math.round( ((36.4- (y)) / (-56.6 - (x)) ) *100)/100. != Math.round(exSlopeH*100)/100.){
+                ptFinder.linearEncoderMovement(x, y, -54.2, 39);
                 telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
             }
             if (aptDetector.targetFound){
