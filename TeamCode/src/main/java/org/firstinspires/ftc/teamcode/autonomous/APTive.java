@@ -89,7 +89,7 @@ public class APTive extends LinearOpMode {
                 y = aptDetector.detectedTag.robotPose.getPosition().y;
                 breaker = true;
             }
-            telemetry.addData("check","");
+            telemetry.addData("check",x + ", " + y);
             sleep(50);
         }
         robot.driveFieldCentric(0,0,0);
@@ -109,13 +109,8 @@ public class APTive extends LinearOpMode {
             exSlopeH = ptFinder.exSlope;
             if (Math.round( ((36.4- (y)) / (-56.6 - (x)) ) *100)/100. != Math.round(exSlopeH*100)/100.){
                 ptFinder.linearEncoderMovement(x, y, -54.2, 39);
+                ptFinder.bearingCorrection(bearing);
                 telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
-            }
-            if (Math.abs(-54.2 - x) <= 10 && Math.abs(-54.2 - x) >= 2){
-                robot.driveFieldCentric(robot.drivePower, robot.strafePower*0.2, robot.turnPower);
-            }
-            if (Math.abs(39 - y) <= 10 && Math.abs(39 - y) >= 2){
-                robot.driveFieldCentric(robot.drivePower*0.2, robot.strafePower, robot.turnPower);
             }
             if (aptDetector.targetFound){
                 ptFinder.bearingCorrection(bearing);
@@ -127,7 +122,8 @@ public class APTive extends LinearOpMode {
             telemetry.update();
         }
         robot.driveRobotCentric(0,0,0);
-
+        telemetry.clearAll();
+        telemetry.update();
         sleep(5000);
 
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready

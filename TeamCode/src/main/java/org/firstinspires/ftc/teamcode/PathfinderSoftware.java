@@ -47,50 +47,42 @@ public class PathfinderSoftware extends RobotHardware{
             } else {
                 // default to this
                 slope = yDifference/xDifference;
-                xVector = ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
-                yVector = ( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
+                xVector = -( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
+                yVector = -( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
             }
             exSlope = slope;
 
-            exVectorX = -xVector*0.12;
-            exVectorY = -yVector*0.12;
+
 
             // slowwww for when close
-            if (Math.abs(xDifference) <= 2){
-                driveFieldCentric(-yVector, -xVector*0.15, turnPower);
+            if (Math.abs(xDifference) <= 10){
+                xVector = xVector*( (Math.abs(xDifference)*0.03) );
                 myOpMode.telemetry.addData("X SLOWED", "");
             }
-            if (Math.abs(yDifference) <= 2){
-                driveFieldCentric(-yVector*0.15, -xVector, turnPower);
+            if (Math.abs(yDifference) <= 10){
+                yVector = yVector*( (Math.abs(yDifference)*0.03) );
                 myOpMode.telemetry.addData("Y SLOWED","");
-            } else {
-                // default
-                driveFieldCentric(-yVector,-xVector, turnPower);
-            } // telemetry
+            }
+            driveFieldCentric(yVector*0.3,xVector*0.3, turnPower);
+             // telemetry
+            exVectorX = xVector;
+            exVectorY = yVector;
+            myOpMode.telemetry.addData("vectors: ", xVector + ", " + yVector);
             myOpMode.telemetry.addData("slope :", exSlope);
         }
 
         public void bearingCorrection(double bearing) {
             // check if u got a readable bearing (duh)
             if (bearing != 404) {
-                // turn if angle is greater than (insert #)
-                if (bearing > 15) {
-                    // turns the closer you are to a 90 deg angle; 0.8 to not go crazy
-                    driveFieldCentric(drivePower, strafePower, (-bearing / 90) * 0.8);
-                    myOpMode.telemetry.addData("Bearing over 45 deg, correcting...", "");
-                } else if (bearing < -15) {
-                    driveFieldCentric(drivePower, strafePower, (bearing / 90) * 0.8);
-                    myOpMode.telemetry.addData("Bearing under -45 deg, correcting...", "");
-                    SoundPlayer.getInstance().startPlaying(myOpMode.hardwareMap.appContext, yellowSoundID);
-                } else if (bearing <= 5 && bearing >= -5) {
+                 if (!(bearing <= 5 && bearing >= -5)) {
                     // degrees of tolerance; noticeable difference so don't sleep on this
-                    driveFieldCentric(drivePower, strafePower, 0);
-                    myOpMode.telemetry.addData("Bearing corrected...", "");
-
-                }
+                    driveFieldCentric(drivePower, strafePower, (bearing / 90) * 0.8);
+                } else {driveFieldCentric(drivePower, strafePower, 0);
+                    myOpMode.telemetry.addData("Bearing corrected...", "");}
             } else {
                 // default to this (bad)
                 driveFieldCentric(drivePower, strafePower, 0);
+                myOpMode.telemetry.addData("NOT CORRECTING BEARING","");
             }
         }
 
@@ -103,6 +95,15 @@ public class PathfinderSoftware extends RobotHardware{
          */
         public boolean atTargetPos(double x1, double y1, double x2, double y2){
             return ((Math.round(x1*10)/10 == Math.round(x2*10)/10) && (Math.round(y1*10)/10 == Math.round(y2*10)/10));
+        }
+
+        public void idiot(double x1, double y1, double x2, double y2){
+            float driveSensitivity = (float) 0.05;
+            float strafeSensitivity = (float) 0.05;
+            double drive = Range.clip((x2-x1) * driveSensitivity, 1, -1);
+            double strafe = Range.clip((y2-y1) * strafeSensitivity, 1, -1);
+
+            driveFieldCentric(drive, strafe, turnPower);
         }
 
     }

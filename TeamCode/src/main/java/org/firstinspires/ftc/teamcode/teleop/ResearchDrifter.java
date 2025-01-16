@@ -50,7 +50,7 @@ public class ResearchDrifter extends LinearOpMode {
         robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         aptDetector.portalAPT.setProcessorEnabled(aptDetector.APTprocessor, true);
-
+        robot.elbowDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         waitForStart();
         runtime.reset();
 
