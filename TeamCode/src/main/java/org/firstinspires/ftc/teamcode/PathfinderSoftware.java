@@ -22,8 +22,6 @@ public class PathfinderSoftware extends RobotHardware{
         public double exSlope;
         public double exVectorX;
         public double exVectorY;
-        public double drivePow;
-        public double strafePow;
 
         /**
          * @param x1 current x position
@@ -34,45 +32,50 @@ public class PathfinderSoftware extends RobotHardware{
         public void linearEncoderMovement(double x1, double y1, double x2, double y2){
             double yDifference = y2-y1;
             double xDifference = x2-x1;
-
-            double slope = yDifference/xDifference;
-            exSlope = slope;
+            double slope;
             double xVector;
+            double yVector;
 
-            double yVector = ( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
+            // check for undefined slope!!!
             if (xDifference == 0){
+                // don't move x
                 xVector = 0;
-            } else {xVector = ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));}
+                // set y to max
+                yVector = (yDifference/Math.abs(yDifference));
+                // set slope to communicate undefined
+                slope = 404;
+            } else {
+                // default to this
+                slope = yDifference/xDifference;
+                xVector = ( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
+                yVector = ( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
+            }
+            exSlope = slope;
+
             exVectorX = -xVector*0.12;
             exVectorY = -yVector*0.12;
 
-            if (Math.abs(xDifference) <= 2.5){
-                driveFieldCentric(-yVector*0.2, -xVector*0.2, turnPower);
+            // slowwww for when close
+            if (Math.abs(xDifference) <= 2){
+                driveFieldCentric(-yVector, -xVector*0.15, turnPower);
                 myOpMode.telemetry.addData("X SLOWED", "");
             }
-            if (Math.abs(yDifference) <= 2.5){
-                driveFieldCentric(-yVector*0.2, -xVector*0.2, turnPower);
+            if (Math.abs(yDifference) <= 2){
+                driveFieldCentric(-yVector*0.15, -xVector, turnPower);
                 myOpMode.telemetry.addData("Y SLOWED","");
-            } else {driveFieldCentric(-yVector,-xVector, turnPower);}
+            } else {
+                // default
+                driveFieldCentric(-yVector,-xVector, turnPower);
+            } // telemetry
             myOpMode.telemetry.addData("slope :", exSlope);
         }
 
-        public void checkDistance(double x1, double y1, double x2, double y2) {
-            double yDifference = y2 - y1;
-            double xDifference = x2 - x1;
-
-            if (Math.abs(xDifference) <= 10){
-                driveFieldCentric(drivePower*0.2, strafePower*0.2, turnPower);
-            }
-            if (Math.abs(yDifference) <= 10){
-                driveFieldCentric(drivePower*0.2, strafePower*0.2, turnPower);
-            }
-            myOpMode.telemetry.addData("SLOWED","");
-        }
-
         public void bearingCorrection(double bearing) {
+            // check if u got a readable bearing (duh)
             if (bearing != 404) {
+                // turn if angle is greater than (insert #)
                 if (bearing > 15) {
+                    // turns the closer you are to a 90 deg angle; 0.8 to not go crazy
                     driveFieldCentric(drivePower, strafePower, (-bearing / 90) * 0.8);
                     myOpMode.telemetry.addData("Bearing over 45 deg, correcting...", "");
                 } else if (bearing < -15) {
@@ -80,11 +83,13 @@ public class PathfinderSoftware extends RobotHardware{
                     myOpMode.telemetry.addData("Bearing under -45 deg, correcting...", "");
                     SoundPlayer.getInstance().startPlaying(myOpMode.hardwareMap.appContext, yellowSoundID);
                 } else if (bearing <= 5 && bearing >= -5) {
+                    // degrees of tolerance; noticeable difference so don't sleep on this
                     driveFieldCentric(drivePower, strafePower, 0);
                     myOpMode.telemetry.addData("Bearing corrected...", "");
 
                 }
             } else {
+                // default to this (bad)
                 driveFieldCentric(drivePower, strafePower, 0);
             }
         }

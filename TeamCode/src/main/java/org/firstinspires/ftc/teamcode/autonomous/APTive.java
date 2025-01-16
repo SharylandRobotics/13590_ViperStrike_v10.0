@@ -95,12 +95,14 @@ public class APTive extends LinearOpMode {
         robot.driveFieldCentric(0,0,0);
         sleep(200);
 
-        ptFinder.linearEncoderMovement(x, y, -54.2, 39);
-        slope = ptFinder.exSlope;
+        telemetry.addData("check2","");
         telemetry.update();
+        ptFinder.linearEncoderMovement(x, y, -54.2, 39);
+        telemetry.addData("check3","");
+        telemetry.update();
+        slope = ptFinder.exSlope;
         while (!ptFinder.atTargetPos(Math.round(x*10)/10. , Math.round(y*10)/10., -54.2, 39) && opModeIsActive()){
             aptDetector.activeAPTscanner(12);
-            ptFinder.checkDistance(x, y, -54.2, 39);
             x = aptDetector.detectedTag.robotPose.getPosition().x;
             y = aptDetector.detectedTag.robotPose.getPosition().y;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
@@ -108,6 +110,12 @@ public class APTive extends LinearOpMode {
             if (Math.round( ((36.4- (y)) / (-56.6 - (x)) ) *100)/100. != Math.round(exSlopeH*100)/100.){
                 ptFinder.linearEncoderMovement(x, y, -54.2, 39);
                 telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
+            }
+            if (Math.abs(-54.2 - x) <= 10 && Math.abs(-54.2 - x) >= 2){
+                robot.driveFieldCentric(robot.drivePower, robot.strafePower*0.2, robot.turnPower);
+            }
+            if (Math.abs(39 - y) <= 10 && Math.abs(39 - y) >= 2){
+                robot.driveFieldCentric(robot.drivePower*0.2, robot.strafePower, robot.turnPower);
             }
             if (aptDetector.targetFound){
                 ptFinder.bearingCorrection(bearing);
