@@ -52,22 +52,20 @@ public class PathfinderSoftware extends RobotHardware{
             }
             exSlope = slope;
 
-
-
             // slowwww for when close
-            if (Math.abs(xDifference) <= 10){
-                xVector = xVector*( (Math.abs(xDifference)*0.03) );
+            if (Math.abs(xDifference) <= 25){
+                xVector = Range.clip( xVector*( Range.clip(Math.abs(xDifference), 7, 1000)*0.01) , xVector*0.02, xVector);
                 myOpMode.telemetry.addData("X SLOWED", "");
             }
-            if (Math.abs(yDifference) <= 10){
-                yVector = yVector*( (Math.abs(yDifference)*0.03) );
+            if (Math.abs(yDifference) <= 25){
+                yVector = Range.clip( yVector*( Range.clip(Math.abs(yDifference), 7, 1000)*0.01) , yVector*0.02, yVector);
                 myOpMode.telemetry.addData("Y SLOWED","");
             }
-            driveFieldCentric(yVector*0.3,xVector*0.3, turnPower);
+            driveFieldCentric(yVector,xVector, turnPower);
              // telemetry
             exVectorX = xVector;
             exVectorY = yVector;
-            myOpMode.telemetry.addData("vectors: ", xVector + ", " + yVector);
+            myOpMode.telemetry.addData("vectors: ", Math.round(xVector*100)/100 + ", " + Math.round(yVector*100)/100);
             myOpMode.telemetry.addData("slope :", exSlope);
         }
 
@@ -76,7 +74,7 @@ public class PathfinderSoftware extends RobotHardware{
             if (bearing != 404) {
                  if (!(bearing <= 5 && bearing >= -5)) {
                     // degrees of tolerance; noticeable difference so don't sleep on this
-                    driveFieldCentric(drivePower, strafePower, (bearing / 90) * 0.8);
+                    driveFieldCentric(drivePower, strafePower, (bearing / 60) * ((drivePower+strafePower)/2));
                  } else {driveFieldCentric(drivePower, strafePower, 0);
                     myOpMode.telemetry.addData("Bearing corrected...", "");}
             } else {
@@ -95,15 +93,6 @@ public class PathfinderSoftware extends RobotHardware{
          */
         public boolean atTargetPos(double x1, double y1, double x2, double y2){
             return ((Math.round(x1*10)/10 == Math.round(x2*10)/10) && (Math.round(y1*10)/10 == Math.round(y2*10)/10));
-        }
-
-        public void idiot(double x1, double y1, double x2, double y2){
-            float driveSensitivity = (float) 0.05;
-            float strafeSensitivity = (float) 0.05;
-            double drive = Range.clip((x2-x1) * driveSensitivity, 1, -1);
-            double strafe = Range.clip((y2-y1) * strafeSensitivity, 1, -1);
-
-            driveFieldCentric(drive, strafe, turnPower);
         }
 
     }
