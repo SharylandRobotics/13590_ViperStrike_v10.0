@@ -251,22 +251,46 @@ public class VisionSoftware extends RobotHardware{
         public void activeAPTscanner(int DESIRED_TAG_ID) {
             List<AprilTagDetection> currentDetections = APTprocessor.getDetections();
             if (!currentDetections.isEmpty()) { // Check if you see an APT
-                for (AprilTagDetection detection : currentDetections) {
-                    // Look to see if we have size info on this tag.
-                    if (detection.metadata != null) {
-                        //  Check to see if we want to track towards this tag.
-                        if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                            // Yes, we want to use this tag.
-                            targetFound = true;
-                            detectedTag = detection;
-                            break;  // don't look any further.
-                        } else {
-                            // This tag is in the library, but we do not want to track it right now.
-                            myOpMode.telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                if (DESIRED_TAG_ID == -2){
+                    // check if you recognize all tags
+                    for (AprilTagDetection detection : currentDetections){
+                        if (detection.metadata == null){
+                            myOpMode.telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary; removing", detection.id);
+                            currentDetections.remove(detection);
                         }
-                    } else {
-                        // This tag is NOT in the library, so we don't have enough information to track to it.
-                        myOpMode.telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
+                    }
+                    // check that we still have something in the list (other check doesn't work cuz we hadn't filtered yet)
+                    if (!currentDetections.isEmpty()) {
+                        // start with first index (we have a small list so it's ok for this type of sort)
+                        AprilTagDetection lowest = currentDetections.get(0);
+                        // go thru every value and save the one closest to you
+                        for (int i = 1; i < currentDetections.size(); i++) {
+                            if (currentDetections.get(i).ftcPose.range < lowest.ftcPose.range) {
+                                lowest = currentDetections.get(i);
+                            }
+                        }
+                        //
+                        targetFound = true;
+                        detectedTag = lowest;
+                    } else {targetFound = false;}
+                } else {
+                    for (AprilTagDetection detection : currentDetections) {
+                        // Look to see if we have size info on this tag.
+                        if (detection.metadata != null) {
+                            //  Check to see if we want to track towards this tag.
+                            if ((DESIRED_TAG_ID == -1) || (detection.id == DESIRED_TAG_ID)) {
+                                // Yes, we want to use this tag.
+                                targetFound = true;
+                                detectedTag = detection;
+                                break;  // don't look any further.
+                            } else {
+                                // This tag is in the library, but we do not want to track it right now.
+                                myOpMode.telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                            }
+                        } else {
+                            // This tag is NOT in the library, so we don't have enough information to track to it.
+                            myOpMode.telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
+                        }
                     }
                 }
             } else { targetFound = false; }// Communicate that there is no APT in view; the previously detected APT will stay in detectedTag
@@ -282,7 +306,6 @@ public class VisionSoftware extends RobotHardware{
                 myOpMode.telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (APT inch)", detectedTag.ftcPose.x, detectedTag.ftcPose.y, detectedTag.ftcPose.z));
             } else {
                 myOpMode.telemetry.addData("\n>","No Target Found...\n");
-                //scanConTower();
             }
             // the following telemetry messages are for troubleshooting...
             // Display the PRY (pitch, roll, yaw) for the robot

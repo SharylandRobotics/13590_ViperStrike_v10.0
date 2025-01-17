@@ -111,8 +111,7 @@ public class APTive extends LinearOpMode {
                 ptFinder.linearEncoderMovement(x, y, -54.2, 39);
                 ptFinder.bearingCorrection(bearing);
                 telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
-            }
-            if (aptDetector.targetFound){
+            } else if (aptDetector.targetFound){
                 ptFinder.bearingCorrection(bearing);
             } else {
                 ptFinder.bearingCorrection(404);

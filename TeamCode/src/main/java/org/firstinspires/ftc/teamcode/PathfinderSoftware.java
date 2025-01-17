@@ -77,7 +77,7 @@ public class PathfinderSoftware extends RobotHardware{
                  if (!(bearing <= 5 && bearing >= -5)) {
                     // degrees of tolerance; noticeable difference so don't sleep on this
                     driveFieldCentric(drivePower, strafePower, (bearing / 90) * 0.8);
-                } else {driveFieldCentric(drivePower, strafePower, 0);
+                 } else {driveFieldCentric(drivePower, strafePower, 0);
                     myOpMode.telemetry.addData("Bearing corrected...", "");}
             } else {
                 // default to this (bad)
