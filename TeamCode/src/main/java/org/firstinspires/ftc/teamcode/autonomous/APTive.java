@@ -106,18 +106,9 @@ public class APTive extends LinearOpMode {
             x = aptDetector.detectedTag.robotPose.getPosition().x;
             y = aptDetector.detectedTag.robotPose.getPosition().y;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            exSlopeH = ptFinder.exSlope;
-            if (aptDetector.targetFound){
-                ptFinder.bearingCorrection(bearing);
-            } else {
-                ptFinder.bearingCorrection(404);
-                telemetry.addData("Lost APT!!", "");
-            }
-            if (Math.round( ((36.4- (y)) / (-56.6 - (x)) ) *100)/100. != Math.round(exSlopeH*100)/100.) {
-                ptFinder.linearEncoderMovement(x, y, -54.2, 39);
-                ptFinder.bearingCorrection(bearing);
-                telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
-            }
+            ptFinder.linearEncoderMovement(x, y, -54.2, 39);
+            ptFinder.bearingCorrection(bearing);
+            telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
             telemetry.addData("original slope: ", slope);
             telemetry.update();
         }

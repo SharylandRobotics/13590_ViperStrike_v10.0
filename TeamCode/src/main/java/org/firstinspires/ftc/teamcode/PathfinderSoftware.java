@@ -69,6 +69,26 @@ public class PathfinderSoftware extends RobotHardware{
             myOpMode.telemetry.addData("slope :", exSlope);
         }
 
+        public void jIC(double x1, double y1, double x2, double y2){
+            double yDifference = y2-y1;
+            double xDifference = x2-x1;
+            double xVector = strafePower;
+            double yVector = drivePower;
+            if (Math.abs(xDifference) <= 25){
+                xVector = Range.clip( xVector*( Range.clip(Math.abs(xDifference), 7, 1000)*0.01) , xVector*0.02, xVector);
+                myOpMode.telemetry.addData("X SLOWED", "");
+            }
+            if (Math.abs(yDifference) <= 25){
+                yVector = Range.clip( yVector*( Range.clip(Math.abs(yDifference), 7, 1000)*0.01) , yVector*0.02, yVector);
+                myOpMode.telemetry.addData("Y SLOWED","");
+            }
+            driveFieldCentric(yVector,xVector, turnPower);
+            // telemetry
+            exVectorX = xVector;
+            exVectorY = yVector;
+            myOpMode.telemetry.addData("vectors: ", Math.round(xVector*100)/100 + ", " + Math.round(yVector*100)/100);
+        }
+
         public void bearingCorrection(double bearing) {
             // check if u got a readable bearing (duh)
             if (bearing != 404) {
