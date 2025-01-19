@@ -97,23 +97,50 @@ public class APTive extends LinearOpMode {
 
         telemetry.addData("check2","");
         telemetry.update();
-        ptFinder.linearEncoderMovement(x, y, -54.2, 39);
+        ptFinder.linearEncoderMovement(x, y, -54.2, 39, (float) 0.05, 0.01f);
         telemetry.addData("check3","");
         telemetry.update();
         slope = ptFinder.exSlope;
-        while (!ptFinder.atTargetPos(Math.round(x*10)/10. , Math.round(y*10)/10., -54.2, 39) && opModeIsActive()){
+        while (!ptFinder.atTargetPos(Math.round(x) , Math.round(y), -50, 39) && opModeIsActive()){
             aptDetector.activeAPTscanner(12);
             x = aptDetector.detectedTag.robotPose.getPosition().x;
             y = aptDetector.detectedTag.robotPose.getPosition().y;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            ptFinder.linearEncoderMovement(x, y, -54.2, 39);
+            ptFinder.linearEncoderMovement(x, y, -50, 39, 0.01f, 0.008f);
+            if (Math.abs(ptFinder.exVectorY) < 0.02 && Math.abs(ptFinder.exVectorX) < 0.02){break;}
             ptFinder.bearingCorrection(bearing);
-            telemetry.addData("Changed course...", "new slope: " + ptFinder.exSlope);
+            telemetry.addData("Vectors: ", ptFinder.exVectorX + ", " + ptFinder.exVectorY);
+            telemetry.addData("PreClip: ", ptFinder.clipVX + ", " + ptFinder.clipVY);
+            telemetry.addData( "new slope: ", ptFinder.exSlope);
             telemetry.addData("original slope: ", slope);
             telemetry.update();
         }
         robot.driveRobotCentric(0,0,0);
         telemetry.clearAll();
+        telemetry.addData("kms", "");
+        telemetry.update();
+        sleep(500);
+        byte check = 0;
+        float multiplier = 0.06f;
+        while (opModeIsActive() && check != 6){
+            aptDetector.activeAPTscanner(12);
+            x = (aptDetector.detectedTag.robotPose.getPosition().x + x)/2;
+            y = (aptDetector.detectedTag.robotPose.getPosition().y + y)/2;
+            bearing = aptDetector.detectedTag.ftcPose.bearing;
+            ptFinder.linearEncoderMovement(x, y, -54.2, 39, multiplier, 0.1f);
+            ptFinder.bearingCorrection(bearing);
+            telemetry.addData("Vectors: ", ptFinder.exVectorX + ", " + ptFinder.exVectorY);
+            telemetry.addData("PreClip: ", ptFinder.clipVX + ", " + ptFinder.clipVY);
+            telemetry.addData( "new slope: ", ptFinder.exSlope);
+            telemetry.addData("original slope: ", slope);
+            telemetry.update();
+            if (ptFinder.atTargetPos(Math.round(x*10)/10. , Math.round(y*10)/10., -54.2, 39)){
+                check++;
+            }
+        }
+        robot.driveFieldCentric(0,0,0 );
+        telemetry.clearAll();
+        telemetry.addData("KMS", "");
         telemetry.update();
         sleep(5000);
 

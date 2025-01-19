@@ -22,6 +22,8 @@ public class PathfinderSoftware extends RobotHardware{
         public double exSlope;
         public double exVectorX;
         public double exVectorY;
+        public double clipVX;
+        public double clipVY;
 
         /**
          * @param x1 current x position
@@ -29,7 +31,7 @@ public class PathfinderSoftware extends RobotHardware{
          * @param x2 target x position
          * @param y2 target y position
          */
-        public void linearEncoderMovement(double x1, double y1, double x2, double y2){
+        public void linearEncoderMovement(double x1, double y1, double x2, double y2, float minPower, float percentLoss){
             double yDifference = y2-y1;
             double xDifference = x2-x1;
             double slope;
@@ -37,7 +39,7 @@ public class PathfinderSoftware extends RobotHardware{
             double yVector;
 
             // check for undefined slope!!!
-            if (xDifference == 0){
+            if ((int) xDifference == 0){
                 // don't move x
                 xVector = 0;
                 // set y to max
@@ -54,39 +56,50 @@ public class PathfinderSoftware extends RobotHardware{
 
             // slowwww for when close
             if (Math.abs(xDifference) <= 25){
-                xVector = Range.clip( xVector*( Range.clip(Math.abs(xDifference), 7, 1000)*0.01) , xVector*0.02, xVector);
+                float maxDisX = (float) (Range.clip(Math.abs(xDifference), 1, 1000)*percentLoss);
+                xVector = Range.clip( xVector*maxDisX, xVector*percentLoss, 1);
                 myOpMode.telemetry.addData("X SLOWED", "");
+                clipVX = xVector;
+                xVector = -Range.clip(Math.abs(xVector), minPower, 1);xVector *= (xDifference/Math.abs(xDifference));
             }
             if (Math.abs(yDifference) <= 25){
-                yVector = Range.clip( yVector*( Range.clip(Math.abs(yDifference), 7, 1000)*0.01) , yVector*0.02, yVector);
+                float maxDisY = (float) (Range.clip(Math.abs(yDifference), 1, 1000)*percentLoss);
+                yVector = Range.clip( yVector*maxDisY , yVector*percentLoss, 1);
                 myOpMode.telemetry.addData("Y SLOWED","");
+                clipVY = yVector;
+                yVector = -Range.clip(Math.abs(yVector), minPower, 1);yVector *= (yDifference/Math.abs(yDifference));
             }
+
             driveFieldCentric(yVector,xVector, turnPower);
              // telemetry
             exVectorX = xVector;
             exVectorY = yVector;
-            myOpMode.telemetry.addData("vectors: ", Math.round(xVector*100)/100 + ", " + Math.round(yVector*100)/100);
             myOpMode.telemetry.addData("slope :", exSlope);
         }
 
-        public void jIC(double x1, double y1, double x2, double y2){
+        public void precise(double x1, double y1, double x2, double y2){
             double yDifference = y2-y1;
             double xDifference = x2-x1;
+            double slope;
+            if ((int) xDifference != 0) {
+                slope = yDifference/xDifference;
+            } else {slope = 1;}
             double xVector = strafePower;
             double yVector = drivePower;
-            if (Math.abs(xDifference) <= 25){
-                xVector = Range.clip( xVector*( Range.clip(Math.abs(xDifference), 7, 1000)*0.01) , xVector*0.02, xVector);
+            if (Math.abs(xDifference) <= 5 && slope != 1){
                 myOpMode.telemetry.addData("X SLOWED", "");
+                xVector = (1-(slope*6)) * -0.06;
+                yVector = Range.clip(Math.abs(yVector), 0.06, 0.2);
             }
-            if (Math.abs(yDifference) <= 25){
-                yVector = Range.clip( yVector*( Range.clip(Math.abs(yDifference), 7, 1000)*0.01) , yVector*0.02, yVector);
+            if (Math.abs(yDifference) <= 5){
                 myOpMode.telemetry.addData("Y SLOWED","");
+                yVector = (slope*6) * -0.06;
+                yVector = Range.clip(Math.abs(yVector), 0.06, 0.2);
             }
             driveFieldCentric(yVector,xVector, turnPower);
             // telemetry
             exVectorX = xVector;
             exVectorY = yVector;
-            myOpMode.telemetry.addData("vectors: ", Math.round(xVector*100)/100 + ", " + Math.round(yVector*100)/100);
         }
 
         public void bearingCorrection(double bearing) {
