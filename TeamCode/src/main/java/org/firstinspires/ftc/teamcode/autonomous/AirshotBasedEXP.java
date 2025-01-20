@@ -5,10 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
@@ -98,12 +95,12 @@ public class AirshotBasedEXP extends LinearOpMode {
         while (robot.elbowDrive.isBusy()) { // check for when to let go of specimen
             robot.setClawPosition(robot.pass,robot.pass,robot.superposition);
 
-            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.COUNTS_PER_DEGREE * 100) ) {
+            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ARM_COUNTS_PER_DEGREE * 100) ) {
                 break;
             }
         }
         robot.setClawPosition(robot.disable,robot.pass ,robot.pass); // let go of specimen
-        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
+        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.ARM_COUNTS_PER_DEGREE);
         telemetry.update();
 
 
@@ -122,7 +119,7 @@ public class AirshotBasedEXP extends LinearOpMode {
         color.primaryBlobList = color.primaryColorProcessor.getBlobs();
         for (ColorBlobLocatorProcessor.Blob b : color.primaryBlobList) {
             double distanceC = countourToDistance(b.getContourArea()); // done
-            double heightB = robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE * 0.1; // height(in) per deg formula missing
+            double heightB = robot.elbowDrive.getCurrentPosition()/robot.ARM_COUNTS_PER_DEGREE * 0.1; // height(in) per deg formula missing
             double depthA = Math.sqrt(Math.pow(distanceC,2) - Math.pow(heightB, 2)); // done
             samplePos.add(depthA + robotPos.y + 14); // add distance to list (idk if its x or y for the pose) and last # is robot length
 

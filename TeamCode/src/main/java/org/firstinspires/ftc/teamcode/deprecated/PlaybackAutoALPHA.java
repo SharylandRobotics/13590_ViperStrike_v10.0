@@ -64,7 +64,7 @@ public class PlaybackAutoALPHA extends LinearOpMode {
                 robot.rightFrontDrive.setTargetPosition((int) dataTable[(i * IS) + 9]);
                 robot.rightBackDrive.setTargetPosition((int) dataTable[(i * IS) + 10]);
 
-                robot.elbowDrive.setTargetPosition((int) (dataTable[(i * IS) + 3] * robot.COUNTS_PER_DEGREE));
+                robot.elbowDrive.setTargetPosition((int) (dataTable[(i * IS) + 3] * robot.ARM_COUNTS_PER_DEGREE));
                 robot.clawPinch.setPosition(dataTable[(i * IS) + 4]);
                 robot.clawAxial.setPosition(dataTable[(i * IS) + 5]);
 

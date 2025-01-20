@@ -51,7 +51,7 @@ public class TesterAuto extends LinearOpMode {
             heading = yawPitchRoll.getYaw(); // set Yaw angle
             telemetry.addData("current orientation", String.valueOf(yawPitchRoll));
             telemetry.addData("current yaw", String.valueOf(heading));
-            telemetry.addData("Elbow Angle:", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE);
+            telemetry.addData("Elbow Angle:", robot.elbowDrive.getCurrentPosition()/robot.ARM_COUNTS_PER_DEGREE);
             telemetry.addData("Extension Rev:", robot.extensionDrive.getCurrentPosition()/robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Extension Pos:", robot.extensionDrive.getCurrentPosition());
             telemetry.addData("Elbow Pos:", robot.elbowDrive.getCurrentPosition());

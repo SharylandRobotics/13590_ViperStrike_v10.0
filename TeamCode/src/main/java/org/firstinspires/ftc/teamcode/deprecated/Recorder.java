@@ -88,7 +88,7 @@ public class Recorder extends LinearOpMode {
                 elbowFactor = gamepad1.right_trigger * robot.ELBOW_FUDGE_FACTOR;
             } else { elbowFactor = 0;}
             robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
-            armPos = robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE;
+            armPos = robot.elbowDrive.getCurrentPosition()/robot.ARM_COUNTS_PER_DEGREE;
 
             if (gamepad1.x) { // close claw
                 robot.setClawPosition(robot.enable, robot.pass, robot.pass);

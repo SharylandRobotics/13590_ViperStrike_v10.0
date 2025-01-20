@@ -81,25 +81,43 @@ public class PathfinderSoftware extends RobotHardware{
             double yDifference = y2-y1;
             double xDifference = x2-x1;
             double slope;
-            if ((int) xDifference != 0) {
+            double Rslope;
+            double yVector;
+            double xVector;
+
+            if ( xDifference != 0 && yDifference != 0){
                 slope = yDifference/xDifference;
-            } else {slope = 1;}
-            double xVector = strafePower;
-            double yVector = drivePower;
-            if (Math.abs(xDifference) <= 5 && slope != 1){
-                myOpMode.telemetry.addData("X SLOWED", "");
-                xVector = (1-(slope*6)) * -0.06;
-                yVector = Range.clip(Math.abs(yVector), 0.06, 0.2);
+                Rslope = xDifference/yDifference;
+                yVector = slope;
+                xVector = slope * Rslope;
+            } else if ( xDifference == 0) {
+                slope = 404;
+                xVector = 0;
+                yVector = 1;
+            } else {
+                slope = 0;
+                xVector = 1;
+                yVector = 0;
             }
-            if (Math.abs(yDifference) <= 5){
-                myOpMode.telemetry.addData("Y SLOWED","");
-                yVector = (slope*6) * -0.06;
-                yVector = Range.clip(Math.abs(yVector), 0.06, 0.2);
+
+            if (Math.abs(xDifference) <= 15 && xDifference != 0){
+                xVector = xVector * (Math.abs(xDifference)*0.06);
+                xVector = Range.clip(Math.abs(xVector), 0.06, 1);
             }
-            driveFieldCentric(yVector,xVector, turnPower);
-            // telemetry
+            if (Math.abs(yDifference) <= 15 && yDifference != 0){
+                yVector = yVector * (Math.abs(yDifference)*0.06);
+                yVector = Range.clip(Math.abs(yVector), 0.06, 1);
+            } else if (yDifference == 0) {
+                yVector = 0;
+            }
+
+            xVector = Math.abs(xVector) * (xDifference/Math.abs(xDifference));
+            yVector = Math.abs(yVector) * (yDifference/Math.abs(yDifference));
+
+            driveFieldCentric(yVector, xVector, turnPower);
             exVectorX = xVector;
             exVectorY = yVector;
+            exSlope = slope;
         }
 
         public void bearingCorrection(double bearing) {

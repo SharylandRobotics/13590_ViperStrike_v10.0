@@ -72,12 +72,12 @@ public class ALPHAvisionAuto extends LinearOpMode{
         while (robot.elbowDrive.isBusy()) { // check for when to let go of specimen
             robot.setClawPosition(robot.pass,robot.pass,robot.superposition);
 
-            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.COUNTS_PER_DEGREE * 100) ) {
+            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ARM_COUNTS_PER_DEGREE * 100) ) {
                 break;
             }
         }
         robot.setClawPosition(robot.disable,robot.pass ,robot.pass); // let go of specimen
-        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.COUNTS_PER_DEGREE );
+        telemetry.addData("GET ELBOW ANGLE", robot.elbowDrive.getCurrentPosition()/robot.ARM_COUNTS_PER_DEGREE);
         telemetry.update();
 
         sleep(200);

@@ -51,6 +51,7 @@ public class RobotHardware {
     public double rightFrontPower;
     public double rightBackPower;
 
+
     public double DRIVE_SPEED;
     public double STRAFE_SPEED;
     public double TURN_SPEED;
@@ -66,19 +67,6 @@ public class RobotHardware {
     public double YAW_MID;
     public double YAW_LEFT;
     public double YAW_RIGHT;
-    /**
-     * Angle 0 for CON TOWER
-     */
-    public double TOWER_MIN;
-    /**
-     * Angle 320 for CON TOWER
-     */
-    public double TOWER_MAx;
-    /**
-     * Angle 160 for CON TOWER
-     */
-    public double TOWER_MID;
-
     // End of Rudimentary inits...
 
 
@@ -96,6 +84,16 @@ public class RobotHardware {
     public statesOfBeing superposition = statesOfBeing.SUPERPOSITION;
     public statesOfBeing pass = statesOfBeing.PASS;
 
+    // Declare Wheel Encoder Variables
+    public int leftFrontTarget;
+    public int leftBackTarget;
+    public int rightFrontTarget;
+    public int rightBackTarget;
+    public final float ROBOT_RADIUS_IN = 8.4f; // FIXME to be measured!!
+    public double COUNTS_PER_MOTOR_REV = 537.7;
+    public double WHEEL_DIAMETER_INCHES = 3.77953;
+    public double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV) / (WHEEL_DIAMETER_INCHES * Math.PI);
+
     // Declare Extender Encoder Variables
     public final double EXTENSION_COUNTS_PER_REV =
         28 // counts for bare motor revolution (aka int number at the end of the *encoder resolution formula*
@@ -111,7 +109,7 @@ public class RobotHardware {
 
 
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
-    public final double COUNTS_PER_DEGREE =
+    public final double ARM_COUNTS_PER_DEGREE =
         28 // counts for motor revolution...
             * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
             * (100.0 / 20.0) // external gearing, 20 to 100 teeth
@@ -133,19 +131,19 @@ public class RobotHardware {
          positions in the executive code and I do not wish to cause confusion there.
      */
     public double ELBOW_COLLAPSED = 0;
-    public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
-    public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
+    public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
+    public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
+    public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
+    public double ELBOW_FUDGE_FACTOR = 5 * ARM_COUNTS_PER_DEGREE; // Amount to rotate the elbow by
     public double angleConvert(double angle){
-        return Math.round((angle) * COUNTS_PER_DEGREE);
+        return Math.round((angle) * ARM_COUNTS_PER_DEGREE);
     }
     public double armByExtender() { // returns elbow pos for extension pos; this sould be a positive slope: as extender goes up arm goes up
         // 13x/25 + 22 = y  ; x = extension pos, y = elbow pos
-        return (((((extensionDrive.getCurrentPosition()/EXTENSION_COUNTS_PER_REV)*13)/25) + 22) * COUNTS_PER_DEGREE);// slope goes here: initial position of 0, 22 ; 25, 35
+        return (((((extensionDrive.getCurrentPosition()/EXTENSION_COUNTS_PER_REV)*13)/25) + 22) * ARM_COUNTS_PER_DEGREE);// slope goes here: initial position of 0, 22 ; 25, 35
     }
     public double extenderByArm() { // this should be a negative slope: as arm goes up extender goes down
         return (elbowDrive.getCurrentPosition());// slope goes here: initial position of arm (parallel), extend (0) ; final position (up or down)
@@ -370,6 +368,25 @@ public class RobotHardware {
         rightBackDrive.setPower(rightBackWheel);
     }
 
+    public void encoderFieldCentric(double driveIN, double strafeIN, double turnDEG){
+        double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+        // Rotate the movement direction counter to the bot rotation
+        double strafeRotation = (strafeIN*COUNTS_PER_INCH) * Math.cos(-botHeading) - (driveIN*COUNTS_PER_INCH) * Math.sin(-botHeading);
+        double driveRotation = (strafeIN*COUNTS_PER_INCH) * Math.sin(-botHeading) + (driveIN*COUNTS_PER_INCH) * Math.cos(-botHeading);
+
+        double turnRAD = (turnDEG*Math.PI)/180;
+        double turnIN = turnRAD*ROBOT_RADIUS_IN;
+
+        leftFrontTarget = (int) (driveRotation + strafeRotation + turnIN);
+        leftBackTarget = (int) (driveRotation - strafeRotation + turnIN);
+        rightFrontTarget = (int) (driveRotation - strafeRotation - turnIN);
+        rightBackTarget = (int) (driveRotation +  strafeRotation - turnIN);
+
+        leftFrontDrive.setTargetPosition(leftFrontTarget);leftBackDrive.setTargetPosition(leftBackTarget);
+        rightFrontDrive.setTargetPosition(rightFrontTarget);rightBackDrive.setTargetPosition(rightBackTarget);
+    }
+
     public void driveFor(ElapsedTime runtimeVar, double time, double drive, double strafe, double turn, String teleMSG) {
         driveFieldCentric(drive,strafe,turn);
         runtimeVar.reset();
@@ -439,7 +456,7 @@ public class RobotHardware {
     public void calibrateClaw(double orientation) { // VERY IMPORTANT: moves the claw to face parallel/perpendicular to the ground
                                                     // relative to the elbow's position
         // returns the current angle without the offset
-        double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / COUNTS_PER_DEGREE));
+        double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / ARM_COUNTS_PER_DEGREE));
         double extensionRevs = Math.round((extensionDrive.getCurrentPosition() / EXTENSION_COUNTS_PER_REV) / 0.1) *0.1;
         double targetClawPos; // used to avoid changing the claw position too many times in here
 

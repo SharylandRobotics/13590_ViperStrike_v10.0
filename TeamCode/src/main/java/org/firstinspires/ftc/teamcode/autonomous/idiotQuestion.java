@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.VisionSoftware;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name= "APTive", group ="Robot")
-public class APTive extends LinearOpMode {
+@Autonomous(name= "idiot", group ="Robot")
+public class idiotQuestion extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
@@ -28,7 +28,6 @@ public class APTive extends LinearOpMode {
         double y = 0;
         double bearing = 0;
         double slope = 0;
-        double exSlopeH = 0;
         boolean breaker = false;
 
         robot.init();
@@ -85,28 +84,25 @@ public class APTive extends LinearOpMode {
             aptDetector.activeAPTscanner(-1);
             telemetry.update();
             if (aptDetector.targetFound) {
-                x = aptDetector.detectedTag.robotPose.getPosition().x;
-                y = aptDetector.detectedTag.robotPose.getPosition().y;
+                x = Math.round(aptDetector.detectedTag.robotPose.getPosition().x*10)/10f;
+                y = Math.round(aptDetector.detectedTag.robotPose.getPosition().y*10)/10f;
                 breaker = true;
             }
-            telemetry.addData("check",x + ", " + y);
             sleep(50);
         }
         robot.driveFieldCentric(0,0,0);
         sleep(200);
 
-        telemetry.addData("check2","");
         telemetry.update();
-        ptFinder.linearEncoderMovement(x, y, -54.2, 39, (float) 0.05, 0.01f);
-        telemetry.addData("check3","");
+        ptFinder.precise(x, y, -54.2, 39);
         telemetry.update();
         slope = ptFinder.exSlope;
-        while (!ptFinder.atTargetPos(Math.round(x) , Math.round(y), -50, 39) && opModeIsActive()){
+        while (!ptFinder.atTargetPos(Math.round(x) , Math.round(y), -54.2, 39) && opModeIsActive()){
             aptDetector.activeAPTscanner(12);
-            x = aptDetector.detectedTag.robotPose.getPosition().x;
-            y = aptDetector.detectedTag.robotPose.getPosition().y;
+            x = Math.round(aptDetector.detectedTag.robotPose.getPosition().x*10)/10f;
+            y = Math.round(aptDetector.detectedTag.robotPose.getPosition().y*10)/10f;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            ptFinder.linearEncoderMovement(x, y, -50, 39, 0.01f, 0.003f);
+            ptFinder.precise(x, y, -50, 39);
             if (Math.abs(ptFinder.exVectorY) < 0.02 && Math.abs(ptFinder.exVectorX) < 0.02){break;}
             ptFinder.bearingCorrection(bearing);
             telemetry.addData("Vectors: ", ptFinder.exVectorX + ", " + ptFinder.exVectorY);
@@ -121,13 +117,12 @@ public class APTive extends LinearOpMode {
         telemetry.update();
         sleep(500);
         byte check = 0;
-        float multiplier = 0.06f;
         while (opModeIsActive() && check != 6){
             aptDetector.activeAPTscanner(12);
-            x = (aptDetector.detectedTag.robotPose.getPosition().x + x)/2;
-            y = (aptDetector.detectedTag.robotPose.getPosition().y + y)/2;
+            x = Math.round(aptDetector.detectedTag.robotPose.getPosition().x*10)/10f;
+            y = Math.round(aptDetector.detectedTag.robotPose.getPosition().y*10)/10f;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            ptFinder.linearEncoderMovement(x, y, -54.2, 39, multiplier, 0.1f);
+            ptFinder.precise(x, y, -54.2, 39);
             ptFinder.bearingCorrection(bearing);
             telemetry.addData("Vectors: ", ptFinder.exVectorX + ", " + ptFinder.exVectorY);
             telemetry.addData("PreClip: ", ptFinder.clipVX + ", " + ptFinder.clipVY);

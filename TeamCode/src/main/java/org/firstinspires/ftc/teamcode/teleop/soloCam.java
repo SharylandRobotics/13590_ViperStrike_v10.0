@@ -125,7 +125,7 @@ public class soloCam extends LinearOpMode{
             // telemetry
             telemetry.addData("Heading", robot.heading);
             telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.COUNTS_PER_DEGREE);
+            telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.ARM_COUNTS_PER_DEGREE);
             telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition() / robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Claw Calibration", "Parallel, Perpendicular", calibrateParallel, calibratePerpendicular);
             telemetry.addData("Elbow Mode:", elbowByExtender ? "Extender Based" : "Free Range");
