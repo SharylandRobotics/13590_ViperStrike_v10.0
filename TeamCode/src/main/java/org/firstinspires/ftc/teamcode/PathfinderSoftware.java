@@ -31,10 +31,11 @@ public class PathfinderSoftware extends RobotHardware{
          * @param x2 target x position
          * @param y2 target y position
          */
-        public void linearEncoderMovement(double x1, double y1, double x2, double y2, float minPower, float percentLoss){
+        public void linearEncoderMovement(double x1, double y1, double x2, double y2, double minPower, float percentLoss){
             double yDifference = y2-y1;
             double xDifference = x2-x1;
             double slope;
+            double Rslope;
             double xVector;
             double yVector;
 
@@ -48,8 +49,9 @@ public class PathfinderSoftware extends RobotHardware{
                 slope = 404;
             } else {
                 // default to this
+                Rslope = xDifference/yDifference;
                 slope = yDifference/xDifference;
-                xVector = -( ( 1 - Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
+                xVector = -( ( Rslope * Math.abs(slope)) * (xDifference/Math.abs(xDifference)));
                 yVector = -( Math.abs(slope) * (yDifference/Math.abs(yDifference)));
             }
             exSlope = slope;
@@ -100,19 +102,19 @@ public class PathfinderSoftware extends RobotHardware{
                 yVector = 0;
             }
 
-            if (Math.abs(xDifference) <= 15 && xDifference != 0){
-                xVector = xVector * (Math.abs(xDifference)*0.06);
+            if (Math.abs(xDifference) <= 25 && xDifference != 0){
+                xVector = xVector * ((Math.abs(xDifference)*0.06));
                 xVector = Range.clip(Math.abs(xVector), 0.06, 1);
             }
-            if (Math.abs(yDifference) <= 15 && yDifference != 0){
-                yVector = yVector * (Math.abs(yDifference)*0.06);
+            if (Math.abs(yDifference) <= 25 && yDifference != 0){
+                yVector = yVector * ((Math.abs(yDifference)*0.06));
                 yVector = Range.clip(Math.abs(yVector), 0.06, 1);
             } else if (yDifference == 0) {
                 yVector = 0;
             }
 
-            xVector = Math.abs(xVector) * (xDifference/Math.abs(xDifference));
-            yVector = Math.abs(yVector) * (yDifference/Math.abs(yDifference));
+            xVector = Math.abs(xVector) * -(xDifference/Math.abs(xDifference));
+            yVector = Math.abs(yVector) * -(yDifference/Math.abs(yDifference));
 
             driveFieldCentric(yVector, xVector, turnPower);
             exVectorX = xVector;

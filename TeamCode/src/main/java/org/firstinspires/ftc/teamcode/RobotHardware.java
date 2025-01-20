@@ -89,7 +89,7 @@ public class RobotHardware {
     public int leftBackTarget;
     public int rightFrontTarget;
     public int rightBackTarget;
-    public final float ROBOT_RADIUS_IN = 8.4f; // FIXME to be measured!!
+    public final float ROBOT_RADIUS_IN = 8.5f; // FIXME to be measured!!
     public double COUNTS_PER_MOTOR_REV = 537.7;
     public double WHEEL_DIAMETER_INCHES = 3.77953;
     public double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV) / (WHEEL_DIAMETER_INCHES * Math.PI);

@@ -190,12 +190,12 @@ public class BazaarTeleOp extends LinearOpMode{
             telemetry.update();
             switch ((int) runtime.seconds()) {
                 case 90:
-                    gamepad2.rumble(0.1, 0.1, 200);
+                    gamepad1.rumble(0.1, 0.1, 200);
                     break;
                 case 120:
-                    gamepad2.rumble(0.5, 0.5, 200);
+                    gamepad1.rumble(0.5, 0.5, 200);
                 case 135:
-                    gamepad2.rumble(0.5, 0.5, 200);
+                    gamepad1.rumble(0.5, 0.5, 200);
             }
             // check for elbow stalls
             if (prevElbowPos == robot.elbowDrive.getCurrentPosition() && robot.elbowDrive.getPower() >= 1.0){

@@ -102,8 +102,8 @@ public class idiotQuestion extends LinearOpMode {
             x = Math.round(aptDetector.detectedTag.robotPose.getPosition().x*10)/10f;
             y = Math.round(aptDetector.detectedTag.robotPose.getPosition().y*10)/10f;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            ptFinder.precise(x, y, -50, 39);
-            if (Math.abs(ptFinder.exVectorY) < 0.02 && Math.abs(ptFinder.exVectorX) < 0.02){break;}
+            ptFinder.precise(x, y, -54.2, 39);
+            if (Math.abs(ptFinder.exVectorY) < 0.06 && Math.abs(ptFinder.exVectorX) < 0.06){break;}
             ptFinder.bearingCorrection(bearing);
             telemetry.addData("Vectors: ", ptFinder.exVectorX + ", " + ptFinder.exVectorY);
             telemetry.addData("PreClip: ", ptFinder.clipVX + ", " + ptFinder.clipVY);
