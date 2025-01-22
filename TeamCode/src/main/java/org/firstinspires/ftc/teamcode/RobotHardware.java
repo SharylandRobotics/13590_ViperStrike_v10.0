@@ -375,7 +375,9 @@ public class RobotHardware {
         double strafeRotation = (strafeIN*COUNTS_PER_INCH) * Math.cos(-botHeading) - (driveIN*COUNTS_PER_INCH) * Math.sin(-botHeading);
         double driveRotation = (strafeIN*COUNTS_PER_INCH) * Math.sin(-botHeading) + (driveIN*COUNTS_PER_INCH) * Math.cos(-botHeading);
 
+        // convert deg to rad
         double turnRAD = (turnDEG*Math.PI)/180;
+        // sector length formula (rad*radius)
         double turnIN = turnRAD*ROBOT_RADIUS_IN;
 
         leftFrontTarget = (int) (driveRotation + strafeRotation + turnIN);

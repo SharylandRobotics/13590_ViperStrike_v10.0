@@ -51,7 +51,7 @@ public class PlaybackAutoALPHA extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        for (int i = 0; i*IS < dataTable.length; i++) { // for every set (of 6) of indexes, do...
+        for (int i = 0; i*IS < dataTable.length; i++) { // for every set (of 10) of indexes, do...
 
 
                 telemetry.addData(String.valueOf(i), "-th action");

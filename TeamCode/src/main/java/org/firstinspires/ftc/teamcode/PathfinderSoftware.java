@@ -122,6 +122,52 @@ public class PathfinderSoftware extends RobotHardware{
             exSlope = slope;
         }
 
+        public void tryAgain(double x1, double y1, double x2, double y2){
+            double xDifference = x2-x1;
+            double yDifference = y2-y1;
+            double slope = 0;
+            double denominator = Math.max(Math.abs(xDifference), Math.abs(yDifference));
+            double xVector;
+            double yVector;
+
+            if ( xDifference != 0 && yDifference != 0){
+                xVector = Math.round((xDifference/denominator)*1000)/1000.;
+                yVector = Math.round((yDifference/denominator)*1000)/1000.;
+
+                if (Math.abs(xDifference) < 26){ xVector *= (Math.abs(xDifference)*0.06); }
+                if (Math.abs(yDifference) < 26){ yVector *= (Math.abs(yDifference)*0.06); }
+
+                xVector = Range.clip(Math.abs(xVector), 0.06, 1);
+                yVector = Range.clip(Math.abs(yVector), 0.06, 1);
+
+                xVector *= (xDifference/Math.abs(xDifference));
+                yVector *= (yDifference/Math.abs(yDifference));
+
+            } else if ( xDifference == 0) {
+                slope = 404;
+                xVector = 0;
+                yVector = 1;
+
+                if (Math.abs(yDifference) < 26){ yVector *= (Math.abs(yDifference)*0.06); }
+                yVector = Range.clip(Math.abs(yVector), 0.06, 1);
+                yVector *= (yDifference/Math.abs(yDifference));
+            } else {
+                slope = 0;
+                xVector = 1;
+
+                if (Math.abs(xDifference) < 26){ xVector *= (Math.abs(xDifference)*0.06); }
+                xVector = Range.clip(Math.abs(xVector), 0.06, 1);
+                xVector *= (xDifference/Math.abs(xDifference));
+                
+                yVector = 0;
+            }
+
+            driveFieldCentric(yVector, xVector, turnPower);
+            exSlope = slope;
+            exVectorX = xVector; exVectorY = yVector;
+            
+        }
+
         public void bearingCorrection(double bearing) {
             // check if u got a readable bearing (duh)
             if (bearing != 404) {
