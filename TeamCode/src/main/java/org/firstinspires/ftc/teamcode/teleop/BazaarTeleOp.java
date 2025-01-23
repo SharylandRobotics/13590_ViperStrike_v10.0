@@ -145,7 +145,7 @@ public class BazaarTeleOp extends LinearOpMode{
             }
 
             if (gamepad2.right_bumper) {
-                robot.setClawPosition(robot.enable, robot.pass, robot.pass);
+                robot.extensionDrive.setTargetPosition((int) robot.EXTENSION_MAXIMUM_COUNT);
             }
 
             // MISC/ACTION code
