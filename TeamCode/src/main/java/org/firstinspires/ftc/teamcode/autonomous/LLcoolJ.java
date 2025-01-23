@@ -31,10 +31,13 @@ public class LLcoolJ extends LinearOpMode {
 
         limelight.pipelineSwitch(1);
 
+        final double MtoIN = 39.3701;
         double x = 0;
         double y = 0;
         double bearing = 0;
         Pose3D botPose;
+        double xHold;
+        double yHold;
 
         robot.init();
         ptFinder.init();
@@ -62,15 +65,23 @@ public class LLcoolJ extends LinearOpMode {
 
         limelight.start();
 
-        botPose = limelight.getLatestResult().getBotpose();
-        x = botPose.getPosition().x;
-        y = botPose.getPosition().y;
-        ptFinder.linearEncoderMovement(x, y, x+10, y, 0.06, 0.03f);
-        telemetry.addData("position: ", x+", "+y); telemetry.addData("slope: ", ptFinder.exSlope); telemetry.addData("vectors: ", ptFinder.exVectorX+", "+ptFinder.exVectorY);
-        telemetry.update();
-
         waitForStart();
 
+        ptFinder.tryAgain(x, y, (x), (y+27) );
+        robot.encoderFieldCentric(27,0,0);
+        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
+            telemetry.addData("Busy","");
+            telemetry.update();
+        }
+
+        sleep(500);
+
+        botPose = limelight.getLatestResult().getBotpose();
+        x = MtoIN*botPose.getPosition().x;
+        y = MtoIN*botPose.getPosition().y;
+        ptFinder.tryAgain(x, y, (x+10), (y) );
+        telemetry.addData("position: ", x+", "+y); telemetry.addData("slope: ", ptFinder.exSlope); telemetry.addData("vectors: ", ptFinder.exVectorX+", "+ptFinder.exVectorY);
+        telemetry.update();
         robot.encoderFieldCentric(0, 10, 0);
 
         runtime.reset();

@@ -162,9 +162,9 @@ public class PathfinderSoftware extends RobotHardware{
                 yVector = 0;
             }
 
-            driveFieldCentric(yVector, xVector, turnPower);
+            driveFieldCentric(-yVector, -xVector, turnPower);
             exSlope = slope;
-            exVectorX = xVector; exVectorY = yVector;
+            exVectorX = -xVector; exVectorY = -yVector;
             
         }
 
