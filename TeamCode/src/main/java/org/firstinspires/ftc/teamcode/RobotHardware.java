@@ -89,7 +89,9 @@ public class RobotHardware {
     public int leftBackTarget;
     public int rightFrontTarget;
     public int rightBackTarget;
-    public final float ROBOT_RADIUS_IN = 8.5f; // FIXME to be measured!!
+    public final byte ROBOT_WIDTH = 17;
+    public final float ROBOT_LENGTH = 8.5f; // FIXME to be measured!!
+
     public double COUNTS_PER_MOTOR_REV = 537.7;
     public double WHEEL_DIAMETER_INCHES = 3.77953;
     public double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV) / (WHEEL_DIAMETER_INCHES * Math.PI);
@@ -375,10 +377,8 @@ public class RobotHardware {
         double strafeRotation = (strafeIN*COUNTS_PER_INCH) * Math.cos(-botHeading) - (driveIN*COUNTS_PER_INCH) * Math.sin(-botHeading);
         double driveRotation = (strafeIN*COUNTS_PER_INCH) * Math.sin(-botHeading) + (driveIN*COUNTS_PER_INCH) * Math.cos(-botHeading);
 
-        // convert deg to rad
-        double turnRAD = (turnDEG*Math.PI)/180;
         // sector length formula (rad*radius)
-        double turnIN = turnRAD*ROBOT_RADIUS_IN;
+        double turnIN = Math.toRadians(turnDEG)* ((ROBOT_WIDTH + ROBOT_LENGTH)/2);
 
         leftFrontTarget = (int) (driveRotation + strafeRotation + turnIN);
         leftBackTarget = (int) (driveRotation - strafeRotation + turnIN);

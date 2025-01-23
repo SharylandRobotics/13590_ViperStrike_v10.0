@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.deprecated;
 
-import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,11 +8,8 @@ import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Autonomous(name= "idiot", group ="Robot")
-public class idiotQuestion extends LinearOpMode {
+@Autonomous(name= "APTive", group ="Robot")
+public class APTive extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
@@ -28,6 +24,7 @@ public class idiotQuestion extends LinearOpMode {
         double y = 0;
         double bearing = 0;
         double slope = 0;
+        double exSlopeH = 0;
         boolean breaker = false;
 
         robot.init();
@@ -84,27 +81,32 @@ public class idiotQuestion extends LinearOpMode {
             aptDetector.activeAPTscanner(-1);
             telemetry.update();
             if (aptDetector.targetFound) {
-                x = Math.round(aptDetector.detectedTag.robotPose.getPosition().x*10)/10f;
-                y = Math.round(aptDetector.detectedTag.robotPose.getPosition().y*10)/10f;
+                x = aptDetector.detectedTag.robotPose.getPosition().x;
+                y = aptDetector.detectedTag.robotPose.getPosition().y;
                 breaker = true;
             }
+            telemetry.addData("check",x + ", " + y);
             sleep(50);
         }
         robot.driveFieldCentric(0,0,0);
         sleep(200);
 
+        byte check = 0;
+        telemetry.addData("check2","");
         telemetry.update();
-        ptFinder.precise(x, y, -54.2, 39);
+        ptFinder.linearEncoderMovement(x, y, -54.2, 39, (float) 0.05, 0.01f);
+        telemetry.addData("check3","");
         telemetry.update();
         slope = ptFinder.exSlope;
-        while (!ptFinder.atTargetPos(Math.round(x) , Math.round(y), -54.2, 39) && opModeIsActive()){
+        while (!ptFinder.atTargetPos(Math.round(x) , Math.round(y), -54.2, 39) && opModeIsActive() || check < 3){
             aptDetector.activeAPTscanner(12);
-            x = Math.round(aptDetector.detectedTag.robotPose.getPosition().x*10)/10f;
-            y = Math.round(aptDetector.detectedTag.robotPose.getPosition().y*10)/10f;
+            x = aptDetector.detectedTag.robotPose.getPosition().x;
+            y = aptDetector.detectedTag.robotPose.getPosition().y;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            ptFinder.precise(x, y, -54.2, 39);
-            if (Math.abs(ptFinder.exVectorY) < 0.06 && Math.abs(ptFinder.exVectorX) < 0.06){break;}
-            ptFinder.bearingCorrection(bearing);
+            ptFinder.linearEncoderMovement(x, y, -54.2, 39, 0.07f, 0.025f);
+            if (ptFinder.atTargetPos(Math.round(x*10)/10. , Math.round(y*10)/10., -54.2, 39)){
+                check++;
+            }            ptFinder.bearingCorrection(bearing);
             telemetry.addData("Vectors: ", ptFinder.exVectorX + ", " + ptFinder.exVectorY);
             telemetry.addData("PreClip: ", ptFinder.clipVX + ", " + ptFinder.clipVY);
             telemetry.addData( "new slope: ", ptFinder.exSlope);
@@ -116,13 +118,15 @@ public class idiotQuestion extends LinearOpMode {
         telemetry.addData("kms", "");
         telemetry.update();
         sleep(500);
+        /*
         byte check = 0;
+        double multiplier = 0.06;
         while (opModeIsActive() && check != 6){
             aptDetector.activeAPTscanner(12);
-            x = Math.round(aptDetector.detectedTag.robotPose.getPosition().x*10)/10f;
-            y = Math.round(aptDetector.detectedTag.robotPose.getPosition().y*10)/10f;
+            x = (aptDetector.detectedTag.robotPose.getPosition().x + x)/2;
+            y = (aptDetector.detectedTag.robotPose.getPosition().y + y)/2;
             bearing = aptDetector.detectedTag.ftcPose.bearing;
-            ptFinder.precise(x, y, -54.2, 39);
+            ptFinder.linearEncoderMovement(x, y, -54.2, 39, multiplier, 0.1f);
             ptFinder.bearingCorrection(bearing);
             telemetry.addData("Vectors: ", ptFinder.exVectorX + ", " + ptFinder.exVectorY);
             telemetry.addData("PreClip: ", ptFinder.clipVX + ", " + ptFinder.clipVY);
@@ -137,6 +141,8 @@ public class idiotQuestion extends LinearOpMode {
         telemetry.clearAll();
         telemetry.addData("KMS", "");
         telemetry.update();
+
+         */
         sleep(5000);
 
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
