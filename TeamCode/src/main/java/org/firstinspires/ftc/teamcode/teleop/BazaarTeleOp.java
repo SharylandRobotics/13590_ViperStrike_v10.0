@@ -23,6 +23,7 @@ public class BazaarTeleOp extends LinearOpMode{
         int leftBumperTimer = 0;
         int timesRan = 0;
         int timesCounted = 0;
+        int stickCounter = 0;
         // sounds
         int coloredSoundID = hardwareMap.appContext.getResources().getIdentifier("colored", "raw", hardwareMap.appContext.getPackageName());
         int yellowSoundID   = hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", hardwareMap.appContext.getPackageName());
@@ -109,10 +110,10 @@ public class BazaarTeleOp extends LinearOpMode{
 
             // gamepad 2
 
-            if (gamepad2.right_stick_button) { // set claw parallel to floor
+            if (gamepad2.right_stick_button && stickCounter > 5) { // set claw parallel to floor
                 calibrateParallel = !calibrateParallel;
                 calibratePerpendicular = false;
-            } else if (gamepad2.left_stick_button) { // set claw perpendicular to floor
+            } else if (gamepad2.left_stick_button && stickCounter > 5) { // set claw perpendicular to floor
                 calibratePerpendicular = !calibratePerpendicular;
                 calibrateParallel = false;
             }
@@ -160,7 +161,9 @@ public class BazaarTeleOp extends LinearOpMode{
             extendFactor = -gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
             if ((robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT) && extendFactor >= 0) {extendFactor = 0;}
             if ((robot.extensionDrive.getCurrentPosition() <= 0) && extendFactor <= 0) {extendFactor = 0;}
-            robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extendFactor);
+            if (extendFactor != 0) {
+                robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extendFactor);
+            }
             // drive arm
             if (gamepad2.left_bumper) {
                 if (leftBumperTimer > 10) {
@@ -206,7 +209,7 @@ public class BazaarTeleOp extends LinearOpMode{
                     }
                 }
             }
-
+            stickCounter++;
             leftBumperTimer++;
             sleep(50);
         }

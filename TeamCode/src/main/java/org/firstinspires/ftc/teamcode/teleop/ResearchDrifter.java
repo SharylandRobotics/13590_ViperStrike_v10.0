@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.ftccommon.SoundPlayer;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
@@ -19,9 +21,15 @@ public class ResearchDrifter extends LinearOpMode {
 
     private boolean coloredFound;
     private boolean yellowFound;
+    private Limelight3A limelight;
 
     @Override
     public void runOpMode() {
+        limelight = hardwareMap.get(Limelight3A.class, "limelight-rfc");
+        limelight.pipelineSwitch(1);
+
+        Pose3D botPose;
+
         // sounds
         int coloredSoundID = hardwareMap.appContext.getResources().getIdentifier("colored", "raw", hardwareMap.appContext.getPackageName());
         int yellowSoundID = hardwareMap.appContext.getResources().getIdentifier("yellow", "raw", hardwareMap.appContext.getPackageName());
@@ -44,19 +52,22 @@ public class ResearchDrifter extends LinearOpMode {
         double posY = 0;
 
         robot.init();
-        aptDetector.visionInit();
+        //aptDetector.visionInit();
         robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        aptDetector.portalAPT.setProcessorEnabled(aptDetector.APTprocessor, true);
+        //aptDetector.portalAPT.setProcessorEnabled(aptDetector.APTprocessor, true);
         robot.elbowDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        limelight.start();
         waitForStart();
         runtime.reset();
 
         while (opModeIsActive()) {
+            botPose = limelight.getLatestResult().getBotpose();
 
-
+            posX = botPose.getPosition().x;
+            posY = botPose.getPosition().y;
             if (gamepad1.left_stick_y != 0 || gamepad1.left_stick_x != 0 || gamepad1.right_stick_x != 0) {
                 drive = -gamepad1.left_stick_y;
                 strafe = gamepad1.left_stick_x * 1.1;
@@ -76,12 +87,14 @@ public class ResearchDrifter extends LinearOpMode {
                 }
 
                 // DETECT APT
-                aptDetector.activeAPTscanner(-1);
+                /*aptDetector.activeAPTscanner(-1);
                 if (aptDetector.targetFound) {
                     telemetry.addData("APT found", "");
                     posX = aptDetector.detectedTag.robotPose.getPosition().x;
                     posY = aptDetector.detectedTag.robotPose.getPosition().y;
-                }
+                }*/
+
+
 
                 robot.driveRobotCentric(drive, strafe, turn);
 

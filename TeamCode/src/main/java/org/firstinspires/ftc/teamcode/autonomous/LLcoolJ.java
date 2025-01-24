@@ -36,9 +36,8 @@ public class LLcoolJ extends LinearOpMode {
         double y = 0;
         double bearing = 0;
         Pose3D botPose;
-        double xHold;
-        double yHold;
-
+        double ozX = 20;
+        double ozY = 50;
         robot.init();
         ptFinder.init();
 
@@ -82,24 +81,27 @@ public class LLcoolJ extends LinearOpMode {
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
+            robot.clawAxial.setPosition(robot.CLAW_MID);
         }
-        robot.setClawPosition(robot.pass, robot.pass, robot.superposition);
+        sleep(1000);
+        robot.clawAxial.setPosition(robot.CLAW_MID);
 
         while (robot.elbowDrive.isBusy()){
             telemetry.addData("raising","");
-            robot.setClawPosition(robot.pass, robot.pass, robot.superposition);
+            robot.clawAxial.setPosition(robot.CLAW_MID);
         }
         while (robot.extensionDrive.isBusy()){
             telemetry.addData("raising","");
-            robot.setClawPosition(robot.pass, robot.pass, robot.superposition);
+            robot.clawAxial.setPosition(robot.CLAW_MID);
         }
 
-
+        sleep(1000);
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
         while (robot.elbowDrive.isBusy()){
-            robot.setClawPosition(robot.pass, robot.pass, robot.superposition);
+            robot.clawAxial.setPosition(robot.CLAW_MID);
             if ((robot.elbowDrive.getCurrentPosition() <= (int) (robot.ARM_COUNTS_PER_DEGREE*100))){
                 robot.setClawPosition(robot.disable, robot.pass, robot.superposition);
+                robot.clawAxial.setPosition(robot.CLAW_MID);
                 robot.extensionDrive.setTargetPosition(0);
                 break;
             }
@@ -155,7 +157,7 @@ public class LLcoolJ extends LinearOpMode {
         robot.setClawPosition(robot.pass, robot.enable, robot.pass);
         // rotate bot back to position
         robot.driveFieldCentric(0,0, -1.0);
-        robot.encoderFieldCentric(0,0,60);
+        robot.encoderFieldCentric(0,0,-60);
         // move bot to next sample
         robot.driveFieldCentric(0, 1.0, 0);
         robot.encoderFieldCentric(0, 6, 0);
@@ -170,7 +172,7 @@ public class LLcoolJ extends LinearOpMode {
 
         // straighten up
         robot.driveFieldCentric(-0.5, 0, -0.5);
-        robot.encoderFieldCentric(5, 0, 30);
+        robot.encoderFieldCentric(-5, 0, -30);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
@@ -183,6 +185,39 @@ public class LLcoolJ extends LinearOpMode {
             telemetry.update();
         }
         robot.setClawPosition(robot.enable, robot.pass, robot.pass);
+        sleep(100);
+
+        ptFinder.tryAgain(-50, 20, 9, 37);
+        robot.driveFieldCentric(robot.drivePower, robot.strafePower, 0.6);
+        robot.encoderFieldCentric(59, 17, -90);
+
+        // score here
+
+        // return to OZ
+        ptFinder.tryAgain(x, y, ozX, ozY);
+        robot.encoderFieldCentric((ozX-x), (ozY-y), 0);
+        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_BACKWARD_PARALLEL);
+        robot.setClawPosition(robot.disable, robot.superposition, robot.superposition);
+        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
+            telemetry.addData("Busy","");
+            telemetry.update();
+        }
+        while (robot.elbowDrive.isBusy()){
+            telemetry.addData("Busy","");
+            telemetry.update();
+        }
+
+        robot.driveFieldCentric(-0.2,0,0);
+        robot.encoderFieldCentric(-4,0,0);
+        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
+            telemetry.addData("Busy","");
+            telemetry.update();
+        }
+        robot.setClawPosition(robot.enable, robot.pass, robot.superposition);
+        sleep(100);
+
+        // go back to score
+
 
         // begin scoring sequence -> (after picking up all 3 samples)
 
