@@ -70,7 +70,7 @@ public class BazaarTeleOp extends LinearOpMode{
 
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1;
-            turn = gamepad1.right_stick_x;
+            turn = -gamepad1.right_stick_x;
 
             rotateFactor = (-gamepad2.right_stick_x*-0.5) + 0.5;
             if (gamepad2.right_stick_y > 0.8){rotateFactor = 0.5;} // move stick up to reset to middle

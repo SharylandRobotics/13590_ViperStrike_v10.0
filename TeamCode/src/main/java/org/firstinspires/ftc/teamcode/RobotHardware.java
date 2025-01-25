@@ -107,7 +107,7 @@ public class RobotHardware {
 
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
             // by the distance traveled
-    public final double EXTENSION_MAXIMUM_COUNT = (COUNTS_PER_MOTOR_REV * (15.5)); // the other number is how many revs
+    public final double EXTENSION_MAXIMUM_COUNT = (COUNTS_PER_MOTOR_REV * (16.15)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 

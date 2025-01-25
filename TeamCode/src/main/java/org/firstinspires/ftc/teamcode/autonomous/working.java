@@ -34,6 +34,8 @@ public class working extends LinearOpMode {
         double y = 0;
         double heading;
         Pose3D botPose;
+
+
         double BrungX = -6.7; // FIXME find this out
         double BrungY = 29; // FIXME find this out
         double BozX = -35.8; // FIXME find this out
@@ -115,29 +117,12 @@ public class working extends LinearOpMode {
                 break;
             }
         }
-        if (limelight.getLatestResult() != null) {
-            botPose = limelight.getLatestResult().getBotpose();
-            x = botPose.getPosition().x*MtoIN;
-            y = botPose.getPosition().y*MtoIN;
 
-            if ( (x < 0) && (y > 0) ){
-                actingOzX = BozX;
-                actingOzY = BozY;
-                actingRungX = BrungX;
-                actingRungY = BrungY;
-            } else {
-                actingOzX = RozX;
-                actingOzY = RozY;
-                actingRungX = RrungX;
-                actingRungY = RrungY;
-            }
+        actingOzX = BozX;
+        actingOzY = BozY;
+        actingRungX = BrungX;
+        actingRungY = BrungY;
 
-        } else {
-            actingOzX = BozX;
-            actingOzY = BozY;
-            actingRungX = BrungX;
-            actingRungY = BrungY;
-        }
         sleep(250);
 
         robot.driveFieldCentric(-0.4,0,0);
@@ -147,13 +132,6 @@ public class working extends LinearOpMode {
             telemetry.update();
         }
 
-        // drive to pos
-        ptFinder.tryAgain(x,y,(x+37),(y+1.25));
-        robot.encoderFieldCentric(1.25, 37,0);
-        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
-            telemetry.addData("Busy","");
-            telemetry.update();
-        }
 
         /*
         robot.clawAxial.setPosition(0.7);
@@ -161,72 +139,6 @@ public class working extends LinearOpMode {
         sleep(3000);
 
          */
-        // heading
-        robot.driveFieldCentric(0,0,-0.6);
-        robot.encoderFieldCentric(0,0,-30);
-        robot.extensionDrive.setTargetPosition((int) (16.5 * robot.COUNTS_PER_MOTOR_REV));
-        // angle of claw
-        robot.clawYaw.setPosition(robot.YAW_LEFT);
-        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy() || robot.extensionDrive.isBusy()){
-            telemetry.addData("Busy","");
-            telemetry.update();
-        }
-
-        // begin pick-up/drop sequence --> (3x)
-        for (byte i=0; i<2; i++) {
-            robot.clawPinch.setPosition(robot.CLAW_OPEN);
-            robot.elbowDrive.setTargetPosition((int) (28 * robot.ARM_COUNTS_PER_DEGREE));
-            while (robot.elbowDrive.isBusy()) {
-                robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-                telemetry.addData("Busy", "");
-                telemetry.update();
-            }
-            // align claw with arm
-            robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-
-            // close claw / grip sample
-            robot.clawPinch.setPosition(robot.CLAW_CLOSE);
-            sleep(300);
-
-            // bring arm slightly up
-            robot.elbowDrive.setTargetPosition((int) (35 * robot.ARM_COUNTS_PER_DEGREE));
-
-            // rotate claw
-            robot.clawYaw.setPosition(robot.YAW_RIGHT);
-
-
-            // rotate bot to place in OZ
-            robot.driveFieldCentric(0, 0, -0.6);
-            robot.encoderFieldCentric(0, 0, -180);
-            robot.extensionDrive.setTargetPosition((int) (15 * robot.COUNTS_PER_MOTOR_REV));
-            while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy() || robot.extensionDrive.isBusy()) {
-                telemetry.addData("Busy", "");
-                telemetry.update();
-            }
-            // drop sample
-            robot.setClawPosition(robot.disable, robot.pass, robot.pass);
-            sleep(300);
-
-            // rotate claw to pick up
-            robot.clawYaw.setPosition(robot.YAW_LEFT);
-
-            // rotate bot back to position
-            robot.driveFieldCentric(0, 0, 0.6);
-            robot.encoderFieldCentric(0, 0, 180);
-            while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()) {
-                telemetry.addData("Busy", "");
-                telemetry.update();
-            }
-            // move bot to next sample
-            robot.driveFieldCentric(0, 1.0, 0);
-            robot.encoderFieldCentric(0, 11, 0);
-            while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()) {
-                telemetry.addData("Busy", "");
-                telemetry.update();
-            }
-            sleep(500);
-        }
-
         // return to OZ
         ptFinder.tryAgain(x, y, actingOzX, actingOzY);
         robot.encoderFieldCentric((actingOzX - x), (actingOzY - y), 0);
