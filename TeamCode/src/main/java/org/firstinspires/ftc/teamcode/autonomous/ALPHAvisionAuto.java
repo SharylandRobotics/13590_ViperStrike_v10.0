@@ -43,6 +43,21 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.init();
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
+
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        robot.leftFrontDrive.setTargetPosition(0);
+        robot.leftBackDrive.setTargetPosition(0);
+        robot.rightFrontDrive.setTargetPosition(0);
+        robot.rightBackDrive.setTargetPosition(0);
+
+        robot.leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Send a telemetry message to signify the robot waiting; wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -61,7 +76,7 @@ public class ALPHAvisionAuto extends LinearOpMode{
         robot.driveFieldCentric(0.3,0,0);
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.45  ) {
+        while (opModeIsActive() && runtime.seconds() < 0.65  ) {
             telemetry.addData("SCORING", "...");
             telemetry.update();
             robot.setClawPosition(robot.pass,robot.superposition,robot.superposition);

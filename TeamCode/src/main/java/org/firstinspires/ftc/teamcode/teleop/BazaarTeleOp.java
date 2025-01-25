@@ -77,14 +77,14 @@ public class BazaarTeleOp extends LinearOpMode{
             // or if you want it incrementally : (-gamepad2.right_stick_x*-0.5) + 0.5) * 0.01 *adjust for sensitivity*
             // also change the set servo pos to getPosition() + rotateFactor
 
-            while (gamepad1.dpad_left && gamepad1.dpad_right) { // reset init
+            while (gamepad1.dpad_left) { // reset init
                 timesRan = timesRan + 1;
-                if (timesRan >= 200) {
+                if (timesRan >= 10) {
                     robot.init();
                     timesRan = 0;
+                    telemetry.addData("RESET","");
                     break;
                 }
-                sleep(50);
             }
 
             if (gamepad1.right_trigger != 0) { // slow down driving
@@ -113,9 +113,11 @@ public class BazaarTeleOp extends LinearOpMode{
             if (gamepad2.right_stick_button && stickCounter > 5) { // set claw parallel to floor
                 calibrateParallel = !calibrateParallel;
                 calibratePerpendicular = false;
+                stickCounter = 0;
             } else if (gamepad2.left_stick_button && stickCounter > 5) { // set claw perpendicular to floor
                 calibratePerpendicular = !calibratePerpendicular;
                 calibrateParallel = false;
+                stickCounter = 0;
             }
 
             if (gamepad2.x) { // close claw
@@ -132,8 +134,7 @@ public class BazaarTeleOp extends LinearOpMode{
             if (gamepad2.dpad_up) {
                 robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
             } else if (gamepad2.dpad_right) {
-                NEWelbowPos = ((int) robot.ELBOW_PARALLEL);
-                robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
+                robot.clawAxial.setPosition(robot.CLAW_UP);
             } else if (gamepad2.dpad_left) {
                 NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
                 robot.elbowDrive.setTargetPosition((int) NEWelbowPos);

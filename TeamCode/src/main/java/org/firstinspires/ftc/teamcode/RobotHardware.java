@@ -90,7 +90,7 @@ public class RobotHardware {
     public int rightFrontTarget;
     public int rightBackTarget;
     public final byte ROBOT_WIDTH = 17;
-    public final float ROBOT_LENGTH = 8.5f; // FIXME to be measured!!
+    public final byte ROBOT_LENGTH = 13; // FIXME to be measured!!
 
     public double COUNTS_PER_MOTOR_REV = 537.7;
     public double WHEEL_DIAMETER_INCHES = 3.77953;
@@ -99,7 +99,7 @@ public class RobotHardware {
     // Declare Extender Encoder Variables
     public final double EXTENSION_COUNTS_PER_REV =
         28 // counts for bare motor revolution (aka int number at the end of the *encoder resolution formula*
-            * (   (1+(46./17.))   ) // times internal gearing (aka *gear ratio formula*)
+            * (   (((1+(46./17))) * (1+(46./11)))   ) // times internal gearing (aka *gear ratio formula*)
             * (60. / 100.) // external gearing, 100 (drive) to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
 
@@ -257,6 +257,11 @@ public class RobotHardware {
         elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        extensionDrive.setTargetPosition(0);
+        extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
