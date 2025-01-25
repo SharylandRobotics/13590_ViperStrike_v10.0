@@ -88,9 +88,11 @@ public class RobotHardware {
     public int leftFrontTarget;
     public int leftBackTarget;
     public int rightFrontTarget;
+
     public int rightBackTarget;
     public final byte ROBOT_WIDTH = 17;
-    public final byte ROBOT_LENGTH = 13; // FIXME to be measured!!
+    public final byte ROBOT_LENGTH = 13;
+    public final double ROBOT_DIAG_RADIUS = Math.sqrt(Math.pow(ROBOT_LENGTH/2f, 2) + Math.pow(ROBOT_WIDTH/2f, 2));
 
     public double COUNTS_PER_MOTOR_REV = 537.7;
     public double WHEEL_DIAMETER_INCHES = 3.77953;
@@ -389,12 +391,12 @@ public class RobotHardware {
         double driveRotation = (strafeIN*COUNTS_PER_INCH) * Math.sin(-botHeading) + (driveIN*COUNTS_PER_INCH) * Math.cos(-botHeading);
 
         // sector length formula (rad*radius)
-        double turnIN = Math.toRadians(turnDEG)* ((ROBOT_WIDTH + ROBOT_LENGTH)/2);
+        double turnTICKS = (Math.toRadians(turnDEG) * ROBOT_DIAG_RADIUS) *COUNTS_PER_INCH;
 
-        leftFrontTarget = (int) (driveRotation + strafeRotation + turnIN);
-        leftBackTarget = (int) (driveRotation - strafeRotation + turnIN);
-        rightFrontTarget = (int) (driveRotation - strafeRotation - turnIN);
-        rightBackTarget = (int) (driveRotation +  strafeRotation - turnIN);
+        leftFrontTarget = (int) (driveRotation + strafeRotation + turnTICKS);
+        leftBackTarget = (int) (driveRotation - strafeRotation + turnTICKS);
+        rightFrontTarget = (int) (driveRotation - strafeRotation - turnTICKS);
+        rightBackTarget = (int) (driveRotation +  strafeRotation - turnTICKS);
 
         leftFrontDrive.setTargetPosition(leftFrontDrive.getCurrentPosition() + leftFrontTarget);
         leftBackDrive.setTargetPosition(leftBackDrive.getCurrentPosition() + leftBackTarget);
