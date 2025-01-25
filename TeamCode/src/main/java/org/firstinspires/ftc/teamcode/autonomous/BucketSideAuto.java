@@ -39,7 +39,7 @@ public class BucketSideAuto extends LinearOpMode {
         robot.driveFieldCentric(0.3,0,0);
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(60))); // score/ hook on
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.45  ) {
+        while (opModeIsActive() && runtime.seconds() < 0.75  ) {
             telemetry.addData("SCORING", "...");
             telemetry.update();
             robot.setClawPosition(robot.pass,robot.superposition,robot.superposition);
@@ -76,7 +76,7 @@ public class BucketSideAuto extends LinearOpMode {
 
         robot.driveFieldCentric(0,-1.0,0);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < 0.65) {
+        while (opModeIsActive() && runtime.seconds() < 0.7) {
             telemetry.addData("STRAFING", "...");
             telemetry.update();
         }
@@ -164,7 +164,7 @@ public class BucketSideAuto extends LinearOpMode {
 
         // strafe to sub zone
 
-        robot.driveFieldCentric(0,-1.0,0);
+        robot.driveFieldCentric(0,1.0,0);
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < 0.4) {
             telemetry.addData("STRAFING", "...");

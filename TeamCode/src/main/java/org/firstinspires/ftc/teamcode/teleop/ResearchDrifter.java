@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.ftccommon.SoundPlayer;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -78,15 +79,15 @@ public class ResearchDrifter extends LinearOpMode {
                 turn = Math.round((turn * 0.7) / 0.01) * 0.01;
             }
 
-                // BRAKE
-                if (gamepad1.right_trigger != 0) { // slow down driving
-                    double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
-                    drive = drive * multiplier;
-                    strafe = strafe * multiplier;
-                    turn = turn * multiplier;
-                }
+            // BRAKE
+            if (gamepad1.right_trigger != 0) { // slow down driving
+                double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
+                drive = drive * multiplier;
+                strafe = strafe * multiplier;
+                turn = turn * multiplier;
+            }
 
-                // DETECT APT
+            // DETECT APT
                 /*aptDetector.activeAPTscanner(-1);
                 if (aptDetector.targetFound) {
                     telemetry.addData("APT found", "");
@@ -95,16 +96,22 @@ public class ResearchDrifter extends LinearOpMode {
                 }*/
 
 
+            robot.driveRobotCentric(drive, strafe, turn);
 
-                robot.driveRobotCentric(drive, strafe, turn);
-
-                // telemetry
-                telemetry.addData("Heading", robot.heading);
-                telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-                telemetry.addData("XY Robot Position:", "\n" + posX + ", " + posY);
+            // telemetry
+            telemetry.addData("Heading", robot.heading);
+            telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            telemetry.addData("XY Robot Position:", "\n" + posX*39.3701 + ", " + posY*39.3701);
+            if (!limelight.getLatestResult().getDetectorResults().isEmpty()) {
+                for (LLResultTypes.DetectorResult detections : limelight.getLatestResult().getDetectorResults()) {
+                    telemetry.addData("tag Id", detections.getClassId());
+                }
+            } else {
+                telemetry.addData("empty", "");
                 telemetry.update();
 
                 sleep(50);
             }
         }
     }
+}
