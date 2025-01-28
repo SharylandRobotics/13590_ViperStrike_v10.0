@@ -4,7 +4,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,16 +44,37 @@ public class FieldLocalization {
     /**
      * variable used internally to determine team color
      */
+
+    // Measurement from middle of rung to side sub wall
+    private float rungHalfWidth;
+    // Measurement from sub wall to the farthest place you can score high rung from
+    private float rungFullLength;
+    private Position blueRungAREA1 = new Position(DistanceUnit.INCH, BlueRung.x - rungHalfWidth, BlueRung.y, 0, 0);
+    private Position blueRungAREA2 = new Position(DistanceUnit.INCH, BlueRung.x + rungHalfWidth, BlueRung.y + rungFullLength, 0,0);
+
+
+    private Position redRungAREA1 = new Position(DistanceUnit.INCH, RedRung.x - rungHalfWidth, RedRung.y + rungFullLength, 0, 0);
+    private Position redRungAREA2 = new Position(DistanceUnit.INCH, RedRung.x + rungHalfWidth, RedRung.y, 0,0);
     private boolean teamColorBlue;
     private List<Integer> blueAPTList = Arrays.asList(11, 12, 13);
     private List<Integer> redAPTList = Arrays.asList(14, 15 ,16);
 
     private enum fieldAreas {
-
+        observationZone,
+        rungs,
+        net,
+        submersible,
+        hangableSubmersible
     }
 
-    // constructor
-    public FieldLocalization (int detectedTagID){
+    /**
+     * Class constructor; initialize when you detect the first april tag (should be an april tag on your team's side)
+     * @param detectedTagID The April Tag you detected.
+     * @param robotObject Your RobotHardware object you first created at the beginning of the class.
+     *                    Kinda like giving the class your credit card info so it can make autonomous purchases w/o
+     *                    your permission, except now its just able to move your robot. (they're watching...) :)
+     */
+    public FieldLocalization (int detectedTagID, RobotHardware robotObject){
         if (redAPTList.contains(detectedTagID))
         {
             teamColorBlue = true;
@@ -65,15 +85,57 @@ public class FieldLocalization {
         }
     }
 
+    /**
+     * One of the main Assistant-type methods you should be calling when using this class.
+     * @param currentPos The current position of the robot needed to check when to assist in moving the elbow.
+     */
     public void elbowAssistant(Pose3D currentPos){
-        poseChecker(currentPos);
+        if (poseChecker(currentPos) == fieldAreas.rungs){
+
+        }
 
 
     }
 
-    private void poseChecker(Pose3D currentPos){
-        if ()
+    private fieldAreas poseChecker(Pose3D currentPos){
+        if (teamColorBlue){
+            return bluCheckerFrag(currentPos);
+        } else {
+            return redCheckerFrag(currentPos);
+        }
+
+        return ;
+    }
+
+    private fieldAreas bluCheckerFrag(Pose3D currentPos){
+        // translate BotPose object into Position object
+        Position pendingPos = currentPos.getPosition();
+        if (withinArea(blueRungAREA1, blueRungAREA2, pendingPos)) {
+            return fieldAreas.rungs;
+        } else if (withinArea()) {
+            return fieldAreas.observationZone;
+        } else if (withinArea()) {
+            return fieldAreas.hangableSubmersible;
+        } else if (withinArea()) {
+            return fieldAreas.submersible;
+        }
+    }
+
+    private fieldAreas redCheckerFrag(Pose3D currentPos){
 
     }
 
+    /**
+     * Pass in positions like if you were drawing a rectangle with 2 points; NO ANGLES. For more complex polygons, nag me
+     * to write it up
+     * @param corner1 should be the corner with the lowest x and greatest y
+     * @param corner2 should be the corner with the highest x and lowest y
+     * @param pendingPos position you want to check
+     */
+    private boolean withinArea(Position corner1, Position corner2, Position pendingPos){
+        boolean withinX = ( corner1.x <= pendingPos.x) && (pendingPos.x <= corner2.x);
+        boolean withinY = ( corner1.y >= pendingPos.y) && (pendingPos.y >= corner2.y);
+
+        return withinX && withinY;
+    }
 }
