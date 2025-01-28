@@ -8,22 +8,24 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FieldLocalization {
+    private float robotWidth;
+    private float robotLength;
     /**
      * Position of the farthest corner of the Blue OZ which still counts as a park
      */
-    public final Position BlueOZ = new Position(DistanceUnit.INCH, -35.8, 53.4, 0, 0);
+    public final Position BlueOZ = new Position(DistanceUnit.INCH, -36, 53.4, 0, 0);
     /**
      * Position of the Blue Rung down the middle
      */
-    public final Position BlueRung = new Position(DistanceUnit.INCH, -6.7, 29, 0, 0);
+    public final Position BlueRung = new Position(DistanceUnit.INCH, 0, 24 + (robotLength/2), 0, 0);
     /**
      * Position of the farthest corner of the Red OZ which still counts as a park
      */
-    public final Position RedOZ = new Position(DistanceUnit.INCH, 36.2, -54.9,  0,0);
+    public final Position RedOZ = new Position(DistanceUnit.INCH, 36, -54.9,  0,0);
     /**
      * Position of the Red Rung down the middle
      */
-    public final Position RedRung = new Position(DistanceUnit.INCH, 9.7, -27.7, 0, 0);
+    public final Position RedRung = new Position(DistanceUnit.INCH, 0, -24 - (robotLength/2), 0, 0);
 
     /**
      * Position of the closest Blue Sample to the center of the field
@@ -46,11 +48,11 @@ public class FieldLocalization {
      */
 
     // Measurement from middle of rung to side sub wall
-    private float rungHalfWidth;
+    private float rungHalfWidth = 13.75f;
     // Measurement from sub wall to the farthest place you can score high rung from
     private float rungFullLength;
-    private Position blueRungAREA1 = new Position(DistanceUnit.INCH, BlueRung.x - rungHalfWidth, BlueRung.y, 0, 0);
-    private Position blueRungAREA2 = new Position(DistanceUnit.INCH, BlueRung.x + rungHalfWidth, BlueRung.y + rungFullLength, 0,0);
+    private Position blueRungAREA1 = new Position(DistanceUnit.INCH, BlueRung.x - rungHalfWidth, BlueRung.y + rungFullLength, 0, 0);
+    private Position blueRungAREA2 = new Position(DistanceUnit.INCH, BlueRung.x + rungHalfWidth, BlueRung.y, 0,0);
 
 
     private Position redRungAREA1 = new Position(DistanceUnit.INCH, RedRung.x - rungHalfWidth, RedRung.y + rungFullLength, 0, 0);
@@ -83,6 +85,9 @@ public class FieldLocalization {
         {
             teamColorBlue = false;
         }
+
+        robotLength = robotObject.ROBOT_LENGTH;
+        robotWidth = robotObject.ROBOT_WIDTH;
     }
 
     /**
@@ -104,7 +109,6 @@ public class FieldLocalization {
             return redCheckerFrag(currentPos);
         }
 
-        return ;
     }
 
     private fieldAreas bluCheckerFrag(Pose3D currentPos){
@@ -112,17 +116,31 @@ public class FieldLocalization {
         Position pendingPos = currentPos.getPosition();
         if (withinArea(blueRungAREA1, blueRungAREA2, pendingPos)) {
             return fieldAreas.rungs;
-        } else if (withinArea()) {
+        }/* else if (withinArea()) {
             return fieldAreas.observationZone;
         } else if (withinArea()) {
             return fieldAreas.hangableSubmersible;
         } else if (withinArea()) {
             return fieldAreas.submersible;
         }
+        */
+        return fieldAreas.net;
     }
 
     private fieldAreas redCheckerFrag(Pose3D currentPos){
-
+        // translate BotPose object into Position object
+        Position pendingPos = currentPos.getPosition();
+        if (withinArea(redRungAREA1, redRungAREA2, pendingPos)) {
+            return fieldAreas.rungs;
+        }/* else if (withinArea()) {
+            return fieldAreas.observationZone;
+        } else if (withinArea()) {
+            return fieldAreas.hangableSubmersible;
+        } else if (withinArea()) {
+            return fieldAreas.submersible;
+        }
+        */
+        return fieldAreas.net;
     }
 
     /**

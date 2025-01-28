@@ -102,14 +102,14 @@ public class RobotHardware {
     // Declare Extender Encoder Variables
     public final double EXTENSION_COUNTS_PER_REV =
         28 // counts for bare motor revolution (aka int number at the end of the *encoder resolution formula*
-            * (   (((1+(46./17))) * (1+(46./11)))   ) // times internal gearing (aka *gear ratio formula*)
+            * (   (1+(46./17)) ) // times internal gearing (aka *gear ratio formula*)
             * (60. / 100.) // external gearing, 100 (drive) to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
 
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
             // by the distance traveled
-    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.8)); // the other number is how many revs
-            // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
+    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.3)); // the other number is how many revs
+            // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance FIXME u changed the motor
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
 
@@ -280,7 +280,7 @@ public class RobotHardware {
         SoundPlayer.getInstance().setMasterVolume(4);
 
         // Wait for the game to start (Display Gyro value while waiting)
-        while (myOpMode.opModeInInit()) {
+
             myOpMode.telemetry.addData("Status", "Hardware Initialized");
             myOpMode.telemetry.addData("Wheels starting at", "%7d :%7d :%7d :%7d",
                     leftFrontDrive.getCurrentPosition(), leftBackDrive.getCurrentPosition(),
@@ -288,8 +288,6 @@ public class RobotHardware {
             myOpMode.telemetry.addData("Starting Elbow Pos:", elbowDrive.getCurrentPosition());
             myOpMode.telemetry.update();
 
-
-        }
     }
 
     /**
