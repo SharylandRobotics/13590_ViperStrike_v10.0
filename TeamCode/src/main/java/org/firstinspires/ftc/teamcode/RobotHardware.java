@@ -6,6 +6,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -107,7 +108,7 @@ public class RobotHardware {
 
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
             // by the distance traveled
-    public final double EXTENSION_MAXIMUM_COUNT = (COUNTS_PER_MOTOR_REV * (16.15)); // the other number is how many revs
+    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.8)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
@@ -507,5 +508,28 @@ public class RobotHardware {
         }
         if (elbowDegTRUE == 0){targetClawPos = 0.75;} // pass submersible clearance
         clawAxial.setPosition(targetClawPos);
+    }
+
+    /**
+     * Drives the extender during teleOp
+     *
+     * @param input Dictates which direction the extender will move. Intended to be used as a gamepad stick.
+     */
+    public void driveExtenderPosition(double input){
+        input = Range.clip(input, -1, 1);
+        // make sure input doesn't exceed the possible power for the motor
+
+        extensionDrive.setPower(input);
+
+        if (input > 0){
+            // if input is positive, go to max pos
+            extensionDrive.setTargetPosition( (int) EXTENSION_MAXIMUM_COUNT);
+        } else if (input < 0){
+            // if input is negative, go to min pos
+            extensionDrive.setTargetPosition( 0);
+        } else {
+            // if input is 0, stop at where you're at
+            extensionDrive.setTargetPosition(extensionDrive.getCurrentPosition());
+        }
     }
 }

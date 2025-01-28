@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class FieldLocalization {
     /**
@@ -37,5 +42,38 @@ public class FieldLocalization {
      * Position of the closes Red Neutral Sample to the center of the field
      */
     public Position firstRedNeutral;
+    /**
+     * variable used internally to determine team color
+     */
+    private boolean teamColorBlue;
+    private List<Integer> blueAPTList = Arrays.asList(11, 12, 13);
+    private List<Integer> redAPTList = Arrays.asList(14, 15 ,16);
+
+    private enum fieldAreas {
+
+    }
+
+    // constructor
+    public FieldLocalization (int detectedTagID){
+        if (redAPTList.contains(detectedTagID))
+        {
+            teamColorBlue = true;
+        }
+        else if (blueAPTList.contains(detectedTagID))
+        {
+            teamColorBlue = false;
+        }
+    }
+
+    public void elbowAssistant(Pose3D currentPos){
+        poseChecker(currentPos);
+
+
+    }
+
+    private void poseChecker(Pose3D currentPos){
+        if ()
+
+    }
 
 }

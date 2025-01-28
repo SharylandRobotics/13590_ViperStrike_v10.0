@@ -39,7 +39,7 @@ public class BazaarTeleOp extends LinearOpMode{
         double turn;
 
         double elbowFactor;
-        double extendFactor;
+        double extendPosition;
         double rotateFactor;
 
         boolean elbowByExtender = false;
@@ -73,7 +73,7 @@ public class BazaarTeleOp extends LinearOpMode{
             turn = -gamepad1.right_stick_x;
 
             rotateFactor = (-gamepad2.right_stick_x*-0.5) + 0.5;
-            if (gamepad2.right_stick_y > 0.8){rotateFactor = 0.5;} // move stick up to reset to middle
+            if (-gamepad2.right_stick_y > 0.8){rotateFactor = robot.YAW_MID;} // move stick up to reset to middle
             // or if you want it incrementally : (-gamepad2.right_stick_x*-0.5) + 0.5) * 0.01 *adjust for sensitivity*
             // also change the set servo pos to getPosition() + rotateFactor
 
@@ -159,12 +159,10 @@ public class BazaarTeleOp extends LinearOpMode{
             robot.elbowDrive.setTargetPosition(robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
             // drive extension
             // ensure you don't hit the extender limit!!
-            extendFactor = -gamepad2.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
-            if ((robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT) && extendFactor >= 0) {extendFactor = 0;}
-            if ((robot.extensionDrive.getCurrentPosition() <= 0) && extendFactor <= 0) {extendFactor = 0;}
-            if (extendFactor != 0) {
-                robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extendFactor);
-            }
+
+            // happy, reader?
+            robot.driveExtenderPosition(-gamepad2.left_stick_y);
+
             // drive arm
             if (gamepad2.left_bumper) {
                 if (leftBumperTimer > 10) {
