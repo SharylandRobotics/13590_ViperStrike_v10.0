@@ -280,14 +280,18 @@ public class RobotHardware {
         SoundPlayer.getInstance().setMasterVolume(4);
 
         // Wait for the game to start (Display Gyro value while waiting)
+        clawAxial.setPosition(clawAxial.getPosition());
+        clawPinch.setPosition(clawPinch.getPosition());
+        clawYaw.setPosition(clawYaw.getPosition());
 
+        while (myOpMode.opModeInInit()) {
             myOpMode.telemetry.addData("Status", "Hardware Initialized");
             myOpMode.telemetry.addData("Wheels starting at", "%7d :%7d :%7d :%7d",
                     leftFrontDrive.getCurrentPosition(), leftBackDrive.getCurrentPosition(),
                     rightFrontDrive.getCurrentPosition(), rightBackDrive.getCurrentPosition());
             myOpMode.telemetry.addData("Starting Elbow Pos:", elbowDrive.getCurrentPosition());
             myOpMode.telemetry.update();
-
+        }
     }
 
     /**
