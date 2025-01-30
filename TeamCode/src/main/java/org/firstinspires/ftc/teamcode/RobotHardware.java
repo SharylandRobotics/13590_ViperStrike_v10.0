@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.*;
 
 public class RobotHardware {
 
@@ -407,15 +407,6 @@ public class RobotHardware {
         rightBackDrive.setTargetPosition(rightBackDrive.getCurrentPosition() + rightBackTarget);
     }
 
-    public void driveFor(ElapsedTime runtimeVar, double time, double drive, double strafe, double turn, String teleMSG) {
-        driveFieldCentric(drive,strafe,turn);
-        runtimeVar.reset();
-        while (myOpMode.opModeIsActive() && this.runtime.seconds() < time) {
-            myOpMode.telemetry.addData(teleMSG, "...");
-            myOpMode.telemetry.update();
-        }
-    }
-
     public double turnDirection(double angle, boolean returnPower) { // put the ACTUAL angle you want to turn to here. Use this func to set the turn power
         heading = imu.getRobotYawPitchRollAngles().getYaw();
         double goal = angle - heading;
@@ -532,6 +523,31 @@ public class RobotHardware {
         } else {
             // if input is 0, stop at where you're at
             extensionDrive.setTargetPosition(extensionDrive.getCurrentPosition());
+        }
+    }
+
+    /**
+     *
+     * @param robotPos current position of robot
+     * @param heading either IMU heading or LL heading
+     * @return returns a counter value for the elbow to face the high rung
+     */
+    public int elbowTrigPosition(Pose3D robotPos, double heading){
+        Position holder = robotPos.getPosition();
+        Position pendingPos = new Position(DistanceUnit.INCH, 0, Math.abs(holder.y), holder.z + 5, 0);
+        // pythagorean theorem ( letters correspond to the triangle part )
+        double distanceA = pendingPos.y;
+        double heightB = 26 - pendingPos.z;
+        double distanceC = Math.sqrt(Math.pow(distanceA, 2) + Math.pow(heightB, 2));
+        double cosOfAngle = distanceC/heightB;
+        double angle = Math.acos(cosOfAngle);
+        // check if you're facing forward
+        if ((heading + 90) >= 0) {
+            // return angle for a forward facing elbow
+            return (int) ((angle + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
+        } else {
+            // return angle for a rearward facing elbow
+            return (int) ((ELBOW_BACKWARD_PARALLEL - angle) * ARM_COUNTS_PER_DEGREE);
         }
     }
 }

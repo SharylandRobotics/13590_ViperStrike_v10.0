@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -9,8 +8,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-
-import java.util.List;
 
 @Autonomous(name= "LL", group ="LL")
 public class LLcoolJ extends LinearOpMode {
@@ -44,10 +41,10 @@ public class LLcoolJ extends LinearOpMode {
         double RozX = 36.2; // FIXME find this out
         double RozY = -54.9; // FIXME find this out
 
-        double actingOzX = 0;
-        double actingOzY = 0;
-        double actingRungX = 0;
-        double actingRungY = 0;
+        double actingOzX;
+        double actingOzY;
+        double actingRungX;
+        double actingRungY;
 
         robot.init();
         ptFinder.init();
@@ -245,21 +242,21 @@ public class LLcoolJ extends LinearOpMode {
 
         // drive to meet specimen
         robot.driveFieldCentric(-0.3, 0, 0);
-        robot.encoderFieldCentric(-20.5  , 0,0);
+        robot.encoderFieldCentric(-20, 0,0);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
         }
         // pick up specimen
         robot.setClawPosition(robot.enable, robot.pass, robot.pass);
-        sleep(100);
+        sleep(600);
 
         // begin 1st specimen scoring off sidewall
-        sleep(5000);
+        sleep(1000);
 
         // drive to rung
-        robot.driveFieldCentric(0.33, -1.0, 0.6);
-        robot.encoderFieldCentric(48, -72, -90);
+        robot.driveFieldCentric(0.33, -1.0, 0);
+        robot.encoderFieldCentric(48, -72, 0);
         // score here
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){

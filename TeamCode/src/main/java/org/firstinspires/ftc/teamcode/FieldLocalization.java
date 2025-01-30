@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
@@ -48,25 +49,41 @@ public class FieldLocalization {
      */
 
     // Measurement from middle of rung to side sub wall
-    private float rungHalfWidth = 13.75f;
+    private final float rungHalfWidth = 13.75f;
     // Measurement from sub wall to the farthest place you can score high rung from
     private float rungFullLength;
-    private Position blueRungAREA1 = new Position(DistanceUnit.INCH, BlueRung.x - rungHalfWidth, BlueRung.y + rungFullLength, 0, 0);
-    private Position blueRungAREA2 = new Position(DistanceUnit.INCH, BlueRung.x + rungHalfWidth, BlueRung.y, 0,0);
+    private final Position blueRungAREA1 = new Position(DistanceUnit.INCH, BlueRung.x - rungHalfWidth, BlueRung.y + rungFullLength, 0, 0);
+    private final Position blueRungAREA2 = new Position(DistanceUnit.INCH, BlueRung.x + rungHalfWidth, BlueRung.y, 0,0);
 
 
-    private Position redRungAREA1 = new Position(DistanceUnit.INCH, RedRung.x - rungHalfWidth, RedRung.y + rungFullLength, 0, 0);
-    private Position redRungAREA2 = new Position(DistanceUnit.INCH, RedRung.x + rungHalfWidth, RedRung.y, 0,0);
+    private final Position redRungAREA1 = new Position(DistanceUnit.INCH, RedRung.x - rungHalfWidth, RedRung.y + rungFullLength, 0, 0);
+    private final Position redRungAREA2 = new Position(DistanceUnit.INCH, RedRung.x + rungHalfWidth, RedRung.y, 0,0);
+
+    private final Position blueOzAREA2 = new Position(DistanceUnit.INCH, -36, 60, 0,0);
+    private final Position blueOzAREA1 = new Position(DistanceUnit.INCH, -72 + robotWidth/2, 72 - robotLength/2, 0,0);
+
+    private final Position redOzAREA2 = new Position(DistanceUnit.INCH, 36, -60, 0,0);
+    private final Position redOzAREA1 = new Position(DistanceUnit.INCH, 72 - robotWidth/2, -72 + robotLength/2, 0,0);
+
+
+    private final Position blueHsubAREA1 = new Position(DistanceUnit.INCH, 24, -24 + robotWidth/2, 0,0);
+    private final Position blueHsubAREA2 = new Position(DistanceUnit.INCH, 12 + robotLength/2, 24 - robotWidth/2, 0,0);
+
+    private final Position redHsubAREA1 = new Position(DistanceUnit.INCH, -12 - robotLength/2, -24 + robotWidth/2, 0,0);
+    private final Position redHsubAREA2 = new Position(DistanceUnit.INCH, -24, 24 - robotWidth/2, 0,0);
+
+
+    private RobotHardware robotObj;
     private boolean teamColorBlue;
-    private List<Integer> blueAPTList = Arrays.asList(11, 12, 13);
-    private List<Integer> redAPTList = Arrays.asList(14, 15 ,16);
+    private final List<Integer> blueAPTList = Arrays.asList(11, 12, 13);
+    private final List<Integer> redAPTList = Arrays.asList(14, 15 ,16);
 
     private enum fieldAreas {
         observationZone,
         rungs,
-        net,
         submersible,
-        hangableSubmersible
+        hangableSubmersible,
+        blank
     }
 
     /**
@@ -86,6 +103,7 @@ public class FieldLocalization {
             teamColorBlue = false;
         }
 
+        robotObj = robotObject;
         robotLength = robotObject.ROBOT_LENGTH;
         robotWidth = robotObject.ROBOT_WIDTH;
     }
@@ -94,13 +112,17 @@ public class FieldLocalization {
      * One of the main Assistant-type methods you should be calling when using this class.
      * @param currentPos The current position of the robot needed to check when to assist in moving the elbow.
      */
-    public void elbowAssistant(Pose3D currentPos){
+    public void elbowAssistant(Pose3D currentPos, double heading){
         if (poseChecker(currentPos) == fieldAreas.rungs){
-
+            robotObj.elbowDrive.setTargetPosition(robotObj.elbowTrigPosition(currentPos, heading));
+        } else if (poseChecker(currentPos) == fieldAreas.submersible ||
+                poseChecker(currentPos) == fieldAreas.hangableSubmersible) {
+            if (heading + 90 >= 0) {
+                robotObj.elbowDrive.setTargetPosition((int) (robotObj.ELBOW_PARALLEL));
+            } else { robotObj.elbowDrive.setTargetPosition((int) (robotObj.ELBOW_BACKWARD_PARALLEL));}
         }
-
-
     }
+
 
     private fieldAreas poseChecker(Pose3D currentPos){
         if (teamColorBlue){
@@ -116,15 +138,15 @@ public class FieldLocalization {
         Position pendingPos = currentPos.getPosition();
         if (withinArea(blueRungAREA1, blueRungAREA2, pendingPos)) {
             return fieldAreas.rungs;
-        }/* else if (withinArea()) {
+        } else if (withinArea(blueOzAREA1, blueOzAREA2, pendingPos)) {
             return fieldAreas.observationZone;
-        } else if (withinArea()) {
+        } else if (withinArea(blueHsubAREA1, blueHsubAREA2, pendingPos)) {
             return fieldAreas.hangableSubmersible;
-        } else if (withinArea()) {
+        } else if (withinArea(redHsubAREA1, redHsubAREA2, pendingPos)) {
             return fieldAreas.submersible;
+        } else {
+            return fieldAreas.blank;
         }
-        */
-        return fieldAreas.net;
     }
 
     private fieldAreas redCheckerFrag(Pose3D currentPos){
@@ -132,15 +154,15 @@ public class FieldLocalization {
         Position pendingPos = currentPos.getPosition();
         if (withinArea(redRungAREA1, redRungAREA2, pendingPos)) {
             return fieldAreas.rungs;
-        }/* else if (withinArea()) {
+        } else if (withinArea(redOzAREA1, redOzAREA2, pendingPos)) {
             return fieldAreas.observationZone;
-        } else if (withinArea()) {
+        } else if (withinArea(redHsubAREA1, redHsubAREA2, pendingPos)) {
             return fieldAreas.hangableSubmersible;
-        } else if (withinArea()) {
+        } else if (withinArea(blueHsubAREA1, blueHsubAREA2, pendingPos)) {
             return fieldAreas.submersible;
+        } else {
+            return fieldAreas.blank;
         }
-        */
-        return fieldAreas.net;
     }
 
     /**
