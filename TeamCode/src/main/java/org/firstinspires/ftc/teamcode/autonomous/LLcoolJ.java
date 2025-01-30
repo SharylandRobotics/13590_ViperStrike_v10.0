@@ -47,8 +47,6 @@ public class LLcoolJ extends LinearOpMode {
         double actingRungY;
 
         robot.init();
-        ptFinder.init();
-
 
         robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -100,7 +98,7 @@ public class LLcoolJ extends LinearOpMode {
             robot.clawAxial.setPosition(robot.CLAW_MID);
         }
 
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL)); // score/ hook on
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(10))); // score/ hook on
         while (robot.elbowDrive.isBusy()){
             robot.clawAxial.setPosition(robot.CLAW_MID);
             if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(45))){
@@ -274,7 +272,8 @@ public class LLcoolJ extends LinearOpMode {
             robot.clawAxial.setPosition(robot.CLAW_MID);
         }
 
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL)); // score/ hook on
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(10))); // score/ hook on
+        // score/ hook on
         while (robot.elbowDrive.isBusy()){
             robot.clawAxial.setPosition(robot.CLAW_MID);
             if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(45))){
@@ -341,7 +340,7 @@ public class LLcoolJ extends LinearOpMode {
             robot.clawAxial.setPosition(robot.CLAW_MID);
         }
 
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL)); // score/ hook on
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(10))); // score/ hook on
         while (robot.elbowDrive.isBusy()){
             robot.clawAxial.setPosition(robot.CLAW_MID);
             if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(45))){

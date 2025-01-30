@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.ftccommon.SoundPlayer;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
 @TeleOp(name = "BazaarTeleOp", group = "Robot")
@@ -13,12 +15,22 @@ public class BazaarTeleOp extends LinearOpMode{
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
 
-
+    Limelight3A limelight;
 
     private boolean coloredFound;
     private boolean yellowFound;
     @Override
     public void runOpMode() {
+        limelight = hardwareMap.get(Limelight3A.class, "limelight-rfc");
+
+        telemetry.setMsTransmissionInterval(11);
+
+        limelight.pipelineSwitch(1);
+
+        Pose3D botPose = null;
+        final double MtoIN = 39.3701;
+        double x;
+        double y;
         // timers
         int leftBumperTimer = 0;
         int timesRan = 0;
@@ -77,6 +89,15 @@ public class BazaarTeleOp extends LinearOpMode{
             // or if you want it incrementally : (-gamepad2.right_stick_x*-0.5) + 0.5) * 0.01 *adjust for sensitivity*
             // also change the set servo pos to getPosition() + rotateFactor
 
+            /*
+            if (limelight.getLatestResult() != null) {
+                botPose = limelight.getLatestResult().getBotpose();
+                x = botPose.getPosition().x * MtoIN;
+                y = botPose.getPosition().y * MtoIN;
+            }
+
+             */
+
             while (gamepad1.dpad_left) { // reset init
                 timesRan = timesRan + 1;
                 if (timesRan >= 10) {
@@ -86,6 +107,14 @@ public class BazaarTeleOp extends LinearOpMode{
                     break;
                 }
             }
+
+            /*
+            if (gamepad1.a) { 
+                if (botPose != null) {
+                    robot.elbowDrive.setTargetPosition(robot.elbowTrigPosition(botPose, robot.heading));
+                }
+            }
+             */
 
             if (gamepad1.right_trigger != 0) { // slow down driving
                 double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
@@ -121,9 +150,9 @@ public class BazaarTeleOp extends LinearOpMode{
             }
 
             if (gamepad2.x) { // close claw
-                robot.setClawPosition(robot.enable, robot.pass, robot.pass);
+                robot.clawPinch.setPosition(robot.CLAW_CLOSE);
             } else if (gamepad2.b) { // open claw
-                robot.setClawPosition(robot.disable, robot.pass, robot.pass);
+                robot.clawPinch.setPosition(robot.CLAW_OPEN);
             }
             if (gamepad2.a) { // mid claw
                 robot.clawAxial.setPosition(robot.CLAW_MID);
