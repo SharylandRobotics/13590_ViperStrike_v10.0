@@ -14,6 +14,7 @@ public class RobotHardware {
 
     // Declare OpMode members
     protected final LinearOpMode myOpMode; // gain access to methods in the calling OpMode.
+    public final double MtoIN = 39.3701; // meters to inches #
 
     // Define Motor and Servo objects (Make them private so that they CANT be accessed externally)
     public DcMotor leftFrontDrive = null;
@@ -185,7 +186,6 @@ public class RobotHardware {
         clawYaw = myOpMode.hardwareMap.get(Servo.class, "claw_yaw");
         clawAxial = myOpMode.hardwareMap.get(Servo.class, "claw_axial");
 
-        myEyes = myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1");
 
         DRIVE_SPEED = 0.5; // Maximum autonomous driving speed for better distance accuracy.
         STRAFE_SPEED = 0.5; // Maximum autonomous strafing speed for better distance accuracy.
@@ -199,9 +199,9 @@ public class RobotHardware {
         CLAW_MID = 0.51; // playable position
         CLAW_UP = 0.08; // MAXIMUM, not playable position
 
-        YAW_LEFT = 1.0;
+        YAW_LEFT = 0.0;
         YAW_MID = 0.5;
-        YAW_RIGHT = 0.0;
+        YAW_RIGHT = 1.0;
 
         /*
             Playable positions, initialize them if you feel the need to do so in the future:
@@ -494,7 +494,7 @@ public class RobotHardware {
             if (elbowDegTRUE < 267.00 && elbowDegTRUE > 210.00) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
                 targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
                 elbowDirection = enable; // elbow is facing forward
-            } else if ((elbowDegTRUE > 13.00 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+            } else if ((elbowDegTRUE > 12.00 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
                 targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
                 elbowDirection = disable; // elbow is facing backwards
             }
@@ -534,7 +534,7 @@ public class RobotHardware {
      */
     public int elbowTrigPosition(Pose3D robotPos, double heading){
         Position holder = robotPos.getPosition();
-        Position pendingPos = new Position(DistanceUnit.INCH, 0, Math.abs(holder.y), holder.z + 5, 0);
+        Position pendingPos = new Position(DistanceUnit.INCH, 0, Math.abs(holder.y)*MtoIN, (holder.z*MtoIN) + 5, 0);
         // pythagorean theorem ( letters correspond to the triangle part )
         double distanceA = pendingPos.y;
         double heightB = 26 - pendingPos.z;

@@ -28,9 +28,6 @@ public class BazaarTeleOp extends LinearOpMode{
         limelight.pipelineSwitch(1);
 
         Pose3D botPose = null;
-        final double MtoIN = 39.3701;
-        double x;
-        double y;
         // timers
         int leftBumperTimer = 0;
         int timesRan = 0;
@@ -61,7 +58,7 @@ public class BazaarTeleOp extends LinearOpMode{
         double prevElbowPos;
 
         robot.init();
-        double NEWelbowPos = robot.elbowDrive.getCurrentPosition(); // just here to keep intelliJ quiet
+        double NEWelbowPos;
 
         // extension encoder setup
         robot.extensionDrive.setTargetPosition(0);
@@ -89,14 +86,12 @@ public class BazaarTeleOp extends LinearOpMode{
             // or if you want it incrementally : (-gamepad2.right_stick_x*-0.5) + 0.5) * 0.01 *adjust for sensitivity*
             // also change the set servo pos to getPosition() + rotateFactor
 
-            /*
+
             if (limelight.getLatestResult() != null) {
                 botPose = limelight.getLatestResult().getBotpose();
-                x = botPose.getPosition().x * MtoIN;
-                y = botPose.getPosition().y * MtoIN;
             }
 
-             */
+
 
             while (gamepad1.dpad_left) { // reset init
                 timesRan = timesRan + 1;
@@ -108,13 +103,11 @@ public class BazaarTeleOp extends LinearOpMode{
                 }
             }
 
-            /*
             if (gamepad1.a) { 
                 if (botPose != null) {
                     robot.elbowDrive.setTargetPosition(robot.elbowTrigPosition(botPose, robot.heading));
                 }
             }
-             */
 
             if (gamepad1.right_trigger != 0) { // slow down driving
                 double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
