@@ -79,37 +79,29 @@ public class LLchillDay extends LinearOpMode {
 
         sleep(7000);
 
-        robot.driveFieldCentric(0.6, 0, 0);
-        robot.encoderFieldCentric(22.25, 0, 0);
+        robot.driveFieldCentric(0.6,0,0);
+        robot.encoderFieldCentric(22.25,0,0);
         sleep(100);
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
-        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()) {
-            telemetry.addData("Busy", "");
+        robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
+        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
+            telemetry.addData("Busy","");
             telemetry.update();
-            robot.clawAxial.setPosition(robot.CLAW_MID);
-            if ((robot.elbowDrive.getCurrentPosition() >= (int) (robot.ARM_COUNTS_PER_DEGREE * 80))) {
-                robot.extensionDrive.setTargetPosition((int) ((robot.EXTENSION_MAXIMUM_COUNT - robot.EXTENSION_COUNTS_PER_REV * 4)));
+            if ((robot.elbowDrive.getCurrentPosition() >= (int) (robot.ELBOW_PARALLEL))){
+                robot.extensionDrive.setTargetPosition((int) ((robot.EXTENSION_MAXIMUM_COUNT - robot.EXTENSION_COUNTS_PER_REV*4)));
             }
         }
-        robot.clawAxial.setPosition(robot.CLAW_MID);
 
-        while (robot.elbowDrive.isBusy()) {
-            telemetry.addData("raising", "");
-            robot.clawAxial.setPosition(robot.CLAW_MID);
-        }
-        robot.extensionDrive.setTargetPosition((int) ((robot.EXTENSION_MAXIMUM_COUNT - robot.EXTENSION_COUNTS_PER_REV * 4)));
-        while (robot.extensionDrive.isBusy()){
-            telemetry.addData("extending", "");
-            telemetry.update();
+        while (robot.elbowDrive.isBusy()){
+            telemetry.addData("raising","");
         }
 
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(15))); // score/ hook on
-        while (robot.elbowDrive.isBusy()) {
+        while (robot.elbowDrive.isBusy()){
             robot.clawAxial.setPosition(robot.CLAW_MID);
-            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(45))) {
+            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(45))){
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
             }
-            if ((robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(70)))) {
+            if ((robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(70)))){
                 robot.setClawPosition(robot.disable, robot.pass, robot.superposition);
                 robot.extensionDrive.setTargetPosition(0);
                 break;
@@ -165,20 +157,79 @@ public class LLchillDay extends LinearOpMode {
             telemetry.update();
         }
 
-        robot.elbowDrive.setTargetPosition((int) (13 * robot.ARM_COUNTS_PER_DEGREE));
-        while (robot.elbowDrive.isBusy()) {
+        // begin pick-up/drop sequence --> (3x)
+        for (byte i=0; i<2; i++) {
+            robot.elbowDrive.setTargetPosition((int) (13 * robot.ARM_COUNTS_PER_DEGREE));
+            while (robot.elbowDrive.isBusy()) {
+                robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
+                telemetry.addData("waiting on elbow", "");
+                telemetry.update();
+            }
+            // align claw with arm
             robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-            telemetry.addData("waiting on elbow", "");
-            telemetry.update();
+
+            // close claw / grip sample
+            robot.clawPinch.setPosition(robot.CLAW_CLOSE);
+            sleep(600);
+
+            // drive back & strafe to next sample (x)
+
+            robot.driveFieldCentric(-0.5, 0.6, 0);
+            robot.encoderFieldCentric(-11.25, (i*13.5) - 13.5, 0);
+            while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy() || robot.extensionDrive.isBusy()){
+                telemetry.addData("Busy","");
+                telemetry.update();
+            }
+            robot.driveFieldCentric(0, 0, 0.4);
+            robot.encoderFieldCentric(0,0, -45);
+            robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
+            while (robot.elbowDrive.getCurrentPosition() <= (int) robot.ELBOW_PARALLEL) {
+                telemetry.addData("waiting on elbow", "");
+                telemetry.update();
+            }
+            robot.extensionDrive.setTargetPosition((int) robot.EXTENSION_MAXIMUM_COUNT);
+
+            // rotate claw
+            robot.clawAxial.setPosition(robot.CLAW_MID);
+            robot.clawYaw.setPosition(robot.YAW_MID);
+            // wait on elbow & extension
+            while (robot.elbowDrive.isBusy() || robot.extensionDrive.isBusy()){
+                telemetry.addData("waiting on elbow & extension", "");
+                telemetry.update();
+            }
+
+            // drop sample
+            robot.clawPinch.setPosition(robot.CLAW_OPEN);
+            sleep(600);
+
+            // bring arm back a bit
+            robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PERPENDICULAR- robot.angleConvert(5)));
+            while (robot.elbowDrive.isBusy()){
+                telemetry.addData("waiting on elbow", "");
+                telemetry.update();
+            }
+            // retract for center of mass
+            robot.extensionDrive.setTargetPosition(0);
+            while (robot.extensionDrive.isBusy()){
+                telemetry.addData("waiting on extension", "");
+                telemetry.update();
+            }
+
+            // straighten up
+            robot.driveFieldCentric(0, 0, 0.4);
+            robot.encoderFieldCentric(0,0, 45);
+
+
+            // drive forward to meet sample
+            robot.driveFieldCentric(0.5,0,0);
+            robot.encoderFieldCentric(11.25, (i*-13.5),0);
+            sleep(300);
+
         }
-        // align claw with arm
-        robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
+        // repeat ^
 
-        // close claw / grip sample
-        robot.clawPinch.setPosition(robot.CLAW_CLOSE);
-        sleep(600);
+        // once done, paste 3rd sample pick-up here...
 
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PARALLEL);
 
         robot.driveFieldCentric(1,0.25,0);
         robot.encoderFieldCentric(28, 7,0);

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
@@ -77,49 +76,6 @@ public class PathfinderSoftware extends RobotHardware{
             exVectorX = xVector;
             exVectorY = yVector;
             myOpMode.telemetry.addData("slope :", exSlope);
-        }
-
-        public void precise(double x1, double y1, double x2, double y2){
-            double yDifference = y2-y1;
-            double xDifference = x2-x1;
-            double slope;
-            double Rslope;
-            double yVector;
-            double xVector;
-
-            if ( xDifference != 0 && yDifference != 0){
-                slope = yDifference/xDifference;
-                Rslope = xDifference/yDifference;
-                yVector = slope;
-                xVector = slope * Rslope;
-            } else if ( xDifference == 0) {
-                slope = 404;
-                xVector = 0;
-                yVector = 1;
-            } else {
-                slope = 0;
-                xVector = 1;
-                yVector = 0;
-            }
-
-            if (Math.abs(xDifference) <= 25 && xDifference != 0){
-                xVector = xVector * ((Math.abs(xDifference)*0.06));
-                xVector = Range.clip(Math.abs(xVector), 0.06, 1);
-            }
-            if (Math.abs(yDifference) <= 25 && yDifference != 0){
-                yVector = yVector * ((Math.abs(yDifference)*0.06));
-                yVector = Range.clip(Math.abs(yVector), 0.06, 1);
-            } else if (yDifference == 0) {
-                yVector = 0;
-            }
-
-            xVector = Math.abs(xVector) * -(xDifference/Math.abs(xDifference));
-            yVector = Math.abs(yVector) * -(yDifference/Math.abs(yDifference));
-
-            driveFieldCentric(yVector, xVector, turnPower);
-            exVectorX = xVector;
-            exVectorY = yVector;
-            exSlope = slope;
         }
 
         public void tryAgain(double x1, double y1, double x2, double y2){

@@ -30,9 +30,9 @@ public class BazaarTeleOp extends LinearOpMode{
         Pose3D botPose = null;
         // timers
         int leftBumperTimer = 0;
-        int timesRan = 0;
         int timesCounted = 0;
         int stickCounter = 0;
+        int stickCounter2 = 0;
         // sounds
         int coloredSoundID = hardwareMap.appContext.getResources().getIdentifier("colored", "raw", hardwareMap.appContext.getPackageName());
         int yellowSoundID   = hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", hardwareMap.appContext.getPackageName());
@@ -48,11 +48,10 @@ public class BazaarTeleOp extends LinearOpMode{
         double turn;
 
         double elbowFactor;
-        double extendPosition;
         double rotateFactor;
 
         boolean elbowByExtender = false;
-        boolean calibrateParallel = false;
+        boolean g2RightStickSwitch = false;
         boolean calibratePerpendicular = false;
 
         double prevElbowPos;
@@ -81,26 +80,22 @@ public class BazaarTeleOp extends LinearOpMode{
             strafe = gamepad1.left_stick_x * 1.1;
             turn = -gamepad1.right_stick_x;
 
-            rotateFactor = (-gamepad2.right_stick_x*-0.5) + 0.5;
-            if (-gamepad2.right_stick_y > 0.8){rotateFactor = robot.YAW_MID;} // move stick up to reset to middle
+            if (gamepad2.right_stick_button && stickCounter2 >= 3){
+                g2RightStickSwitch = !g2RightStickSwitch;
+                stickCounter2 = 0;
+            }
+            if (g2RightStickSwitch){
+                rotateFactor = robot.clawYaw.getPosition();
+            } else {
+                rotateFactor = (gamepad2.right_stick_x*-0.5) + 0.5;
+            }
+            // move stick up to reset to middle
             // or if you want it incrementally : (-gamepad2.right_stick_x*-0.5) + 0.5) * 0.01 *adjust for sensitivity*
             // also change the set servo pos to getPosition() + rotateFactor
 
 
             if (limelight.getLatestResult() != null) {
                 botPose = limelight.getLatestResult().getBotpose();
-            }
-
-
-
-            while (gamepad1.dpad_left) { // reset init
-                timesRan = timesRan + 1;
-                if (timesRan >= 10) {
-                    robot.init();
-                    timesRan = 0;
-                    telemetry.addData("RESET","");
-                    break;
-                }
             }
 
             if (gamepad1.a) { 
@@ -132,13 +127,8 @@ public class BazaarTeleOp extends LinearOpMode{
 
             // gamepad 2
 
-            if (gamepad2.right_stick_button && stickCounter > 5) { // set claw parallel to floor
-                calibrateParallel = !calibrateParallel;
-                calibratePerpendicular = false;
-                stickCounter = 0;
-            } else if (gamepad2.left_stick_button && stickCounter > 5) { // set claw perpendicular to floor
+             if (gamepad2.left_stick_button && stickCounter > 5) { // set claw perpendicular to floor
                 calibratePerpendicular = !calibratePerpendicular;
-                calibrateParallel = false;
                 stickCounter = 0;
             }
 
@@ -149,7 +139,6 @@ public class BazaarTeleOp extends LinearOpMode{
             }
             if (gamepad2.a) { // mid claw
                 robot.clawAxial.setPosition(robot.CLAW_MID);
-                calibrateParallel = false;
                 calibratePerpendicular = false;
             }
 
@@ -198,9 +187,8 @@ public class BazaarTeleOp extends LinearOpMode{
             // drive heading servo
             robot.clawYaw.setPosition(rotateFactor);
 
-            if (calibrateParallel) { // actually calibrate the claw
-                robot.calibrateClaw(robot.ELBOW_PARALLEL);
-            } else if (calibratePerpendicular) {
+             // actually calibrate the claw
+            if (calibratePerpendicular) {
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
             }
 
@@ -209,7 +197,7 @@ public class BazaarTeleOp extends LinearOpMode{
             telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.ARM_COUNTS_PER_DEGREE);
             telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition() / robot.EXTENSION_COUNTS_PER_REV);
-            telemetry.addData("Claw Calibration", "Parallel, Perpendicular", calibrateParallel, calibratePerpendicular);
+            telemetry.addData("Claw Calibration", "Perpendicular?", calibratePerpendicular);
             telemetry.addData("Elbow Mode:", elbowByExtender ? "Extender Based" : "Free Range");
             telemetry.update();
             switch ((int) runtime.seconds()) {
@@ -232,6 +220,7 @@ public class BazaarTeleOp extends LinearOpMode{
             }
             stickCounter++;
             leftBumperTimer++;
+            stickCounter2++;
             sleep(50);
         }
     }

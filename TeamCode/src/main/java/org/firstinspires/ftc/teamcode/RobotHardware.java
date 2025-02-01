@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.*;
 
 public class RobotHardware {
@@ -23,7 +22,6 @@ public class RobotHardware {
     public DcMotor rightBackDrive = null;
     public DcMotor elbowDrive = null;
     public DcMotor extensionDrive = null;
-    public WebcamName myEyes = null; // CAMERA!! remember to change the type of this var if not available on Dhub
     public Servo clawPinch = null;
     public Servo clawYaw = null;
     public Servo clawAxial = null;

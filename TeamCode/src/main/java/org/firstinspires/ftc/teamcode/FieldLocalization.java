@@ -75,8 +75,6 @@ public class FieldLocalization {
 
     private RobotHardware robotObj;
     private boolean teamColorBlue;
-    private final List<Integer> blueAPTList = Arrays.asList(11, 12, 13);
-    private final List<Integer> redAPTList = Arrays.asList(14, 15 ,16);
 
     private enum fieldAreas {
         observationZone,
@@ -94,6 +92,9 @@ public class FieldLocalization {
      *                    your permission, except now its just able to move your robot. (they're watching...) :)
      */
     public FieldLocalization (int detectedTagID, RobotHardware robotObject){
+        List<Integer> blueAPTList = Arrays.asList(11, 12, 13);
+        List<Integer> redAPTList = Arrays.asList(14, 15, 16);
+
         if (redAPTList.contains(detectedTagID))
         {
             teamColorBlue = true;
