@@ -492,7 +492,7 @@ public class RobotHardware {
             if (elbowDegTRUE < 267.00 && elbowDegTRUE > 210.00) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
                 targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
                 elbowDirection = enable; // elbow is facing forward
-            } else if ((elbowDegTRUE > 12.00 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+            } else if ((elbowDegTRUE > 10.50 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
                 targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
                 elbowDirection = disable; // elbow is facing backwards
             }

@@ -100,7 +100,7 @@ public class BazaarTeleOp extends LinearOpMode{
 
             if (gamepad1.a) { 
                 if (botPose != null) {
-                    robot.elbowDrive.setTargetPosition(robot.elbowTrigPosition(botPose, robot.heading));
+                    NEWelbowPos = (robot.elbowTrigPosition(botPose, robot.heading));
                 }
             }
 
@@ -143,14 +143,15 @@ public class BazaarTeleOp extends LinearOpMode{
             }
 
             if (gamepad2.dpad_up) {
-                robot.elbowDrive.setTargetPosition((int) robot.ELBOW_PERPENDICULAR);
+                NEWelbowPos = ((int) robot.ELBOW_PERPENDICULAR);
+                robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
             } else if (gamepad2.dpad_right) {
                 robot.clawAxial.setPosition(robot.CLAW_UP);
             } else if (gamepad2.dpad_left) {
                 NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
                 robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
             } else if (gamepad2.dpad_down) {
-                NEWelbowPos = ((int) robot.ELBOW_COLLAPSED);
+                NEWelbowPos = ((int) robot.ELBOW_PARALLEL);
                 robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
             } else {
                 NEWelbowPos = robot.elbowDrive.getCurrentPosition();

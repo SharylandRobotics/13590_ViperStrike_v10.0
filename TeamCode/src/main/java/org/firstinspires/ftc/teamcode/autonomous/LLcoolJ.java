@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
@@ -29,22 +30,23 @@ public class LLcoolJ extends LinearOpMode {
         final double MtoIN = 39.3701;
         double x = 0;
         double y = 0;
-        double heading;
         Pose3D botPose;
         double BrungX = -6.7; // FIXME find this out
         double BrungY = 29; // FIXME find this out
         double BozX = -35.8; // FIXME find this out
-        double BozY = 53.4; // FIXME find this out
+        double BozY = 43.4; // FIXME find this out
 
         double RrungX = 9.7; // FIXME find this out
         double RrungY = -27.7; // FIXME find this out
         double RozX = 36.2; // FIXME find this out
-        double RozY = -54.9; // FIXME find this out
+        double RozY = -44.9; // FIXME find this out
 
         double actingOzX;
         double actingOzY;
         double actingRungX;
         double actingRungY;
+
+        double heading;
 
         robot.init();
         ptFinder.init();
@@ -81,7 +83,7 @@ public class LLcoolJ extends LinearOpMode {
 
 
         robot.driveFieldCentric(0.6,0,0);
-        robot.encoderFieldCentric(22.25,0,0);
+        robot.encoderFieldCentric(22.5,0,0);
         sleep(100);
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
@@ -99,7 +101,7 @@ public class LLcoolJ extends LinearOpMode {
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(15))); // score/ hook on
         while (robot.elbowDrive.isBusy()){
             robot.clawAxial.setPosition(robot.CLAW_MID);
-            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(45))){
+            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(47.5))){
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
             }
             if ((robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(70)))){
@@ -131,19 +133,19 @@ public class LLcoolJ extends LinearOpMode {
             actingRungX = BrungX;
             actingRungY = BrungY;
         }
-        sleep(500);
+        sleep(300);
 
         robot.driveFieldCentric(-0.4,0,0);
-        robot.encoderFieldCentric(-3,0,0);
+        robot.encoderFieldCentric(-3.1,0,0);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
         }
 
         // drive to pos
-        robot.elbowDrive.setTargetPosition((int) (13 * robot.ARM_COUNTS_PER_DEGREE));
+        robot.elbowDrive.setTargetPosition((int) (11.5 * robot.ARM_COUNTS_PER_DEGREE));
         ptFinder.tryAgain(0,0,(46.5),(7.9));
-        robot.encoderFieldCentric(7.9, 46.5,0);
+        robot.encoderFieldCentric(8.35, 46.85,0);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
@@ -151,16 +153,21 @@ public class LLcoolJ extends LinearOpMode {
             robot.clawPinch.setPosition(robot.CLAW_OPEN);
         }
 
-        // angle of claw
-        robot.clawYaw.setPosition(robot.YAW_MID);
-        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy() || robot.extensionDrive.isBusy()){
+        heading = -robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        // straighten up
+        robot.driveFieldCentric(0,0,0.2);
+        robot.encoderFieldCentric(0,0, Math.round(heading));
+        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
         }
 
+        // angle of claw
+        robot.clawYaw.setPosition(robot.YAW_MID);
+
         // begin pick-up/drop sequence --> (3x)
         for (byte i=0; i<2; i++) {
-            robot.elbowDrive.setTargetPosition((int) (13 * robot.ARM_COUNTS_PER_DEGREE));
+            robot.elbowDrive.setTargetPosition((int) (11.5 * robot.ARM_COUNTS_PER_DEGREE));
             while (robot.elbowDrive.isBusy()) {
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
                 telemetry.addData("waiting on elbow", "");
@@ -171,15 +178,16 @@ public class LLcoolJ extends LinearOpMode {
 
             // close claw / grip sample
             robot.clawPinch.setPosition(robot.CLAW_CLOSE);
-            sleep(600);
+            sleep(300);
 
             // drive back & strafe to next sample (x)
             if (i==1){
                 robot.driveFieldCentric(-0.5,0,0);
                 robot.encoderFieldCentric(-11.25, 0,0);
+                break;
             } else {
                 robot.driveFieldCentric(-0.5, 0.6, 0);
-                robot.encoderFieldCentric(-11.25, 13.5, 0);
+                robot.encoderFieldCentric(-11.25, 13.1, 0);
             }
             // bring arm back
             robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL));
@@ -194,70 +202,48 @@ public class LLcoolJ extends LinearOpMode {
             // drop sample
             robot.clawPinch.setPosition(robot.CLAW_OPEN);
 
+            heading = -robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             // drive forward to meet sample
-            robot.driveFieldCentric(0.5,0,0);
-            robot.encoderFieldCentric(11.25, 0,0);
+            robot.driveFieldCentric(0.5,0,0.2);
+            robot.encoderFieldCentric(11.25, 0, Math.round(heading));
             sleep(300);
-
         }
         // repeat ^
 
-        // once done, grab 3rd
-        robot.clawYaw.setPosition(robot.YAW_LEFT);
-        robot.elbowDrive.setTargetPosition((int) (robot.ARM_COUNTS_PER_DEGREE * 30));
-        robot.driveFieldCentric(0,0,-0.4);
-        robot.encoderFieldCentric(0,0,-47);
-        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy() || robot.elbowDrive.isBusy()){
-            telemetry.addData("Busy","");
-            telemetry.update();
-            robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-        }
-        robot.extensionDrive.setTargetPosition((int) (robot.EXTENSION_MAXIMUM_COUNT - robot.EXTENSION_COUNTS_PER_REV*3));
-        while (robot.extensionDrive.isBusy()){
-            telemetry.addData("extending","");
-            robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-        }
-        robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-        sleep(200);
-        robot.clawPinch.setPosition(robot.CLAW_CLOSE);
-        sleep(500);
-        robot.elbowDrive.setTargetPosition((int) robot.ELBOW_ANGLED);
-        robot.extensionDrive.setTargetPosition(0);
-
-        // straighten up
-        robot.driveFieldCentric(0,0,0.4);
-        robot.encoderFieldCentric(0,0,47);
-
         // get arm in position
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL - robot.angleConvert(5)));
-        robot.setClawPosition(robot.disable, robot.superposition, robot.superposition);
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_BACKWARD_PARALLEL - robot.angleConvert(10)));
+        robot.setClawPosition(robot.pass, robot.superposition, robot.superposition);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy() || robot.elbowDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
-            if (!robot.elbowDrive.isBusy()){
-                robot.clawPinch.setPosition(robot.CLAW_OPEN);
-            }
         }
-        robot.clawPinch.setPosition(robot.CLAW_OPEN);
-        robot.clawYaw.setPosition(robot.YAW_MID);
 
-        // drive to meet specimen
+        robot.driveFieldCentric(-0.4, 0, 0);
+        robot.encoderFieldCentric(-6.4, 0,0);
+        while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
+            telemetry.addData("Busy","");
+            telemetry.update();
+        }
+
+        robot.clawYaw.setPosition(robot.YAW_MID);
+        robot.clawPinch.setPosition(robot.CLAW_OPEN);
+        sleep(300);
+
         robot.driveFieldCentric(-0.3, 0, 0);
-        robot.encoderFieldCentric(-16.4, 0,0);
+        robot.encoderFieldCentric(-2.8, 0,0);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
         }
         // pick up specimen
         robot.setClawPosition(robot.enable, robot.pass, robot.pass);
-        sleep(600);
 
         // begin 1st specimen scoring off sidewall
-        sleep(1000);
+        sleep(300);
 
         // drive to rung
-        robot.driveFieldCentric(0.184, -1.0, 0);
-        robot.encoderFieldCentric(13.25, -72, 0);
+        robot.driveFieldCentric(0.12, -1.0, -0.05);
+        robot.encoderFieldCentric(7.25, -60, Math.round(heading));
         // score here
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){

@@ -65,10 +65,14 @@ public class ResearchDrifter extends LinearOpMode {
         runtime.reset();
 
         while (opModeIsActive()) {
-            botPose = limelight.getLatestResult().getBotpose();
 
-            posX = botPose.getPosition().x;
-            posY = botPose.getPosition().y;
+            if (limelight.getLatestResult() != null) {
+                 botPose = limelight.getLatestResult().getBotpose();
+                posX = botPose.getPosition().x;
+                posY = botPose.getPosition().y;
+            }
+
+
             if (gamepad1.left_stick_y != 0 || gamepad1.left_stick_x != 0 || gamepad1.right_stick_x != 0) {
                 drive = -gamepad1.left_stick_y;
                 strafe = gamepad1.left_stick_x * 1.1;
@@ -102,16 +106,8 @@ public class ResearchDrifter extends LinearOpMode {
             telemetry.addData("Heading", robot.heading);
             telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             telemetry.addData("XY Robot Position:", "\n" + posX*39.3701 + ", " + posY*39.3701);
-            if (!limelight.getLatestResult().getDetectorResults().isEmpty()) {
-                for (LLResultTypes.DetectorResult detections : limelight.getLatestResult().getDetectorResults()) {
-                    telemetry.addData("tag Id", detections.getClassId());
-                }
-            } else {
-                telemetry.addData("empty", "");
-                telemetry.update();
-
-                sleep(50);
-            }
+            telemetry.update();
+            sleep(50);
         }
     }
 }
