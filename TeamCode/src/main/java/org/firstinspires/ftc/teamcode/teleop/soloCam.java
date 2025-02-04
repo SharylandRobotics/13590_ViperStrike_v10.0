@@ -47,7 +47,7 @@ public class soloCam extends LinearOpMode{
 
         double prevElbowPos;
 
-        robot.init();
+        robot.init(false);
 
         // extension encoder setup
         robot.extensionDrive.setTargetPosition(0);
@@ -69,16 +69,6 @@ public class soloCam extends LinearOpMode{
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1;
             turn = gamepad1.right_stick_x;
-
-            while (gamepad1.dpad_left && gamepad1.dpad_right) { // reset init
-                timesRan = timesRan + 1;
-                if (timesRan >= 200) {
-                    robot.init();
-                    timesRan = 0;
-                    break;
-                }
-                sleep(50);
-            }
 
             if (gamepad1.right_trigger != 0) { // slow down driving
                 double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)

@@ -2,20 +2,13 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import android.annotation.SuppressLint;
 
-import android.graphics.Color;
-import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.VisionSoftware;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
-import org.firstinspires.ftc.vision.opencv.ColorRange;
-import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 
@@ -35,7 +28,7 @@ public class VisionTest extends LinearOpMode {
         double relevantAngle;
         YawPitchRollAngles  yawAngles;
 
-        robot.init();
+        robot.init(false);
         colorDetector.visionInit("BLUE", false, -0.5, 0.5, 0.5, -0.5);
         // WARNING:  To be able to view the stream preview on the Driver Station, this code runs in INIT mode.
         colorDetector.portalColor.setProcessorEnabled(colorDetector.primaryColorProcessor, true);

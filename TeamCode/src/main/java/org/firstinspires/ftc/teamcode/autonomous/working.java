@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -9,8 +8,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.PathfinderSoftware;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-
-import java.util.List;
 
 @Autonomous(name= "workingSpecimen", group ="LL")
 public class working extends LinearOpMode {
@@ -51,8 +48,8 @@ public class working extends LinearOpMode {
         double actingRungX = 0;
         double actingRungY = 0;
 
-        robot.init();
-        ptFinder.init();
+        robot.init(true);
+        ptFinder.init(false);
 
 
         robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

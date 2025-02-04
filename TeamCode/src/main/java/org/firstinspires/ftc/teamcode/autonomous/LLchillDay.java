@@ -46,8 +46,8 @@ public class LLchillDay extends LinearOpMode {
         double actingRungX;
         double actingRungY;
 
-        robot.init();
-        ptFinder.init();
+        robot.init(true);
+        ptFinder.init(false);
 
         robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

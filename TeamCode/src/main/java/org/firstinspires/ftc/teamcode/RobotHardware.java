@@ -88,8 +88,9 @@ public class RobotHardware {
     public int leftFrontTarget;
     public int leftBackTarget;
     public int rightFrontTarget;
-
     public int rightBackTarget;
+
+
     public final byte ROBOT_WIDTH = 17;
     public final byte ROBOT_LENGTH = 13;
     public final double ROBOT_DIAG_RADIUS = Math.sqrt(Math.pow(ROBOT_LENGTH/2f, 2) + Math.pow(ROBOT_WIDTH/2f, 2));
@@ -108,9 +109,11 @@ public class RobotHardware {
     public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
             // by the distance traveled
     public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.3)); // the other number is how many revs
-            // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance FIXME u changed the motor
+            // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
+    private final float FORWARD_EXTENSION_LIMIT = (float) (EXTENSION_COUNTS_PER_INCH * EXTENSION_MAXIMUM_COUNT); // FIXME Placeholder; farthest extender can go forwards
+    private final float REARWARD_EXTENSION_LIMIT = 42 - FORWARD_EXTENSION_LIMIT; // FIXME measured or calculated; farthest the extender can go backwards before going OOB
 
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
     public final double ARM_COUNTS_PER_DEGREE =
@@ -118,8 +121,8 @@ public class RobotHardware {
             * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
             * (100.0 / 20.0) // external gearing, 20 to 100 teeth
             * (1.0 / 360.0); // ... per degree
-    public final int ELBOW_ANGLE_OFFSET = 55; // FIXME Should be the angle from parallel to floor to the true zero
-    public final int ELBOW_TRUE_OFFSET = 145; // FIXME Should be from true zero to perpendicular
+    public final int ELBOW_ANGLE_OFFSET = 55; //  Should be the angle from parallel to floor to the true zero
+    public final int ELBOW_TRUE_OFFSET = 145; //  Should be from true zero to perpendicular
 
     /* Elbow Positions
      ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
@@ -170,10 +173,10 @@ public class RobotHardware {
      * <p>
      * All the hardware devices are accessed via the hardware map and initialized.
      */
-    public void init(){
+    public void init(boolean auto) {
 
         // Define and initialize ALL installed motors (note: need to use reference to the actual OpMode).
-        leftFrontDrive = myOpMode.hardwareMap.get(DcMotor.class,"left_front_drive"); // Stuff on CH
+        leftFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "left_front_drive"); // Stuff on CH
         leftBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "left_back_drive");
         rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_front_drive");
         rightBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_back_drive");
@@ -269,18 +272,25 @@ public class RobotHardware {
 
         // Initialize sound player
         coloredSoundID = myOpMode.hardwareMap.appContext.getResources().getIdentifier("colored", "raw", myOpMode.hardwareMap.appContext.getPackageName());
-        yellowSoundID   = myOpMode.hardwareMap.appContext.getResources().getIdentifier("yellow",   "raw", myOpMode.hardwareMap.appContext.getPackageName());
+        yellowSoundID = myOpMode.hardwareMap.appContext.getResources().getIdentifier("yellow", "raw", myOpMode.hardwareMap.appContext.getPackageName());
         // preload sounds
-        if (coloredSoundID != 0){ coloredFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, coloredSoundID); }
-        if (yellowSoundID != 0){ yellowFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, yellowSoundID); }
-        myOpMode.telemetry.addData("gold resource",   coloredFound ?   "Found" : "NOT found\n Add colored.wav to /src/main/res/raw" );
-        myOpMode.telemetry.addData("silver resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw" );
+        if (coloredSoundID != 0) {
+            coloredFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, coloredSoundID);
+        }
+        if (yellowSoundID != 0) {
+            yellowFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, yellowSoundID);
+        }
+        myOpMode.telemetry.addData("gold resource", coloredFound ? "Found" : "NOT found\n Add colored.wav to /src/main/res/raw");
+        myOpMode.telemetry.addData("silver resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw");
         SoundPlayer.getInstance().setMasterVolume(4);
 
         // Wait for the game to start (Display Gyro value while waiting)
-        clawAxial.setPosition(CLAW_MID);
-        clawPinch.setPosition(CLAW_CLOSE);
-        clawYaw.setPosition(clawYaw.getPosition());
+        if (auto){
+            clawAxial.setPosition(CLAW_MID);
+            clawPinch.setPosition(CLAW_CLOSE);
+            clawYaw.setPosition(clawYaw.getPosition());
+        }
+
 
         while (myOpMode.opModeInInit()) {
             myOpMode.telemetry.addData("Status", "Hardware Initialized");
@@ -546,6 +556,17 @@ public class RobotHardware {
         } else {
             // return angle for a rearward facing elbow
             return (int) ((ELBOW_BACKWARD_PARALLEL - angle) * ARM_COUNTS_PER_DEGREE);
+        }
+    }
+
+    public void extensionBoundBox(){
+        // cos (angle) = A/C ; targetC = flatA/ cos(angle) : flatA is REARWARD_EXTENSION_LIMIT
+        // u rike my mat eh?
+        double cosAngle = Math.cos(   Math.toRadians(elbowDrive.getCurrentPosition()/ARM_COUNTS_PER_DEGREE)   );
+        double targetC = REARWARD_EXTENSION_LIMIT /  cosAngle;
+
+        if (extensionDrive.getCurrentPosition() >= targetC) {
+            extensionDrive.setTargetPosition( (int) (targetC * EXTENSION_COUNTS_PER_INCH));
         }
     }
 }

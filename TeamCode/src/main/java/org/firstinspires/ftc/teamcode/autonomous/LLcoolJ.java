@@ -48,8 +48,8 @@ public class LLcoolJ extends LinearOpMode {
 
         double heading;
 
-        robot.init();
-        ptFinder.init();
+        robot.init(true);
+        ptFinder.init(false);
 
         robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

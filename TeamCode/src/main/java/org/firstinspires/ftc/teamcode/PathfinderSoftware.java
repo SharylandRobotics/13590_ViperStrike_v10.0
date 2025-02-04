@@ -14,8 +14,8 @@ public class PathfinderSoftware extends RobotHardware{
         /**
          * CALL THIS FUNCTION OR ELSE IMU WILL TURN UP NULL!!!! (it breaks)
          */
-        public void init() {
-            super.init();
+        public void init(boolean autoQ) {
+            super.init(autoQ);
         }
 
         public double exSlope;
