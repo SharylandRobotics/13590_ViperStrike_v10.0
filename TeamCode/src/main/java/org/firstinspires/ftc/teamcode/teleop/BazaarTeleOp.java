@@ -70,6 +70,7 @@ public class BazaarTeleOp extends LinearOpMode{
 
         robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
+        limelight.start();
         waitForStart();
         runtime.reset();
 
@@ -81,27 +82,33 @@ public class BazaarTeleOp extends LinearOpMode{
             turn = -gamepad1.right_stick_x;
 
             // RSB for keeping the servo where u had it
-            if (gamepad2.right_stick_button && stickCounter2 >= 3){
+            if (gamepad2.right_stick_button && stickCounter2 >= 2){
                 g2RightStickSwitch = !g2RightStickSwitch;
                 stickCounter2 = 0;
             }
             if (g2RightStickSwitch){
-                rotateFactor = robot.clawYaw.getPosition();
+                rotateFactor = robot.YAW_RIGHT;
             } else {
-                rotateFactor = (gamepad2.right_stick_x*-0.5) + 0.5;
+                rotateFactor = (gamepad2.right_stick_x*-0.5) + robot.YAW_MID;
             }
 
             // get LL results
             if (limelight.getLatestResult() != null) {
                 botPose = limelight.getLatestResult().getBotpose();
+            } else {
+                telemetry.addData("not detecting", "");
             }
 
             // what it says
-            if (gamepad1.a) { 
+            if (gamepad1.b) {
                 if (botPose != null) {
                     NEWelbowPos = (robot.elbowTrigPosition(botPose, robot.heading));
+                    telemetry.addData(botPose.toString(), "");
+                } else {
+                    telemetry.addData("not passing", "");
                 }
             }
+
 
             if (gamepad1.right_trigger != 0) { // slow down driving
                 double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
@@ -149,11 +156,11 @@ public class BazaarTeleOp extends LinearOpMode{
             if (gamepad2.dpad_up) {
                 NEWelbowPos = ((int) robot.ELBOW_PERPENDICULAR);
             } else if (gamepad2.dpad_right) {
-                NEWelbowPos = (int) robot.ELBOW_PARALLEL;
+                NEWelbowPos = (int) (robot.angleConvert(33));
             } else if (gamepad2.dpad_left) {
                 NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
             } else if (gamepad2.dpad_down) { // slightly off ground
-                NEWelbowPos = (int) (robot.ELBOW_COLLAPSED + robot.angleConvert(10));
+                NEWelbowPos = (int) (robot.ELBOW_COLLAPSED);
             }
 
             // shortcut to not preoccupy driver
@@ -165,15 +172,19 @@ public class BazaarTeleOp extends LinearOpMode{
             // check if triggers are active...
             if (gamepad2.left_trigger != 0 || gamepad2.right_trigger != 0) {
                 if (gamepad2.left_trigger > 0.5) {
-                    elbowFactor = Math.pow(5 * gamepad2.left_trigger, 3) * -robot.ELBOW_FUDGE_FACTOR;
+                    elbowFactor = Math.pow(3 * gamepad2.left_trigger, 2) * -robot.ELBOW_FUDGE_FACTOR;
                 } else if (gamepad2.right_trigger > 0.5) {
-                    elbowFactor = Math.pow(5 * gamepad2.right_trigger, 3) * robot.ELBOW_FUDGE_FACTOR;
+                    elbowFactor = Math.pow(3 * gamepad2.right_trigger, 2) * robot.ELBOW_FUDGE_FACTOR;
                 } else {
                     elbowFactor = robot.ELBOW_FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
                 }
+
+                // avoid going past 0
+                if (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor < 0){
+                    elbowFactor -= (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
+                }
                 // if they are drive and change the target position
                 NEWelbowPos = robot.elbowDrive.getCurrentPosition() + (int) elbowFactor;
-
             }
 
             // drive elbow
@@ -181,7 +192,6 @@ public class BazaarTeleOp extends LinearOpMode{
             // drive extension
             // happy, reader?
             robot.driveExtenderPosition(-gamepad2.left_stick_y);
-
             // drive heading servo
             robot.clawYaw.setPosition(rotateFactor);
 

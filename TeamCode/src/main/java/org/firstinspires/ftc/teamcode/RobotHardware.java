@@ -59,6 +59,7 @@ public class RobotHardware {
 
     public double CLAW_CLOSE;
     public double CLAW_OPEN;
+    public double CLAW_COLLAPSED;
     public double CLAW_DOWN;
     public double CLAW_MID;
     public double CLAW_UP;
@@ -106,8 +107,9 @@ public class RobotHardware {
             * (60. / 100.) // external gearing, 100 (drive) to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
 
-    public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
-            // by the distance traveled
+    public final double EXTENSION_INCH_PER_REV = 0.3125;
+    // by the distance traveled
+    public final double EXTENSION_COUNTS_PER_INCH = EXTENSION_INCH_PER_REV*EXTENSION_COUNTS_PER_REV; // Find the inches per rev, then multiply EXTENSION_COUNTS_PER_REV
     public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.3)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
@@ -121,8 +123,8 @@ public class RobotHardware {
             * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
             * (100.0 / 20.0) // external gearing, 20 to 100 teeth
             * (1.0 / 360.0); // ... per degree
-    public final int ELBOW_ANGLE_OFFSET = 55; //  Should be the angle from parallel to floor to the true zero
-    public final int ELBOW_TRUE_OFFSET = 145; //  Should be from true zero to perpendicular
+    public final int ELBOW_ANGLE_OFFSET = 37; //  Should be the angle from parallel to floor to the true zero
+    public final int ELBOW_TRUE_OFFSET = 127; //  Should be from true zero to perpendicular
 
     /* Elbow Positions
      ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
@@ -196,12 +198,13 @@ public class RobotHardware {
         CLAW_CLOSE = 0.4; // TBD
         CLAW_OPEN = 0.1; // TBD
 
-        CLAW_DOWN = 0.92; // MAXIMUM, not playable position
+        CLAW_UP = 0.92; // MAXIMUM, not playable position
         CLAW_MID = 0.51; // playable position
-        CLAW_UP = 0.08; // MAXIMUM, not playable position
+        CLAW_DOWN = 0.33667; // playable position
+        CLAW_COLLAPSED = 0.08; // MAXIMUM, not playable position
 
         YAW_LEFT = 0.0;
-        YAW_MID = 0.5;
+        YAW_MID = 0.37;
         YAW_RIGHT = 1.0;
 
         /*
@@ -288,7 +291,7 @@ public class RobotHardware {
         if (auto){
             clawAxial.setPosition(CLAW_MID);
             clawPinch.setPosition(CLAW_CLOSE);
-            clawYaw.setPosition(clawYaw.getPosition());
+            clawYaw.setPosition(YAW_MID);
         }
 
 
@@ -448,7 +451,7 @@ public class RobotHardware {
 
         } else if (axial == enable) { clawAxial.setPosition(CLAW_UP); // Raises Claw:
 
-        } else if (axial == disable) { clawAxial.setPosition(CLAW_DOWN); // Lowers Claw:
+        } else if (axial == disable) { clawAxial.setPosition(CLAW_COLLAPSED); // Lowers Claw:
 
         } else if (axial == superposition) { clawAxial.setPosition(CLAW_MID); // Parallels Claw to floor:
 
@@ -500,10 +503,10 @@ public class RobotHardware {
          */
         if (orientation == ELBOW_PERPENDICULAR){ // change position to perpendicular to floor
             if (elbowDegTRUE < 267.00 && elbowDegTRUE > 210.00) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
-                targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
+                targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 207) + CLAW_UP); // this if for when the elbow is normal
                 elbowDirection = enable; // elbow is facing forward
-            } else if ((elbowDegTRUE > 10.50 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
-                targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
+            } else if ((elbowDegTRUE >= -0.2 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+                targetClawPos = ((0.15 / 45) * Math.abs(elbowDegTRUE - 77) + CLAW_COLLAPSED); // this is for when the elbow is backwards
                 elbowDirection = disable; // elbow is facing backwards
             }
         }
@@ -544,11 +547,12 @@ public class RobotHardware {
         Position holder = robotPos.getPosition();
         Position pendingPos = new Position(DistanceUnit.INCH, 0, Math.abs(holder.y)*MtoIN, (holder.z*MtoIN) + 5, 0);
         // pythagorean theorem ( letters correspond to the triangle part )
-        double distanceA = pendingPos.y;
-        double heightB = 26 - pendingPos.z;
-        double distanceC = Math.sqrt(Math.pow(distanceA, 2) + Math.pow(heightB, 2));
-        double cosOfAngle = distanceC/heightB;
-        double angle = Math.acos(cosOfAngle);
+        double distanceA = pendingPos.y - 24;
+        double heightB = 27 - pendingPos.z;
+        double distanceC = Math.sqrt((distanceA*distanceA) + (heightB*heightB));
+        double cosOfAngle = distanceA/distanceC;
+        double angle = Math.toDegrees(Math.acos(cosOfAngle));
+        myOpMode.telemetry.addData(String.valueOf(angle), "");
         // check if you're facing forward
         if ((heading + 90) >= 0) {
             // return angle for a forward facing elbow
