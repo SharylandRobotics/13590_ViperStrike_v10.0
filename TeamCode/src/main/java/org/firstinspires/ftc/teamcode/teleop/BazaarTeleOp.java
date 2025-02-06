@@ -150,6 +150,7 @@ public class BazaarTeleOp extends LinearOpMode{
                 calibratePerpendicular = false;
             } else if (gamepad2.y) { // claw mid
                 robot.clawAxial.setPosition(robot.CLAW_MID);
+                calibratePerpendicular = false;
             }
 
             // elbow pre-set positions
@@ -207,7 +208,7 @@ public class BazaarTeleOp extends LinearOpMode{
                     leftBumperTimer = 0;
                 }
                 // if changed to false, start retracting the extender to near 0 (it can be intercepted, it's not a forced move!!)
-                if (!elbowByExtender){robot.extensionDrive.setTargetPosition((int) (0.1*robot.EXTENSION_COUNTS_PER_REV));}
+                if (!elbowByExtender){robot.extensionDrive.setTargetPosition(0);}
             } else if (elbowByExtender) {robot.elbowDrive.setTargetPosition((int) robot.armByExtender());}
 
             // telemetry

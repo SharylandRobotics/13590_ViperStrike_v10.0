@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
@@ -51,13 +50,13 @@ public class FieldLocalization {
     // Measurement from middle of rung to side sub wall
     private final float rungHalfWidth = 13.75f;
     // Measurement from sub wall to the farthest place you can score high rung from
-    private float rungFullLength;
-    private final Position blueRungAREA1 = new Position(DistanceUnit.INCH, BlueRung.x - rungHalfWidth, BlueRung.y + rungFullLength, 0, 0);
-    private final Position blueRungAREA2 = new Position(DistanceUnit.INCH, BlueRung.x + rungHalfWidth, BlueRung.y, 0,0);
+    private final float rungFullLength = 24f;
+    private final Position blueRungAREA1 = new Position(DistanceUnit.INCH, BlueRung.x + rungHalfWidth, BlueRung.y, 0, 0);
+    private final Position blueRungAREA2 = new Position(DistanceUnit.INCH, BlueRung.x - rungHalfWidth, BlueRung.y + rungFullLength, 0,0);
 
 
-    private final Position redRungAREA1 = new Position(DistanceUnit.INCH, RedRung.x - rungHalfWidth, RedRung.y + rungFullLength, 0, 0);
-    private final Position redRungAREA2 = new Position(DistanceUnit.INCH, RedRung.x + rungHalfWidth, RedRung.y, 0,0);
+    private final Position redRungAREA1 = new Position(DistanceUnit.INCH, RedRung.x + rungHalfWidth, RedRung.y, 0, 0);
+    private final Position redRungAREA2 = new Position(DistanceUnit.INCH, RedRung.x - rungHalfWidth, RedRung.y + rungFullLength, 0,0);
 
     private final Position blueOzAREA2 = new Position(DistanceUnit.INCH, -36, 60, 0,0);
     private final Position blueOzAREA1 = new Position(DistanceUnit.INCH, -72 + robotWidth/2, 72 - robotLength/2, 0,0);
@@ -114,14 +113,38 @@ public class FieldLocalization {
      * @param currentPos The current position of the robot needed to check when to assist in moving the elbow.
      */
     public void elbowAssistant(Pose3D currentPos, double heading){
-        if (poseChecker(currentPos) == fieldAreas.rungs){
+        fieldAreas area = poseChecker(currentPos);
+        if (area == fieldAreas.rungs){
             robotObj.elbowDrive.setTargetPosition(robotObj.elbowTrigPosition(currentPos, heading));
-        } else if (poseChecker(currentPos) == fieldAreas.submersible ||
-                poseChecker(currentPos) == fieldAreas.hangableSubmersible) {
+        } else if (area == fieldAreas.submersible ||
+                area == fieldAreas.hangableSubmersible) {
             if (heading + 90 >= 0) {
                 robotObj.elbowDrive.setTargetPosition((int) (robotObj.ELBOW_PARALLEL));
             } else { robotObj.elbowDrive.setTargetPosition((int) (robotObj.ELBOW_BACKWARD_PARALLEL));}
         }
+
+        robotObj.myOpMode.telemetry.addData(area.toString(), ": current area");
+    }
+
+    public int elbowAssistantPassive(Pose3D currentPos, double heading){
+        int elbowPos = robotObj.elbowDrive.getCurrentPosition();
+        fieldAreas area = poseChecker(currentPos);
+        if (area == fieldAreas.rungs){
+            elbowPos = (robotObj.elbowTrigPosition(currentPos, heading));
+        } else if (area == fieldAreas.submersible) {
+            if (heading + 90 >= 45 && heading + 90 <= 135) {
+                elbowPos = (int) (robotObj.armByExtender());
+            } else {
+                elbowPos = (int) (robotObj.ELBOW_PARALLEL);
+            }
+        } else if (area == fieldAreas.hangableSubmersible) {
+            elbowPos = (int) robotObj.ELBOW_PERPENDICULAR;
+        } else {
+            robotObj.myOpMode.telemetry.addData("Area not partnered with a position", "...");
+        }
+
+        robotObj.myOpMode.telemetry.addData(area.toString(), ": current area");
+        return elbowPos;
     }
 
 
@@ -174,8 +197,8 @@ public class FieldLocalization {
      * @param pendingPos position you want to check
      */
     private boolean withinArea(Position corner1, Position corner2, Position pendingPos){
-        boolean withinX = ( corner1.x <= pendingPos.x) && (pendingPos.x <= corner2.x);
-        boolean withinY = ( corner1.y >= pendingPos.y) && (pendingPos.y >= corner2.y);
+        boolean withinX = ( corner1.x >= pendingPos.x) && (pendingPos.x >= corner2.x);
+        boolean withinY = ( corner1.y <= pendingPos.y) && (pendingPos.y <= corner2.y);
 
         return withinX && withinY;
     }

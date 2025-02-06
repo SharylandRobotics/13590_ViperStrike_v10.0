@@ -249,7 +249,7 @@ public class LLcoolJ extends LinearOpMode {
         }
 
         robot.driveFieldCentric(-0.4, 0, 0);
-        robot.encoderFieldCentric(-6.5, 0,0);
+        robot.encoderFieldCentric(-6.4, 0,0);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();
