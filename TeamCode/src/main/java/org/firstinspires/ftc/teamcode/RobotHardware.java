@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 // hardware & class imports
 import com.qualcomm.ftccommon.SoundPlayer;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
@@ -25,6 +26,7 @@ public class RobotHardware {
     public Servo clawPinch = null;
     public Servo clawYaw = null;
     public Servo clawAxial = null;
+    public Limelight3A limelight = null;
 
     // Define Sensor objects (Make them private so that they CANT be accessed externally)
     public IMU imu = null; // Universal IMU interface
@@ -189,6 +191,7 @@ public class RobotHardware {
         clawYaw = myOpMode.hardwareMap.get(Servo.class, "claw_yaw");
         clawAxial = myOpMode.hardwareMap.get(Servo.class, "claw_axial");
 
+        limelight = myOpMode.hardwareMap.get(Limelight3A.class, "limelight-rfc");
 
         DRIVE_SPEED = 0.5; // Maximum autonomous driving speed for better distance accuracy.
         STRAFE_SPEED = 0.5; // Maximum autonomous strafing speed for better distance accuracy.
@@ -272,6 +275,9 @@ public class RobotHardware {
 
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
+
+        // initialize limelight
+        limelight.start();
 
         // Initialize sound player
         coloredSoundID = myOpMode.hardwareMap.appContext.getResources().getIdentifier("colored", "raw", myOpMode.hardwareMap.appContext.getPackageName());

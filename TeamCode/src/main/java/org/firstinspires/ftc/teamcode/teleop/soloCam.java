@@ -6,19 +6,56 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.FieldLocalization;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
-@TeleOp(name = "SoloCameraOp", group = "Robot")
-@Disabled
+import java.lang.reflect.Field;
+
+@TeleOp(name = "SoloCameraOp", group = "Solor")
 public class soloCam extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
-
+    FieldLocalization localization = new FieldLocalization(12, robot);
 
 
     private boolean coloredFound;
     private boolean yellowFound;
+    private double NEWelbowPos;
+
+    public void pinchClaw(){
+        if (gamepad1.x) { // close claw
+            robot.setClawPosition(robot.enable, robot.pass, robot.pass);
+        } else if (gamepad1.b) { // open claw
+            robot.setClawPosition(robot.disable, robot.pass, robot.pass);
+        }
+    }
+
+    public void driveSticks(){
+        robot.driveFieldCentric(-gamepad1.left_stick_y, gamepad1.left_stick_x * 1.1, gamepad1.right_stick_x);
+    }
+
+    public void dpadChecker(){
+        if (gamepad2.dpad_up) {
+            NEWelbowPos = ((int) (robot.ELBOW_PARALLEL + robot.angleConvert(15)));
+        } else if (gamepad2.dpad_right) {
+            NEWelbowPos = (int) (robot.angleConvert(33));
+        } else if (gamepad2.dpad_left) {
+            NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
+        } else if (gamepad2.dpad_down) { // slightly off ground
+            NEWelbowPos = (int) (robot.ELBOW_COLLAPSED);
+        }
+    }
+
+    public int bumperSolver(){
+
+        int Lval = gamepad1.left_bumper ? -1 : 0;
+        int Rval = gamepad1.right_bumper ?  1 : 0;
+
+        return Lval + Rval;
+    }
+
     @Override
     public void runOpMode() {
         // timers
@@ -35,11 +72,10 @@ public class soloCam extends LinearOpMode{
         telemetry.addData("silver resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw" );
         SoundPlayer.getInstance().setMasterVolume(2);
         // initialization phase...
-        double drive;
-        double strafe;
-        double turn;
+        Pose3D botPose = null;
 
         double extendFactor;
+        double elbowFactor;
 
         boolean elbowByExtender = false;
         boolean calibrateParallel = false;
@@ -64,57 +100,48 @@ public class soloCam extends LinearOpMode{
         runtime.reset();
 
         while (opModeIsActive()) {
+            if (robot.limelight.getLatestResult() != null) {
+                botPose = robot.limelight.getLatestResult().getBotpose();
+            } else {
+                telemetry.addData("not detecting", "");
+            }
             prevElbowPos = robot.elbowDrive.getCurrentPosition();
 
-            drive = -gamepad1.left_stick_y;
-            strafe = gamepad1.left_stick_x * 1.1;
-            turn = gamepad1.right_stick_x;
-
-            if (gamepad1.right_trigger != 0) { // slow down driving
-                double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
-                drive = -gamepad1.left_stick_y * multiplier;
-                strafe = (gamepad1.left_stick_x * 1.1) * multiplier;
-                turn = gamepad1.right_stick_x * multiplier;
-            }
-            if (gamepad1.left_trigger != 0) { // release friction
-                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            } else {
-                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            }
-
-            robot.driveFieldCentric(drive, strafe, turn);
-
-            if (gamepad1.x) { // close claw
-                robot.setClawPosition(robot.enable, robot.pass, robot.pass);
-            } else if (gamepad1.b) { // open claw
-                robot.setClawPosition(robot.disable, robot.pass, robot.pass);
-            }
-
-            // drive extension
-            // ensure you don't hit the extender limit!! FIXME
-            extendFactor = -gamepad1.left_stick_y * robot.EXTENSION_FUDGE_FACTOR;
-            if ((robot.extensionDrive.getCurrentPosition() >= robot.EXTENSION_MAXIMUM_COUNT) && extendFactor >= 0) {extendFactor = 0;}
-            if ((robot.extensionDrive.getCurrentPosition() <= 0) && extendFactor <= 0) {extendFactor = 0;}
-            robot.extensionDrive.setTargetPosition(robot.extensionDrive.getCurrentPosition() + (int) extendFactor);
-            // drive arm
-            if (gamepad1.left_bumper) {
-                if (leftBumperTimer > 10) {
-                    elbowByExtender = !elbowByExtender;
-                    leftBumperTimer = 0;
+            if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
+                if (gamepad1.left_trigger > 0.5) {
+                    elbowFactor = Math.pow(3 * gamepad1.left_trigger, 2) * -robot.ELBOW_FUDGE_FACTOR;
+                } else if (gamepad1.right_trigger > 0.5) {
+                    elbowFactor = Math.pow(3 * gamepad1.right_trigger, 2) * robot.ELBOW_FUDGE_FACTOR;
+                } else {
+                    elbowFactor = robot.ELBOW_FUDGE_FACTOR * (gamepad1.right_trigger + (-gamepad1.left_trigger));
                 }
-                // if changed to false, start retracting the extender to near 0 (it can be intercepted, it's not a forced move!!)
-                if (!elbowByExtender){robot.extensionDrive.setTargetPosition((int) (0.1*robot.EXTENSION_COUNTS_PER_REV));}
-            } else if (elbowByExtender) {robot.elbowDrive.setTargetPosition((int) robot.armByExtender());}
+
+                // avoid going past 0
+                if (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor < 0){
+                    elbowFactor -= (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
+                }
+                // if they are drive and change the target position
+                NEWelbowPos = robot.elbowDrive.getCurrentPosition() + (int) elbowFactor;
+            } else {
+                if (botPose != null) {
+                    localization.elbowAssistant(botPose, robot.heading);
+                }
+            }
+
+            driveSticks();
+            dpadChecker();
+            pinchClaw();
+
+            if (gamepad1.y){
+                robot.clawYaw.setPosition(robot.YAW_RIGHT);
+            } else if(gamepad1.a){
+                robot.clawYaw.setPosition(robot.YAW_MID);
+            }
+
+            robot.driveExtenderPosition(bumperSolver());
 
             // telemetry
             telemetry.addData("Heading", robot.heading);
-            telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.ARM_COUNTS_PER_DEGREE);
             telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition() / robot.EXTENSION_COUNTS_PER_REV);
             telemetry.addData("Claw Calibration", "Parallel, Perpendicular", calibrateParallel, calibratePerpendicular);
