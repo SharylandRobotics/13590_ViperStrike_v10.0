@@ -141,7 +141,7 @@ public class LLchillDay extends LinearOpMode {
 
         // drive to pos
         robot.elbowDrive.setTargetPosition((int) (13 * robot.ARM_COUNTS_PER_DEGREE));
-        ptFinder.tryAgain(0, 0, (-46.5), (7.65));
+        ptFinder.tryAgain(0, 0, (-46.5), (7.65), false);
         robot.encoderFieldCentric(7.65, -46.5, 0);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()) {
             telemetry.addData("Busy", "");

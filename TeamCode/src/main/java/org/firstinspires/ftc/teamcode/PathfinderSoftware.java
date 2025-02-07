@@ -78,7 +78,7 @@ public class PathfinderSoftware extends RobotHardware{
             myOpMode.telemetry.addData("slope :", exSlope);
         }
 
-        public void tryAgain(double x1, double y1, double x2, double y2){
+        public void tryAgain(double x1, double y1, double x2, double y2, boolean slow){
             double xDifference = x2-x1;
             double yDifference = y2-y1;
             double slope = 0;
@@ -87,11 +87,11 @@ public class PathfinderSoftware extends RobotHardware{
             double yVector;
 
             if ( xDifference != 0 && yDifference != 0){
-                xVector = Math.round((xDifference/denominator)*1000)/1000.;
-                yVector = Math.round((yDifference/denominator)*1000)/1000.;
+                xVector = (xDifference/denominator);
+                yVector = (yDifference/denominator);
 
-                if (Math.abs(xDifference) < 26){ xVector *= (Math.abs(xDifference)*0.06); }
-                if (Math.abs(yDifference) < 26){ yVector *= (Math.abs(yDifference)*0.06); }
+                if (Math.abs(xDifference) < 26 && slow){ xVector *= (Math.abs(xDifference)*0.06); }
+                if (Math.abs(yDifference) < 26 && slow){ yVector *= (Math.abs(yDifference)*0.06); }
 
                 xVector = Range.clip(Math.abs(xVector), 0.06, 1);
                 yVector = Range.clip(Math.abs(yVector), 0.06, 1);
@@ -104,14 +104,14 @@ public class PathfinderSoftware extends RobotHardware{
                 xVector = 0;
                 yVector = 1;
 
-                if (Math.abs(yDifference) < 26){ yVector *= (Math.abs(yDifference)*0.06); }
+                if (Math.abs(yDifference) < 26 && slow){ yVector *= (Math.abs(yDifference)*0.06); }
                 yVector = Range.clip(Math.abs(yVector), 0.06, 1);
                 yVector *= (yDifference/Math.abs(yDifference));
             } else {
                 slope = 0;
                 xVector = 1;
 
-                if (Math.abs(xDifference) < 26){ xVector *= (Math.abs(xDifference)*0.06); }
+                if (Math.abs(xDifference) < 26 && slow){ xVector *= (Math.abs(xDifference)*0.06); }
                 xVector = Range.clip(Math.abs(xVector), 0.06, 1);
                 xVector *= (xDifference/Math.abs(xDifference));
                 

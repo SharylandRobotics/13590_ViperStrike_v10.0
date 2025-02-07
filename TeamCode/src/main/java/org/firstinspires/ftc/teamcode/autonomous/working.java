@@ -137,7 +137,7 @@ public class working extends LinearOpMode {
 
          */
         // return to OZ
-        ptFinder.tryAgain(x, y, actingOzX, actingOzY);
+        ptFinder.tryAgain(x, y, actingOzX, actingOzY, false);
         robot.encoderFieldCentric((actingOzX - x), (actingOzY - y), 0);
         robot.elbowDrive.setTargetPosition((int) robot.ELBOW_COLLAPSED);
         robot.clawPinch.setPosition(robot.CLAW_OPEN);
