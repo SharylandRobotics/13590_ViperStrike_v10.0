@@ -40,7 +40,6 @@ public class RobotHardware {
     These variables are declared here (as class members) so they can be updated in various methods, but still be
     displayed by sendTelemetry()
      */
-    public ElapsedTime runtime = new ElapsedTime();
     public double heading; // yaw of robot
 
     // Rudimentary initialization of variables
