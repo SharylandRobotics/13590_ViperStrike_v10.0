@@ -1,20 +1,31 @@
 package org.firstinspires.ftc.teamcode;
 
 // hardware & class imports
-import com.qualcomm.ftccommon.SoundPlayer;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
+import android.annotation.SuppressLint;
+import android.util.Size;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import org.firstinspires.ftc.robotcore.external.navigation.*;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RobotHardware {
 
     // Declare OpMode members
     protected final LinearOpMode myOpMode; // gain access to methods in the calling OpMode.
-    public final double MtoIN = 39.3701; // meters to inches #
 
     // Define Motor and Servo objects (Make them private so that they CANT be accessed externally)
     public DcMotor leftFrontDrive = null;
@@ -23,23 +34,19 @@ public class RobotHardware {
     public DcMotor rightBackDrive = null;
     public DcMotor elbowDrive = null;
     public DcMotor extensionDrive = null;
+    public WebcamName myEyes = null; // CAMERA!! remember to change the type of this var if not available on Dhub
     public Servo clawPinch = null;
     public Servo clawYaw = null;
     public Servo clawAxial = null;
-    public Limelight3A limelight = null;
 
     // Define Sensor objects (Make them private so that they CANT be accessed externally)
     public IMU imu = null; // Universal IMU interface
-
-    public int coloredSoundID;
-    public int yellowSoundID;
-    public boolean yellowFound;
-    public boolean coloredFound;
 
     /*
     These variables are declared here (as class members) so they can be updated in various methods, but still be
     displayed by sendTelemetry()
      */
+    public ElapsedTime runtime = new ElapsedTime();
     public double heading; // yaw of robot
 
     // Rudimentary initialization of variables
@@ -52,7 +59,6 @@ public class RobotHardware {
     public double rightFrontPower;
     public double rightBackPower;
 
-
     public double DRIVE_SPEED;
     public double STRAFE_SPEED;
     public double TURN_SPEED;
@@ -60,7 +66,6 @@ public class RobotHardware {
 
     public double CLAW_CLOSE;
     public double CLAW_OPEN;
-    public double CLAW_COLLAPSED;
     public double CLAW_DOWN;
     public double CLAW_MID;
     public double CLAW_UP;
@@ -69,6 +74,7 @@ public class RobotHardware {
     public double YAW_MID;
     public double YAW_LEFT;
     public double YAW_RIGHT;
+
     // End of Rudimentary inits...
 
 
@@ -86,46 +92,28 @@ public class RobotHardware {
     public statesOfBeing superposition = statesOfBeing.SUPERPOSITION;
     public statesOfBeing pass = statesOfBeing.PASS;
 
-    // Declare Wheel Encoder Variables
-    public int leftFrontTarget;
-    public int leftBackTarget;
-    public int rightFrontTarget;
-    public int rightBackTarget;
-
-
-    public final byte ROBOT_WIDTH = 17;
-    public final byte ROBOT_LENGTH = 13;
-    public final double ROBOT_DIAG_RADIUS = Math.sqrt(Math.pow(ROBOT_LENGTH/2f, 2) + Math.pow(ROBOT_WIDTH/2f, 2));
-
-    public double COUNTS_PER_MOTOR_REV = 537.7;
-    public double WHEEL_DIAMETER_INCHES = 3.77953;
-    public double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV) / (WHEEL_DIAMETER_INCHES * Math.PI);
-
     // Declare Extender Encoder Variables
     public final double EXTENSION_COUNTS_PER_REV =
-        28 // counts for bare motor revolution (aka int number at the end of the *encoder resolution formula*
-            * (   (1+(46./17)) ) // times internal gearing (aka *gear ratio formula*)
-            * (60. / 100.) // external gearing, 100 (drive) to 60 teeth
+        28 // counts for bare motor revolution
+            * ( (((1+ (46.0/17.0))) * (1+ (46.0/11.0))) ) // times internal gearing (aka gear ratio formula)
+            * (1.0) // external gearing, 60 to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
 
-    public final double EXTENSION_INCH_PER_REV = 0.3125;
-    // by the distance traveled
-    public final double EXTENSION_COUNTS_PER_INCH = EXTENSION_INCH_PER_REV*EXTENSION_COUNTS_PER_REV; // Find the inches per rev, then multiply EXTENSION_COUNTS_PER_REV
-    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.3)); // the other number is how many revs
+    public final double EXTENSION_COUNTS_PER_INCH = 0; // Find the inches per rev, then divide EXTENSION_COUNTS_PER_REV
+            // by the distance traveled
+    public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (26 - 1)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
     public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
-    private final float FORWARD_EXTENSION_LIMIT = (float) (EXTENSION_COUNTS_PER_INCH * EXTENSION_MAXIMUM_COUNT); // FIXME Placeholder; farthest extender can go forwards
-    private final float REARWARD_EXTENSION_LIMIT = 42 - FORWARD_EXTENSION_LIMIT; // FIXME measured or calculated; farthest the extender can go backwards before going OOB
 
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
-    public final double ARM_COUNTS_PER_DEGREE =
+    public final double COUNTS_PER_DEGREE =
         28 // counts for motor revolution...
             * (250047.0 / 4913.0) // times internal gearing (yes, counts per motor rev are the BARE drive)
             * (100.0 / 20.0) // external gearing, 20 to 100 teeth
             * (1.0 / 360.0); // ... per degree
-    public final int ELBOW_ANGLE_OFFSET = 37; //  Should be the angle from parallel to floor to the true zero
-    public final int ELBOW_TRUE_OFFSET = 127; //  Should be from true zero to perpendicular
+    public final int ELBOW_ANGLE_OFFSET = 55; // FIXME Should be the angle from parallel to floor to the true zero
+    public final int ELBOW_TRUE_OFFSET = 145; // FIXME Should be from true zero to perpendicular
 
     /* Elbow Positions
      ELBOW_ANGLE_OFFSET is the offset angle the arm starts off on
@@ -141,26 +129,20 @@ public class RobotHardware {
          positions in the executive code and I do not wish to cause confusion there.
      */
     public double ELBOW_COLLAPSED = 0;
-    public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_FUDGE_FACTOR = 5 * ARM_COUNTS_PER_DEGREE; // Amount to rotate the elbow by
+    public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_BACKWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * COUNTS_PER_DEGREE);
+    public double ELBOW_FUDGE_FACTOR = 5 * COUNTS_PER_DEGREE; // Amount to rotate the elbow by
     public double angleConvert(double angle){
-        return Math.round((angle) * ARM_COUNTS_PER_DEGREE);
+        return Math.round((angle) * COUNTS_PER_DEGREE);
     }
-
-    /**
-     * Returns count position for elbow when moving extender to keep it on the same y level.
-     * @return elbow position (in counts, needs casting) relative to extender position to keep the extender leveled
-     */
     public double armByExtender() { // returns elbow pos for extension pos; this sould be a positive slope: as extender goes up arm goes up
         // 13x/25 + 22 = y  ; x = extension pos, y = elbow pos
-        return (((((extensionDrive.getCurrentPosition()/EXTENSION_COUNTS_PER_REV)*13)/25) + 22) * ARM_COUNTS_PER_DEGREE);// slope goes here: initial position of 0, 22 ; 25, 35
+        return (((((extensionDrive.getCurrentPosition()/EXTENSION_COUNTS_PER_REV)*13)/25) + 22) * COUNTS_PER_DEGREE);// slope goes here: initial position of 0, 22 ; 25, 35
     }
-
     public double extenderByArm() { // this should be a negative slope: as arm goes up extender goes down
         return (elbowDrive.getCurrentPosition());// slope goes here: initial position of arm (parallel), extend (0) ; final position (up or down)
     }
@@ -176,10 +158,10 @@ public class RobotHardware {
      * <p>
      * All the hardware devices are accessed via the hardware map and initialized.
      */
-    public void init(boolean auto) {
+    public void init(){
 
         // Define and initialize ALL installed motors (note: need to use reference to the actual OpMode).
-        leftFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "left_front_drive"); // Stuff on CH
+        leftFrontDrive = myOpMode.hardwareMap.get(DcMotor.class,"left_front_drive"); // Stuff on CH
         leftBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "left_back_drive");
         rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_front_drive");
         rightBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_back_drive");
@@ -190,7 +172,7 @@ public class RobotHardware {
         clawYaw = myOpMode.hardwareMap.get(Servo.class, "claw_yaw");
         clawAxial = myOpMode.hardwareMap.get(Servo.class, "claw_axial");
 
-        limelight = myOpMode.hardwareMap.get(Limelight3A.class, "limelight-rfc");
+        myEyes = myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1");
 
         DRIVE_SPEED = 0.5; // Maximum autonomous driving speed for better distance accuracy.
         STRAFE_SPEED = 0.5; // Maximum autonomous strafing speed for better distance accuracy.
@@ -200,14 +182,13 @@ public class RobotHardware {
         CLAW_CLOSE = 0.4; // TBD
         CLAW_OPEN = 0.1; // TBD
 
-        CLAW_UP = 0.92; // MAXIMUM, not playable position
+        CLAW_DOWN = 0.92; // MAXIMUM, not playable position
         CLAW_MID = 0.51; // playable position
-        CLAW_DOWN = 0.33667; // playable position
-        CLAW_COLLAPSED = 0.08; // MAXIMUM, not playable position
+        CLAW_UP = 0.08; // MAXIMUM, not playable position
 
-        YAW_LEFT = 0.0;
-        YAW_MID = 0.37;
-        YAW_RIGHT = 1.0;
+        YAW_LEFT = 1.0;
+        YAW_MID = 0.5;
+        YAW_RIGHT = 0.0;
 
         /*
             Playable positions, initialize them if you feel the need to do so in the future:
@@ -245,10 +226,10 @@ public class RobotHardware {
          wheel that runs backward. Keep testing until ALL the wheels move the robot forward when you push the left
          joystick forward.
          */
-        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
         elbowDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         extensionDrive.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -267,39 +248,10 @@ public class RobotHardware {
         elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        extensionDrive.setTargetPosition(0);
-        extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
 
-        // initialize limelight
-        limelight.start();
-
-        // Initialize sound player
-        coloredSoundID = myOpMode.hardwareMap.appContext.getResources().getIdentifier("colored", "raw", myOpMode.hardwareMap.appContext.getPackageName());
-        yellowSoundID = myOpMode.hardwareMap.appContext.getResources().getIdentifier("yellow", "raw", myOpMode.hardwareMap.appContext.getPackageName());
-        // preload sounds
-        if (coloredSoundID != 0) {
-            coloredFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, coloredSoundID);
-        }
-        if (yellowSoundID != 0) {
-            yellowFound = SoundPlayer.getInstance().preload(myOpMode.hardwareMap.appContext, yellowSoundID);
-        }
-        myOpMode.telemetry.addData("gold resource", coloredFound ? "Found" : "NOT found\n Add colored.wav to /src/main/res/raw");
-        myOpMode.telemetry.addData("silver resource", yellowFound ? "Found" : "Not found\n Add yellow.wav to /src/main/res/raw");
-        SoundPlayer.getInstance().setMasterVolume(4);
-
         // Wait for the game to start (Display Gyro value while waiting)
-        if (auto){
-            clawAxial.setPosition(CLAW_MID);
-            clawPinch.setPosition(CLAW_CLOSE);
-            clawYaw.setPosition(YAW_MID);
-        }
-
-
         while (myOpMode.opModeInInit()) {
             myOpMode.telemetry.addData("Status", "Hardware Initialized");
             myOpMode.telemetry.addData("Wheels starting at", "%7d :%7d :%7d :%7d",
@@ -360,31 +312,6 @@ public class RobotHardware {
         setDrivePower(leftFrontPower, leftBackPower, rightFrontPower, rightBackPower);
     }
 
-    public void driveRobotCentric(double drive, double strafe, double turn){
-        double max;
-
-        // Combine drive and Turn for blended motion.
-        double leftFPower = drive + strafe + turn;
-        double leftBPower = drive - strafe + turn;
-        double rightFPower = drive - strafe -turn;
-        double rightBPower = drive + strafe -turn;
-
-        // Scale the values so neither exceed +/- 1.0
-        max = Math.max(Math.abs(leftFPower) , Math.abs(leftBPower));
-        max = Math.max(max, Math.abs(rightFPower));
-        max= Math.max(max, Math.abs(rightBPower));
-
-        if (max > 1.0){
-            leftFPower /= max;
-            leftBPower /= max;
-            rightFPower /= max;
-            rightBPower /= max;
-        }
-
-        //Use existing function to drive both wheels.
-        setDrivePower (leftFPower, leftBPower, rightFPower, rightBPower);
-    }
-
     /**
      * Pass the requested wheel motor power to the appropriate hardware drive motors.
      *
@@ -402,29 +329,17 @@ public class RobotHardware {
         rightBackDrive.setPower(rightBackWheel);
     }
 
-    public void encoderFieldCentric(double driveIN, double strafeIN, double turnDEG){
-        double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-        // Rotate the movement direction counter to the bot rotation
-        double strafeRotation = (strafeIN*COUNTS_PER_INCH) * Math.cos(-botHeading) - (driveIN*COUNTS_PER_INCH) * Math.sin(-botHeading);
-        double driveRotation = (strafeIN*COUNTS_PER_INCH) * Math.sin(-botHeading) + (driveIN*COUNTS_PER_INCH) * Math.cos(-botHeading);
-
-        // sector length formula (rad*radius)
-        double turnTICKS = (Math.toRadians(turnDEG) * ROBOT_DIAG_RADIUS) *COUNTS_PER_INCH;
-
-        leftFrontTarget = (int) (driveRotation + strafeRotation + turnTICKS);
-        leftBackTarget = (int) (driveRotation - strafeRotation + turnTICKS);
-        rightFrontTarget = (int) (driveRotation - strafeRotation - turnTICKS);
-        rightBackTarget = (int) (driveRotation +  strafeRotation - turnTICKS);
-
-        leftFrontDrive.setTargetPosition(leftFrontDrive.getCurrentPosition() + leftFrontTarget);
-        leftBackDrive.setTargetPosition(leftBackDrive.getCurrentPosition() + leftBackTarget);
-        rightFrontDrive.setTargetPosition(rightFrontDrive.getCurrentPosition() + rightFrontTarget);
-        rightBackDrive.setTargetPosition(rightBackDrive.getCurrentPosition() + rightBackTarget);
+    public void driveFor(ElapsedTime runtimeVar, double time, double drive, double strafe, double turn, String teleMSG) {
+        driveFieldCentric(drive,strafe,turn);
+        runtimeVar.reset();
+        while (myOpMode.opModeIsActive() && this.runtime.seconds() < time) {
+            myOpMode.telemetry.addData(teleMSG, "...");
+            myOpMode.telemetry.update();
+        }
     }
 
-    public double turnDirection(double angle, boolean returnPower) { // put the ACTUAL angle you want to turn to here. Use this func to set the turn power
-        heading = imu.getRobotYawPitchRollAngles().getYaw();
+    public double turnDirection(double angle) { // put the ACTUAL angle you want to turn to here. Use this func to set the turn power
+        heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         double goal = angle - heading;
         if (goal > 180) {
             goal -= 360;
@@ -432,14 +347,33 @@ public class RobotHardware {
         if (goal < -180) {
             goal += 360;
         }
-
-        if (!returnPower) { return goal;}
         if (heading != goal) {
             return (goal / Math.abs(goal) * 0.4);
         } else {
             return 0.0;
         }
     }
+/*
+        while (heading != goal && myOpMode.opModeIsActive()) {
+            heading = Math.round(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)/2.5 ) * 2.5;
+            if (heading == goal) {
+                myOpMode.telemetry.addData("MET GOAL", "...");
+                break;
+            }
+            if (heading == 67.5) { // go 22.5 under your target
+                myOpMode.telemetry.addData("AT 90 DEG", "");
+                break;
+            }
+            myOpMode.telemetry.addData("HEADING:", heading);
+            myOpMode.telemetry.update();
+
+        }
+        driveFieldCentric(0,0,0);
+    }
+
+ */
+
+
 
     public void setClawPosition(statesOfBeing pinch, statesOfBeing yaw, statesOfBeing axial) {
 
@@ -456,7 +390,7 @@ public class RobotHardware {
 
         } else if (axial == enable) { clawAxial.setPosition(CLAW_UP); // Raises Claw:
 
-        } else if (axial == disable) { clawAxial.setPosition(CLAW_COLLAPSED); // Lowers Claw:
+        } else if (axial == disable) { clawAxial.setPosition(CLAW_DOWN); // Lowers Claw:
 
         } else if (axial == superposition) { clawAxial.setPosition(CLAW_MID); // Parallels Claw to floor:
 
@@ -483,8 +417,7 @@ public class RobotHardware {
     public void calibrateClaw(double orientation) { // VERY IMPORTANT: moves the claw to face parallel/perpendicular to the ground
                                                     // relative to the elbow's position
         // returns the current angle without the offset
-        double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / ARM_COUNTS_PER_DEGREE));
-        double extensionRevs = Math.round((extensionDrive.getCurrentPosition() / EXTENSION_COUNTS_PER_REV) / 0.1) *0.1;
+        double elbowDegTRUE = Math.round((elbowDrive.getCurrentPosition() / COUNTS_PER_DEGREE));
         double targetClawPos; // used to avoid changing the claw position too many times in here
 
         if (elbowDegTRUE > ELBOW_TRUE_OFFSET) { // sets function to normal/forwards facing FIXME
@@ -508,10 +441,10 @@ public class RobotHardware {
          */
         if (orientation == ELBOW_PERPENDICULAR){ // change position to perpendicular to floor
             if (elbowDegTRUE < 267.00 && elbowDegTRUE > 210.00) { // sets limit between 84 deg from collapsed and 27 deg from collapsed
-                targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 207) + CLAW_UP); // this if for when the elbow is normal
+                targetClawPos = ((-0.17 / 45) * Math.abs(elbowDegTRUE - 209) + CLAW_DOWN); // this if for when the elbow is normal
                 elbowDirection = enable; // elbow is facing forward
-            } else if ((elbowDegTRUE >= -0.2 && elbowDegTRUE < 80.00) || (elbowDegTRUE < 80.00 && extensionRevs >= 2.5)){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
-                targetClawPos = ((0.15 / 45) * Math.abs(elbowDegTRUE - 77) + CLAW_COLLAPSED); // this is for when the elbow is backwards
+            } else if (elbowDegTRUE > 22.00 && elbowDegTRUE < 80.00){ // sets limit between 214 deg from collapsed and 271 deg from collapsed
+                targetClawPos = ((0.16 / 45) * Math.abs(elbowDegTRUE - 79) + CLAW_UP); // this is for when the elbow is backwards
                 elbowDirection = disable; // elbow is facing backwards
             }
         }
@@ -519,63 +452,187 @@ public class RobotHardware {
         clawAxial.setPosition(targetClawPos);
     }
 
-    /**
-     * Drives the extender during teleOp
-     *
-     * @param input Dictates which direction the extender will move. Intended to be used as a gamepad stick.
+    /*
+    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE --------------------------
+                                just beware yk.
+    ------------------------- YOU ARE ENTERING THE CAMERA SOFTWARE ZONE --------------------------
      */
-    public void driveExtenderPosition(double input){
-        input = Range.clip(input, -1, 1);
-        // make sure input doesn't exceed the possible power for the motor
 
-        extensionDrive.setPower(input);
+    // init vision variables
+    public ColorBlobLocatorProcessor colorLocator;
+    public VisionPortal portal;
+    public List<ColorBlobLocatorProcessor.Blob> blobS;
 
-        if (input > 0){
-            // if input is positive, go to max pos
-            extensionDrive.setTargetPosition( (int) EXTENSION_MAXIMUM_COUNT);
-        } else if (input < 0){
-            // if input is negative, go to min pos
-            extensionDrive.setTargetPosition( 0);
-        } else {
-            // if input is 0, stop at where you're at
-            extensionDrive.setTargetPosition(extensionDrive.getCurrentPosition());
+    public ColorBlobLocatorProcessor secondaryColorLocator;
+    public List<ColorBlobLocatorProcessor.Blob> secondaryBlobS;
+    /**
+
+      @param leftUp Top Left Point of the ROI you wish to set
+     * @param rightDown Bottom Right Point of the ROI you wish to set
+     *                  These Points can only make shapes with all perpendicular angles (only squares/rectangles)
+     * @param blobList Pass the list (blob list) you wish to filter
+     */
+    public void filterBySetROI(Point leftUp, Point rightDown, List<ColorBlobLocatorProcessor.Blob> blobList) {
+        ArrayList<ColorBlobLocatorProcessor.Blob> toRemove = new ArrayList<>();
+
+        Point leftDown = new Point(leftUp.x, rightDown.y);
+        Point rightUp = new Point(rightDown.x, leftUp.y);
+
+        Point[] pointsSet = {leftUp, leftDown, rightUp, rightDown};
+
+        Imgproc.minAreaRect( new MatOfPoint2f(pointsSet));
+
+        for(ColorBlobLocatorProcessor.Blob b : blobList)
+        {
+            double bCenterX = b.getBoxFit().center.x;
+            double bCenterY = b.getBoxFit().center.y;
+
+            if (bCenterX <= leftUp.x || bCenterY >= leftUp.y ||
+                bCenterX >= rightDown.x || bCenterY <= rightDown.y)
+            {
+                toRemove.add(b);
+            }
         }
+
+        blobList.removeAll(toRemove);
     }
 
     /**
-     *
-     * @param robotPos current position of robot
-     * @param heading either IMU heading or LL heading
-     * @return returns a counter value for the elbow to face the high rung
+
+      @param color What color you want (IN STRING VALUE), BLUE, RED, or YELLOW
+     * @param portalQ If you want to reset the {@link VisionPortal} or not, true is yes, false is no
+     * @param left How far left from the center the border should be, range of 1,-1
+     * @param top How far up from the center the border should be, range of 1,-1
+     * @param right How far right from the center the border should be, range of 1,-1
+     * @param bottom How far down from the center the border should be, range of 1,-1
      */
-    public int elbowTrigPosition(Pose3D robotPos, double heading){
-        Position holder = robotPos.getPosition();
-        Position pendingPos = new Position(DistanceUnit.INCH, 0, Math.abs(holder.y)*MtoIN, (holder.z*MtoIN) + 5, 0);
-        // pythagorean theorem ( letters correspond to the triangle part )
-        double distanceA = pendingPos.y - 24;
-        double heightB = 27 - pendingPos.z;
-        double distanceC = Math.sqrt((distanceA*distanceA) + (heightB*heightB));
-        double cosOfAngle = distanceA/distanceC;
-        double angle = Math.toDegrees(Math.acos(cosOfAngle));
-        myOpMode.telemetry.addData(String.valueOf(angle), "");
-        // check if you're facing forward
-        if ((heading + 90) >= 0) {
-            // return angle for a forward facing elbow
-            return (int) ((angle + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-        } else {
-            // return angle for a rearward facing elbow
-            return (int) ((ELBOW_BACKWARD_PARALLEL - angle) * ARM_COUNTS_PER_DEGREE);
+    public void visionInit (String color, boolean portalQ, double left, double top, double right, double bottom) {
+        switch (color) { // CUTTING EDGE CODE!!!!
+            case "BLUE":
+                colorLocator = new ColorBlobLocatorProcessor.Builder()
+                        .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
+                        .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                        .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                        .setDrawContours(true)                        // Show contours on the Stream Preview
+                        .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                        .build();
+                break;
+            case "RED":
+                colorLocator = new ColorBlobLocatorProcessor.Builder()
+                        .setTargetColorRange(ColorRange.RED)         // use a predefined color match
+                        .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                        .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                        .setDrawContours(true)                        // Show contours on the Stream Preview
+                        .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                        .build();
+                break;
+            case "YELLOW":
+                colorLocator = new ColorBlobLocatorProcessor.Builder()
+                        .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
+                        .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                        .setRoi(ImageRegion.asUnityCenterCoordinates(left, top, right, bottom))  // search central 1/4 of camera view
+                        .setDrawContours(true)                        // Show contours on the Stream Preview
+                        .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                        .build();
         }
+
+        if (portalQ) {
+            VisionPortal portal = new VisionPortal.Builder()
+                    .addProcessor(colorLocator)
+                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                    .setCameraResolution(new Size(1920, 1080))
+                    .setCamera(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .build();
+            myOpMode.telemetry.setMsTransmissionInterval(50);   // Speed up telemetry updates, Just use for debugging.
+            myOpMode.telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
+        }
+
     }
 
-    public void extensionBoundBox(){
-        // cos (angle) = A/C ; targetC = flatA/ cos(angle) : flatA is REARWARD_EXTENSION_LIMIT
-        // u rike my mat eh?
-        double cosAngle = Math.cos(   Math.toRadians(elbowDrive.getCurrentPosition()/ARM_COUNTS_PER_DEGREE)   );
-        double targetC = REARWARD_EXTENSION_LIMIT /  cosAngle;
+    @SuppressLint("DefaultLocale")
+    public void detectR (Point topLeft, Point bottomRight) {
+        /* ----- USE THIS FUNC LIKE SO... -----
+                                while (condition)
+                                {
+                                    robot.detectR();  // analyzes camera feed and puts blobs it finds into a list
 
-        if (extensionDrive.getCurrentPosition() >= targetC) {
-            extensionDrive.setTargetPosition( (int) (targetC * EXTENSION_COUNTS_PER_INCH));
+                                    if (blobs (operator) (condition)) {  // blobs is the list mentioned above...
+                                        (action)
+                                    } // this checks if the list of blobs (condition) and if it is met it executes (action)
+                                }
+
+                                OR
+
+                                while (true)
+                                {
+                                    robot.detectR();  // analyzes camera feed and puts blobs it finds into a list
+
+                                    if (blobs (operator) (condition)) {  // blobs is the list mentioned above...
+                                        break;
+                                    } // this checks if the list of blobs (condition) and if it is met it breaks out the loop
+                                }
+
+                                (action); // action is then performed
+
+*/
+
+
+        myOpMode.telemetry.addData("wakey wakey...", "\n" + // init message :D
+                "⠀⠀⠀⠄⠀⠀⠀⠀⠄⠂⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n" +
+                "⠀⠔⠁⠀⠀⠀⠀⠀⠀⠂⠀⠁⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠐⠂⠠⡀⠀⠀⠀\n" +
+                "⠀⣠⣶⣾⣾⣿⡿⣷⡀⢐⠀⠀⠁⠀⠀⡰⠃⣀⣀⣀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀\n" +
+                "⢸⣿⢻⣿⣿⣿⣷⣹⡗⢨⠀⠀⠀⡆⠠⠀⣾⢛⣿⣿⣿⣶⣦⣄⠀⠀⠀⠀⠈⠀\n" +
+                "⠀⢿⣿⣿⡻⣿⣿⣿⠃⠀⠀⠀⢀⡧⠆⢠⡏⣾⣿⣿⡏⠉⣿⣿⣿⣦⣄⠀⠀⠀\n");
+
+        blobS = colorLocator.getBlobs(); // set list to whatever the camera found
+
+        filterBySetROI(topLeft, bottomRight, blobS);
+
+        ColorBlobLocatorProcessor.Util.filterByArea(300, 20000, blobS);  // filter out very small blobs.
+
+        myOpMode.telemetry.addLine(" Area Density Aspect  Center");
+
+        // Display the size (area) and center location for each Blob.
+        for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found
+        {
+            RotatedRect boxFit = b.getBoxFit();
+            myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
+                    b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
         }
+
+        myOpMode.telemetry.update();
+        myOpMode.sleep(50);
+
     }
+
+    @SuppressLint("DefaultLocale")
+    public void teleOpdetectR (Point topLeft, Point bottomRight) {
+        myOpMode.telemetry.addData("SCANNER IS", "SCANNING");
+
+        blobS = colorLocator.getBlobs(); filterBySetROI(topLeft, bottomRight, blobS);
+        secondaryBlobS = secondaryColorLocator.getBlobs(); filterBySetROI(topLeft, bottomRight, secondaryBlobS);
+
+        ColorBlobLocatorProcessor.Util.filterByArea(800, 20000, blobS);
+        ColorBlobLocatorProcessor.Util.filterByArea(800, 20000, secondaryBlobS);
+
+        myOpMode.telemetry.addLine("Area Density Aspect Center");
+        for(ColorBlobLocatorProcessor.Blob b : blobS) // telemetry the blobs found; primary
+        {
+            RotatedRect boxFit = b.getBoxFit();
+            myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
+                    b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+        }
+        myOpMode.telemetry.addLine("Area Density Aspect Center 2");
+        for(ColorBlobLocatorProcessor.Blob b : secondaryBlobS) // telemetry the blobs found; secondary
+        {
+            RotatedRect boxFit = b.getBoxFit();
+            myOpMode.telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
+                    b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+        }
+        myOpMode.telemetry.update();
+        myOpMode.sleep(50);
+    }
+
+
+
 }
