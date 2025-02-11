@@ -40,7 +40,6 @@ public class RobotHardware {
     These variables are declared here (as class members) so they can be updated in various methods, but still be
     displayed by sendTelemetry()
      */
-    public ElapsedTime runtime = new ElapsedTime();
     public double heading; // yaw of robot
 
     // Rudimentary initialization of variables
@@ -114,7 +113,6 @@ public class RobotHardware {
     public final double EXTENSION_COUNTS_PER_INCH = EXTENSION_INCH_PER_REV*EXTENSION_COUNTS_PER_REV; // Find the inches per rev, then multiply EXTENSION_COUNTS_PER_REV
     public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.3)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
-    public final double EXTENSION_FUDGE_FACTOR = EXTENSION_COUNTS_PER_REV;
 
     private final float FORWARD_EXTENSION_LIMIT = (float) (EXTENSION_COUNTS_PER_INCH * EXTENSION_MAXIMUM_COUNT); // FIXME Placeholder; farthest extender can go forwards
     private final float REARWARD_EXTENSION_LIMIT = 42 - FORWARD_EXTENSION_LIMIT; // FIXME measured or calculated; farthest the extender can go backwards before going OOB
@@ -145,9 +143,7 @@ public class RobotHardware {
     public double ELBOW_PARALLEL = Math.round((ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
     public double ELBOW_ANGLED = Math.round((45 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
     public double ELBOW_PERPENDICULAR = Math.round((90 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_ANGLED = Math.round((135 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
     public double ELBOW_BACKWARD_PARALLEL = Math.round((180 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
-    public double ELBOW_BACKWARD_COLLAPSED = Math.round((225 + ELBOW_ANGLE_OFFSET) * ARM_COUNTS_PER_DEGREE);
     public double ELBOW_FUDGE_FACTOR = 5 * ARM_COUNTS_PER_DEGREE; // Amount to rotate the elbow by
     public double angleConvert(double angle){
         return Math.round((angle) * ARM_COUNTS_PER_DEGREE);
@@ -262,16 +258,8 @@ public class RobotHardware {
         elbowDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         extensionDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        // ensure elbow starts at 0
-        elbowDrive.setTargetPosition(0);
         elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        extensionDrive.setTargetPosition(0);
         extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
@@ -525,7 +513,7 @@ public class RobotHardware {
      *
      * @param input Dictates which direction the extender will move. Intended to be used as a gamepad stick.
      */
-    public void driveExtenderPosition(double input){
+    public int driveExtenderPosition(double input){
         input = Range.clip(input, -1, 1);
         // make sure input doesn't exceed the possible power for the motor
 
@@ -533,13 +521,13 @@ public class RobotHardware {
 
         if (input > 0){
             // if input is positive, go to max pos
-            extensionDrive.setTargetPosition( (int) EXTENSION_MAXIMUM_COUNT);
+            return (int) EXTENSION_MAXIMUM_COUNT;
         } else if (input < 0){
             // if input is negative, go to min pos
-            extensionDrive.setTargetPosition( 0);
+            return 0;
         } else {
             // if input is 0, stop at where you're at
-            extensionDrive.setTargetPosition(extensionDrive.getCurrentPosition());
+            return extensionDrive.getCurrentPosition();
         }
     }
 

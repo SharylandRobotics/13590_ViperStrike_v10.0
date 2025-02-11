@@ -19,6 +19,79 @@ public class BazaarTeleOp extends LinearOpMode{
 
     private boolean coloredFound;
     private boolean yellowFound;
+    private double NEWelbowPos;
+    private double NEWextenderPos;
+    private boolean calibratePerpendicular;
+
+    private void checkDpad(){
+        // elbow pre-set positions
+        if (gamepad2.dpad_up) {
+            NEWelbowPos = ((int) robot.ELBOW_PERPENDICULAR);
+        } else if (gamepad2.dpad_right) {
+            NEWelbowPos = (int) (robot.angleConvert(33));
+        } else if (gamepad2.dpad_left) {
+            NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
+        } else if (gamepad2.dpad_down) { // slightly off ground
+            NEWelbowPos = (int) (robot.ELBOW_COLLAPSED);
+        }
+    }
+
+    private void checkLetters(){
+        // claw positions
+        if (gamepad2.x) { // close claw
+            robot.clawPinch.setPosition(robot.CLAW_CLOSE);
+        } else if (gamepad2.b) { // open claw
+            robot.clawPinch.setPosition(robot.CLAW_OPEN);
+        }
+        if (gamepad2.a) { // down claw
+            robot.clawAxial.setPosition(robot.CLAW_DOWN);
+            calibratePerpendicular = false;
+        } else if (gamepad2.y) { // claw mid
+            robot.clawAxial.setPosition(robot.CLAW_MID);
+            calibratePerpendicular = false;
+        }
+    }
+
+    private void extensionHandler(){
+        NEWextenderPos = robot.driveExtenderPosition(-gamepad2.left_stick_y);
+        // shortcut to not preoccupy driver
+        if (gamepad2.left_bumper) {
+            robot.extensionDrive.setTargetPosition((int) robot.EXTENSION_MAXIMUM_COUNT);
+        } else if ((int) NEWextenderPos != robot.extensionDrive.getCurrentPosition())
+        { // check that the input given is actually doing smt as to not interrupt shortcut
+            robot.extensionDrive.setTargetPosition((int) NEWextenderPos);
+        }
+    }
+
+    private void triggerHandler(){
+        double elbowFactor;
+        // drive elbow manually
+        // check if triggers are active...
+        if (gamepad2.left_trigger != 0 || gamepad2.right_trigger != 0) {
+            if (gamepad2.left_trigger > 0.5) {
+                elbowFactor = Math.pow(3 * gamepad2.left_trigger, 2) * -robot.ELBOW_FUDGE_FACTOR;
+            } else if (gamepad2.right_trigger > 0.5) {
+                elbowFactor = Math.pow(3 * gamepad2.right_trigger, 2) * robot.ELBOW_FUDGE_FACTOR;
+            } else {
+                elbowFactor = robot.ELBOW_FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+            }
+
+            // avoid going past 0
+            if (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor < 0){
+                elbowFactor -= (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
+            }
+            // if they are drive and change the target position
+            NEWelbowPos = robot.elbowDrive.getCurrentPosition() + (int) elbowFactor;
+        }
+    }
+
+    private void modeSwapper (DcMotor.RunMode mode){
+        robot.leftFrontDrive.setMode(mode);
+        robot.leftBackDrive.setMode(mode);
+        robot.rightFrontDrive.setMode(mode);
+        robot.rightBackDrive.setMode(mode);
+    }
+
     @Override
     public void runOpMode() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight-rfc");
@@ -47,34 +120,29 @@ public class BazaarTeleOp extends LinearOpMode{
         double strafe;
         double turn;
 
-        double elbowFactor;
         double rotateFactor;
 
         boolean elbowByExtender = false;
         boolean g2RightStickSwitch = false;
-        boolean calibratePerpendicular = false;
+        calibratePerpendicular = false;
 
         double prevElbowPos;
 
         robot.init(false);
-        double NEWelbowPos = robot.elbowDrive.getCurrentPosition();
+        NEWelbowPos = robot.elbowDrive.getCurrentPosition();
+        NEWextenderPos = robot.extensionDrive.getCurrentPosition();
 
-        // extension encoder setup
-        robot.extensionDrive.setTargetPosition(0);
-        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.extensionDrive.setPower(1.0);
-
-        robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
         limelight.start();
         waitForStart();
         runtime.reset();
 
         while (opModeIsActive()) {
+            // swap mode back when done with rotation
+            if (!robot.leftFrontDrive.isBusy() || !robot.leftBackDrive.isBusy() || !robot.rightFrontDrive.isBusy() || !robot.rightBackDrive.isBusy()){
+                modeSwapper(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
             prevElbowPos = robot.elbowDrive.getCurrentPosition();
 
             drive = -gamepad1.left_stick_y;
@@ -99,14 +167,12 @@ public class BazaarTeleOp extends LinearOpMode{
                 telemetry.addData("not detecting", "");
             }
 
-            // what it says
-            if (gamepad1.b) {
-                if (botPose != null) {
-                    NEWelbowPos = (robot.elbowTrigPosition(botPose, robot.heading));
-                    telemetry.addData(botPose.toString(), "");
-                } else {
-                    telemetry.addData("not passing", "");
-                }
+            // rotate to face straight ahead ; you will lose control for a bit (no driving/strafing until its done)
+            if (gamepad1.a) {
+                double ortho = -(robot.imu.getRobotYawPitchRollAngles().getYaw() + 180);
+                robot.encoderFieldCentric(0,0,ortho);
+                robot.driveFieldCentric(0,0, Math.abs(ortho)/ortho);
+                modeSwapper(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
 
@@ -139,60 +205,39 @@ public class BazaarTeleOp extends LinearOpMode{
                 stickCounter = 0;
             }
 
-             // claw positions
-            if (gamepad2.x) { // close claw
-                robot.clawPinch.setPosition(robot.CLAW_CLOSE);
-            } else if (gamepad2.b) { // open claw
-                robot.clawPinch.setPosition(robot.CLAW_OPEN);
-            }
-            if (gamepad2.a) { // down claw
-                robot.clawAxial.setPosition(robot.CLAW_DOWN);
-                calibratePerpendicular = false;
-            } else if (gamepad2.y) { // claw mid
-                robot.clawAxial.setPosition(robot.CLAW_MID);
-                calibratePerpendicular = false;
-            }
+            checkLetters();
+            checkDpad();
 
-            // elbow pre-set positions
-            if (gamepad2.dpad_up) {
-                NEWelbowPos = ((int) robot.ELBOW_PERPENDICULAR);
-            } else if (gamepad2.dpad_right) {
-                NEWelbowPos = (int) (robot.angleConvert(33));
-            } else if (gamepad2.dpad_left) {
-                NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
-            } else if (gamepad2.dpad_down) { // slightly off ground
-                NEWelbowPos = (int) (robot.ELBOW_COLLAPSED);
-            }
-
-            // shortcut to not preoccupy driver
+            // drive arm by extender: manual control has priority, movement here can be interrupted
             if (gamepad2.right_bumper) {
-                robot.extensionDrive.setTargetPosition((int) robot.EXTENSION_MAXIMUM_COUNT);
-            }
-
-            // drive elbow manually
-            // check if triggers are active...
-            if (gamepad2.left_trigger != 0 || gamepad2.right_trigger != 0) {
-                if (gamepad2.left_trigger > 0.5) {
-                    elbowFactor = Math.pow(3 * gamepad2.left_trigger, 2) * -robot.ELBOW_FUDGE_FACTOR;
-                } else if (gamepad2.right_trigger > 0.5) {
-                    elbowFactor = Math.pow(3 * gamepad2.right_trigger, 2) * robot.ELBOW_FUDGE_FACTOR;
-                } else {
-                    elbowFactor = robot.ELBOW_FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+                if (leftBumperTimer > 7) {
+                    elbowByExtender = !elbowByExtender;
+                    leftBumperTimer = 0;
                 }
-
-                // avoid going past 0
-                if (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor < 0){
-                    elbowFactor -= (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
+                // if changed to false, start retracting the extender to near 0 (it can be intercepted, it's not a forced move!!)
+                if (!elbowByExtender){
+                    robot.extensionDrive.setTargetPosition(0);
+                    NEWelbowPos = robot.ELBOW_PARALLEL;
+                } else { // if switched on, move to preset pos : lowest elbow priority (can be intercepted)
+                    NEWelbowPos = robot.ELBOW_COLLAPSED + robot.angleConvert(5);
                 }
-                // if they are drive and change the target position
-                NEWelbowPos = robot.elbowDrive.getCurrentPosition() + (int) elbowFactor;
             }
+            extensionHandler();
+
+            // triggerHandler goes after bc manual control has priority
+            if (elbowByExtender) {
+                // only start moving elbow when you're in preset pos
+                if (robot.elbowDrive.getCurrentPosition() < robot.ELBOW_PARALLEL - robot.angleConvert(10)) {
+                    NEWelbowPos = (int) robot.armByExtender();
+                }
+            }
+            triggerHandler();
+
+
+
 
             // drive elbow
             robot.elbowDrive.setTargetPosition((int) NEWelbowPos);
-            // drive extension
-            // happy, reader?
-            robot.driveExtenderPosition(-gamepad2.left_stick_y);
             // drive heading servo
             robot.clawYaw.setPosition(rotateFactor);
 
@@ -201,15 +246,7 @@ public class BazaarTeleOp extends LinearOpMode{
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
             }
 
-            // drive arm by extender
-            if (gamepad2.left_bumper) {
-                if (leftBumperTimer > 10) {
-                    elbowByExtender = !elbowByExtender;
-                    leftBumperTimer = 0;
-                }
-                // if changed to false, start retracting the extender to near 0 (it can be intercepted, it's not a forced move!!)
-                if (!elbowByExtender){robot.extensionDrive.setTargetPosition(0);}
-            } else if (elbowByExtender) {robot.elbowDrive.setTargetPosition((int) robot.armByExtender());}
+
 
             // telemetry
             telemetry.addData("Heading", robot.heading);
