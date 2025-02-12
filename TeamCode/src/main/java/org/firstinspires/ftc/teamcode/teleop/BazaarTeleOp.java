@@ -24,16 +24,7 @@ public class BazaarTeleOp extends LinearOpMode{
     private boolean calibratePerpendicular;
 
     private void checkDpad(){
-        // elbow pre-set positions
-        if (gamepad2.dpad_up) {
-            NEWelbowPos = ((int) robot.ELBOW_PERPENDICULAR);
-        } else if (gamepad2.dpad_right) {
-            NEWelbowPos = (int) (robot.angleConvert(33));
-        } else if (gamepad2.dpad_left) {
-            NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
-        } else if (gamepad2.dpad_down) { // slightly off ground
-            NEWelbowPos = (int) (robot.ELBOW_COLLAPSED);
-        }
+
     }
 
     private void checkLetters(){
@@ -63,26 +54,22 @@ public class BazaarTeleOp extends LinearOpMode{
         }
     }
 
-    private void triggerHandler(){
+    private double elbowFactor(){
         double elbowFactor;
-        // drive elbow manually
-        // check if triggers are active...
-        if (gamepad2.left_trigger != 0 || gamepad2.right_trigger != 0) {
-            if (gamepad2.left_trigger > 0.5) {
-                elbowFactor = Math.pow(3 * gamepad2.left_trigger, 2) * -robot.ELBOW_FUDGE_FACTOR;
-            } else if (gamepad2.right_trigger > 0.5) {
-                elbowFactor = Math.pow(3 * gamepad2.right_trigger, 2) * robot.ELBOW_FUDGE_FACTOR;
-            } else {
-                elbowFactor = robot.ELBOW_FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
-            }
-
-            // avoid going past 0
-            if (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor < 0){
-                elbowFactor -= (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
-            }
-            // if they are drive and change the target position
-            NEWelbowPos = robot.elbowDrive.getCurrentPosition() + (int) elbowFactor;
+        if (gamepad2.left_trigger > 0.5) {
+            elbowFactor = Math.pow(3 * gamepad2.left_trigger, 2) * -robot.ELBOW_FUDGE_FACTOR;
+        } else if (gamepad2.right_trigger > 0.5) {
+            elbowFactor = Math.pow(3 * gamepad2.right_trigger, 2) * robot.ELBOW_FUDGE_FACTOR;
+        } else {
+            elbowFactor = robot.ELBOW_FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
         }
+
+        // avoid going past 0
+        if (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor < 0){
+            elbowFactor -= (robot.elbowDrive.getCurrentPosition() + (int) elbowFactor);
+        }
+
+        return elbowFactor;
     }
 
     private void modeSwapper (DcMotor.RunMode mode){
@@ -127,22 +114,29 @@ public class BazaarTeleOp extends LinearOpMode{
         calibratePerpendicular = false;
 
         double prevElbowPos;
+        double elbowFactor;
 
         robot.init(false);
-        NEWelbowPos = robot.elbowDrive.getCurrentPosition();
-        NEWextenderPos = robot.extensionDrive.getCurrentPosition();
+        double NEWelbowPos = robot.elbowDrive.getCurrentPosition();
+        double heading;
 
+        // extension encoder setup
+        robot.extensionDrive.setTargetPosition(0);
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.extensionDrive.setPower(1.0);
+
+        robot.elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.elbowDrive.setPower(1.0);
         limelight.start();
         waitForStart();
         runtime.reset();
 
         while (opModeIsActive()) {
-            // swap mode back when done with rotation
-            if (!robot.leftFrontDrive.isBusy() || !robot.leftBackDrive.isBusy() || !robot.rightFrontDrive.isBusy() || !robot.rightBackDrive.isBusy()){
-                modeSwapper(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            }
+            heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
             prevElbowPos = robot.elbowDrive.getCurrentPosition();
 
             drive = -gamepad1.left_stick_y;
@@ -167,13 +161,7 @@ public class BazaarTeleOp extends LinearOpMode{
                 telemetry.addData("not detecting", "");
             }
 
-            // rotate to face straight ahead ; you will lose control for a bit (no driving/strafing until its done)
-            if (gamepad1.a) {
-                double ortho = -(robot.imu.getRobotYawPitchRollAngles().getYaw() + 180);
-                robot.encoderFieldCentric(0,0,ortho);
-                robot.driveFieldCentric(0,0, Math.abs(ortho)/ortho);
-                modeSwapper(DcMotor.RunMode.RUN_TO_POSITION);
-            }
+
 
 
             if (gamepad1.right_trigger != 0) { // slow down driving
@@ -194,8 +182,24 @@ public class BazaarTeleOp extends LinearOpMode{
                 robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
 
-            robot.driveFieldCentric(drive, strafe, turn);
 
+            // rotate to face straight ahead ; you will lose control for a bit (no driving/strafing until its done)
+            if (gamepad1.b) {
+                double ortho;
+                if (heading < 0){
+                    ortho = -(180 + Math.round(heading));
+                } else {
+                    ortho = (180 - Math.round(heading));
+                }
+                robot.encoderFieldCentric(0,0,ortho);
+                robot.driveFieldCentric(0,0, Math.abs(ortho)/ortho);
+                modeSwapper(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+            // swap mode back when done with rotation
+            if (!robot.leftFrontDrive.isBusy() || !robot.leftBackDrive.isBusy() || !robot.rightFrontDrive.isBusy() || !robot.rightBackDrive.isBusy()){
+                modeSwapper(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                robot.driveFieldCentric(drive, strafe, turn);
+            }
 
             // gamepad 2
 
@@ -206,7 +210,16 @@ public class BazaarTeleOp extends LinearOpMode{
             }
 
             checkLetters();
-            checkDpad();
+            // elbow pre-set positions DPAD
+            if (gamepad2.dpad_up) {
+                NEWelbowPos = ((int) robot.ELBOW_PERPENDICULAR);
+            } else if (gamepad2.dpad_right) {
+                NEWelbowPos = (int) (robot.angleConvert(33));
+            } else if (gamepad2.dpad_left) {
+                NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
+            } else if (gamepad2.dpad_down) { // slightly off ground
+                NEWelbowPos = (int) (robot.ELBOW_COLLAPSED);
+            }
 
             // drive arm by extender: manual control has priority, movement here can be interrupted
             if (gamepad2.right_bumper) {
@@ -231,7 +244,12 @@ public class BazaarTeleOp extends LinearOpMode{
                     NEWelbowPos = (int) robot.armByExtender();
                 }
             }
-            triggerHandler();
+
+            if (gamepad2.left_trigger != 0 || gamepad2.right_trigger != 0) {
+                elbowFactor = elbowFactor();
+                // if they are drive and change the target position
+                NEWelbowPos = robot.elbowDrive.getCurrentPosition() + (int) elbowFactor;
+            }
 
 
 
@@ -249,7 +267,7 @@ public class BazaarTeleOp extends LinearOpMode{
 
 
             // telemetry
-            telemetry.addData("Heading", robot.heading);
+            telemetry.addData("Heading", heading);
             telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.ARM_COUNTS_PER_DEGREE);
             telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition() / robot.EXTENSION_COUNTS_PER_REV);

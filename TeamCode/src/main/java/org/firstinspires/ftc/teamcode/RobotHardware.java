@@ -155,7 +155,7 @@ public class RobotHardware {
      */
     public double armByExtender() { // returns elbow pos for extension pos; this sould be a positive slope: as extender goes up arm goes up
         // 13x/25 + 22 = y  ; x = extension pos, y = elbow pos
-        return (((((extensionDrive.getCurrentPosition()/EXTENSION_COUNTS_PER_REV)*13)/25) + 22) * ARM_COUNTS_PER_DEGREE);// slope goes here: initial position of 0, 22 ; 25, 35
+        return (((((extensionDrive.getCurrentPosition()/EXTENSION_COUNTS_PER_REV)*13)/25) + 5) * ARM_COUNTS_PER_DEGREE);// slope goes here: initial position of 0, 22 ; 25, 35
     }
 
     public double extenderByArm() { // this should be a negative slope: as arm goes up extender goes down
@@ -258,8 +258,16 @@ public class RobotHardware {
         elbowDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         extensionDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        // ensure elbow starts at 0
+        elbowDrive.setTargetPosition(0);
         elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        extensionDrive.setTargetPosition(0);
         extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Reset the IMU when initializing the hardware class
         imu.resetYaw();
