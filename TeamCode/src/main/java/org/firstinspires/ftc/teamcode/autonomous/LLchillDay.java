@@ -18,6 +18,23 @@ public class LLchillDay extends LinearOpMode {
 
     private Limelight3A limelight;
 
+    public void score(){
+        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(15))); // score/ hook on
+        while (robot.elbowDrive.isBusy()){
+            robot.clawAxial.setPosition(robot.CLAW_MID);
+            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(47.5))){
+                robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
+            }
+            if ((robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(70)))){
+                robot.setClawPosition(robot.disable, robot.pass, robot.superposition);
+                robot.extensionDrive.setTargetPosition(0);
+                break;
+            }
+        }
+        robot.extensionDrive.setTargetPosition(0);
+        robot.setClawPosition(robot.disable, robot.pass, robot.superposition);
+    }
+
     @Override
     public void runOpMode() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight-rfc");
@@ -80,7 +97,7 @@ public class LLchillDay extends LinearOpMode {
         sleep(7000);
 
         robot.driveFieldCentric(0.6,0,0);
-        robot.encoderFieldCentric(22.25,0,0);
+        robot.encoderFieldCentric(21.25,0,0);
         sleep(100);
         robot.elbowDrive.setTargetPosition( (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(15))); // get arm ready
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
@@ -95,18 +112,8 @@ public class LLchillDay extends LinearOpMode {
             telemetry.addData("raising","");
         }
 
-        robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_PARALLEL + robot.angleConvert(15))); // score/ hook on
-        while (robot.elbowDrive.isBusy()){
-            robot.clawAxial.setPosition(robot.CLAW_MID);
-            if (robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(45))){
-                robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
-            }
-            if ((robot.elbowDrive.getCurrentPosition() <= (int) (robot.ELBOW_PERPENDICULAR - robot.angleConvert(70)))){
-                robot.setClawPosition(robot.disable, robot.pass, robot.superposition);
-                robot.extensionDrive.setTargetPosition(0);
-                break;
-            }
-        }
+        score();
+
         if (limelight.getLatestResult() != null && limelight.getLatestResult().getBotpose() != null) {
             botPose = limelight.getLatestResult().getBotpose();
             x = botPose.getPosition().x * MtoIN;
@@ -159,7 +166,7 @@ public class LLchillDay extends LinearOpMode {
 
         // begin pick-up/drop sequence --> (3x)
         for (byte i=0; i<2; i++) {
-            robot.elbowDrive.setTargetPosition((int) (13 * robot.ARM_COUNTS_PER_DEGREE));
+            robot.elbowDrive.setTargetPosition( (0));
             while (robot.elbowDrive.isBusy()) {
                 robot.calibrateClaw(robot.ELBOW_PERPENDICULAR);
                 telemetry.addData("waiting on elbow", "");

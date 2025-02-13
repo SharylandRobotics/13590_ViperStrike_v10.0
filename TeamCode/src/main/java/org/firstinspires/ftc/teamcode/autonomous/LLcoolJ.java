@@ -154,8 +154,8 @@ public class LLcoolJ extends LinearOpMode {
 
         // drive to pos
         robot.elbowDrive.setTargetPosition((int) (robot.ELBOW_COLLAPSED));
-        ptFinder.tryAgain(0,0,(46.895),(8), false);
-        robot.encoderFieldCentric(8, 46.895,0);
+        ptFinder.tryAgain(0,0,(46.895),(8.5), false);
+        robot.encoderFieldCentric(8.5, 46.895,0);
         while (robot.leftFrontDrive.isBusy() || robot.leftBackDrive.isBusy() || robot.rightFrontDrive.isBusy() || robot.rightBackDrive.isBusy()){
             telemetry.addData("Busy","");
             telemetry.update();

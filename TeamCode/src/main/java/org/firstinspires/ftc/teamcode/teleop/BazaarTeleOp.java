@@ -216,7 +216,7 @@ public class BazaarTeleOp extends LinearOpMode{
             } else if (gamepad2.dpad_right) {
                 NEWelbowPos = (int) (robot.angleConvert(33));
             } else if (gamepad2.dpad_left) {
-                NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL);
+                NEWelbowPos = ((int) robot.ELBOW_BACKWARD_PARALLEL-robot.angleConvert(5));
             } else if (gamepad2.dpad_down) { // slightly off ground
                 NEWelbowPos = (int) (robot.ELBOW_COLLAPSED);
             }
