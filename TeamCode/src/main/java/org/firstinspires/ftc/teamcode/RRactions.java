@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -35,21 +36,9 @@ public class RRactions {
             }
 
             @Override
-            public boolean run(@NotNull TelemetryPacket packet) {
-                if (!initialized) {
-                    elbow.setPower(1);
-                    initialized = true;
-                }
-
-                double pos = elbow.getCurrentPosition();
-                packet.put("elbow Angle", pos/robotHW.ARM_COUNTS_PER_DEGREE);
-                if (pos != Tpos) {
-                    return true;
-                } else {
-                    elbow.setPower(0);
-                    return false;
-                }
-
+            public boolean run(@NonNull TelemetryPacket packet) {
+                robotHW.velocityElbowHandler(Tpos);
+                return Math.abs(elbow.getCurrentPosition() - Tpos) > 10;
             }
 
         }
@@ -73,7 +62,6 @@ public class RRactions {
 
         // actual action class/ do-er
         public class extenderToInches implements Action {
-            private boolean initialized = false;
             private double Tpos; // in counts
             public extenderToInches(double inch){
                 // return the smaller of the two (effectively limit to maximum count)
@@ -81,21 +69,9 @@ public class RRactions {
             }
 
             @Override
-            public boolean run(@NotNull TelemetryPacket packet) {
-                if (!initialized) {
-                    extender.setPower(1);
-                    initialized = true;
-                }
-
-                double pos = extender.getCurrentPosition();
-                packet.put("extender distance", pos/robotHW.EXTENSION_COUNTS_PER_INCH);
-                if (pos != Tpos) {
-                    return true;
-                } else {
-                    extender.setPower(0);
-                    return false;
-                }
-
+            public boolean run(@NonNull TelemetryPacket packet) {
+                robotHW.velocityExtensionHandler(Tpos);
+                return Math.abs(extender.getCurrentPosition() - Tpos) > 10;
             }
 
         }
@@ -118,14 +94,14 @@ public class RRactions {
         // actual action class/ do-er(s) -->
         public class ClosePincher implements Action {
             @Override
-            public boolean run(@NotNull TelemetryPacket packet) {
+            public boolean run(@NonNull TelemetryPacket packet) {
                 pincher.setPosition(robotHW.CLAW_CLOSE);
                 return false;
             }
         }
         public class OpenPincher implements Action {
             @Override
-            public boolean run(@NotNull TelemetryPacket packet) {
+            public boolean run(@NonNull TelemetryPacket packet) {
                 pincher.setPosition(robotHW.CLAW_OPEN);
                 return false;
             }
@@ -158,7 +134,7 @@ public class RRactions {
             }
 
             @Override
-            public boolean run(@NotNull TelemetryPacket packet) {
+            public boolean run(@NonNull TelemetryPacket packet) {
                 yaw.setPosition(Tpos);
                 return false;
             }
@@ -187,7 +163,7 @@ public class RRactions {
             }
 
             @Override
-            public boolean run(@NotNull TelemetryPacket packet) {
+            public boolean run(@NonNull TelemetryPacket packet) {
                 axial.setPosition(Tpos);
                 return false;
             }

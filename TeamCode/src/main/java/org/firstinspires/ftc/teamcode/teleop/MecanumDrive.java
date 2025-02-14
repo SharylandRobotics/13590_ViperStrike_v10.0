@@ -54,7 +54,7 @@ public final class MecanumDrive {
         // TODO: fill in these values based on
         //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
@@ -135,10 +135,8 @@ public final class MecanumDrive {
 
             // TODO: reverse encoders if needed
             //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightBackEnc.setDirection(DcMotor.Direction.REVERSE);
-            rightFrontEnc.setDirection(DcMotor.Direction.REVERSE);
-            rightFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftFrontDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftBackDrive.setDirection(DcMotorSimple.Direction.REVERSE);
             this.pose = pose;
         }
 
@@ -225,10 +223,10 @@ public final class MecanumDrive {
         // TODO: make sure your config has motors with these names (or change them)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
 
-        leftFrontDrive = hardwareMap.get(DcMotorEx.class, "left_front_drive");
-        leftBackDrive = hardwareMap.get(DcMotorEx.class, "left_back_drive");
-        rightBackDrive = hardwareMap.get(DcMotorEx.class, "right_back_drive");
-        rightFrontDrive = hardwareMap.get(DcMotorEx.class, "right_front_drive");
+        leftFrontDrive = hardwareMap.get(DcMotorEx.class, "right_back_drive");
+        leftBackDrive = hardwareMap.get(DcMotorEx.class, "right_front_drive");
+        rightBackDrive = hardwareMap.get(DcMotorEx.class, "left_front_drive");
+        rightFrontDrive = hardwareMap.get(DcMotorEx.class, "left_back_drive");
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

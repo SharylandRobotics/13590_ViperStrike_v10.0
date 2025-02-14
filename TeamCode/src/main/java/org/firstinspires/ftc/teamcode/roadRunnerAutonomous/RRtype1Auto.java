@@ -38,19 +38,17 @@ public class RRtype1Auto extends LinearOpMode{
         RRactions.Axial axial = actionLib.new Axial(hardwareMap);
 
         Action leg1 = drive.actionBuilder(initialPose)
+                .setTangent(Math.PI/2)
                 .lineToY(-40)
                 .waitSeconds(1)
                 .build();
 
-        Action leg2 = drive.actionBuilder(initialPose)
+        Action leg2 = drive.actionBuilder(testPose)
+                .setTangent(0)
                 .lineToXLinearHeading(35, Math.toRadians(45))
-                .lineToY(-35)
                 .build();
 
-        Actions.runBlocking(pinch.closeClaw());
-        Actions.runBlocking(axial.rotateAxial(robot.CLAW_MID));
-        Actions.runBlocking(extension.extenderToInch(0));
-        Actions.runBlocking(elbow.elbowToDeg(0));
+        robot.init(true);
 
         waitForStart();
 

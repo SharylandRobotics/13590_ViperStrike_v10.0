@@ -575,4 +575,16 @@ public class RobotHardware {
             extensionDrive.setTargetPosition( (int) (targetC * EXTENSION_COUNTS_PER_INCH));
         }
     }
+
+    public void velocityElbowHandler(double armDegC){
+        elbowDrive.setTargetPosition((int) (armDegC));
+        ((DcMotorEx) elbowDrive).setVelocity(2200);
+        elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void velocityExtensionHandler(double inchesC){
+        extensionDrive.setTargetPosition((int) (inchesC));
+        ((DcMotorEx) extensionDrive).setVelocity(2200);
+        extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
 }
