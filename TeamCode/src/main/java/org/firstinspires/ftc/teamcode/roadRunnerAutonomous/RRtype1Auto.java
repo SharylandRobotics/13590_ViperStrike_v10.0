@@ -22,7 +22,10 @@ public class RRtype1Auto extends LinearOpMode{
     public void runOpMode() {
         Pose2d initialPose = new Pose2d(9.5, -61.25, Math.toRadians(90));
         Pose2d rungPose = new Pose2d(9.5, -40, Math.toRadians(90));
-        Pose2d backupPose = new Pose2d(9.5, -45, Math.toRadians(90));
+
+        Pose2d sample1Pose = new Pose2d(35, -34, Math.toRadians(50));
+        Pose2d sample2Pose = new Pose2d(60, -34, Math.toRadians(60));
+        Pose2d sample3Pose = new Pose2d(40, -34, Math.toRadians(50));
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
@@ -32,7 +35,7 @@ public class RRtype1Auto extends LinearOpMode{
         RRactions.Yaw yaw = actionLib.new Yaw(hardwareMap);
         RRactions.Axial axial = actionLib.new Axial(hardwareMap);
 
-        Action leg1 = drive.actionBuilder(initialPose)
+        Action score1 = drive.actionBuilder(initialPose)
                 .setTangent(Math.PI/2)
                 .lineToY(-40)
                 .waitSeconds(1)
