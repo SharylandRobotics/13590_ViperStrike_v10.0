@@ -108,9 +108,11 @@ public class RobotHardware {
             * (60. / 100.) // external gearing, 100 (drive) to 60 teeth
             * (1.0); // ... per revolution ( simplified from 360/360 like the logic from the Elbow Count formula)
 
-    public final double EXTENSION_INCH_PER_REV = 0.3125;
+    public final double EXTENSION_INCH_PER_REV = 0.375;
     // by the distance traveled
-    public final double EXTENSION_COUNTS_PER_INCH = EXTENSION_INCH_PER_REV*EXTENSION_COUNTS_PER_REV; // Find the inches per rev, then multiply EXTENSION_COUNTS_PER_REV
+
+    public final double EXTENSION_REVS_PER_INCH = 3;
+    public final double EXTENSION_COUNTS_PER_INCH = EXTENSION_REVS_PER_INCH*EXTENSION_COUNTS_PER_REV; // Find the inches per rev, then multiply EXTENSION_COUNTS_PER_REV
     public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.3)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
 
@@ -226,13 +228,9 @@ public class RobotHardware {
          printed logo on the hub is pointing. (2) the second parameter specifies the direction the USB connector on the
          hub is pointing. All directions are relative to the robot, and left/right is as-viewed from behind the robot.
          */
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
 
-        imu.initialize(parameters);
 
-        heading = imu.getRobotYawPitchRollAngles().getYaw();
+
         /*
          Most robots need the motors on one side to be reversed to drive forward. The motor reversals shown here are
          for a "direct drive" robot (the wheels turn in the same direction as the motor shaft). If your robot has
@@ -261,16 +259,29 @@ public class RobotHardware {
         // ensure elbow starts at 0
         elbowDrive.setTargetPosition(0);
         elbowDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         extensionDrive.setTargetPosition(0);
         extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (auto){
+            IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                    RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                    RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+
+            imu.initialize(parameters);
+
+            // Reset the IMU when initializing the hardware class
+            imu.resetYaw();
+
+            clawAxial.setPosition(CLAW_MID);
+            clawPinch.setPosition(CLAW_CLOSE);
+            clawYaw.setPosition(YAW_MID);
+            elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+        elbowDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // Reset the IMU when initializing the hardware class
-        imu.resetYaw();
+        heading = imu.getRobotYawPitchRollAngles().getYaw();
+
 
         // initialize limelight
         limelight.start();
@@ -290,11 +301,7 @@ public class RobotHardware {
         SoundPlayer.getInstance().setMasterVolume(4);
 
         // Wait for the game to start (Display Gyro value while waiting)
-        if (auto){
-            clawAxial.setPosition(CLAW_MID);
-            clawPinch.setPosition(CLAW_CLOSE);
-            clawYaw.setPosition(YAW_MID);
-        }
+
 
 
         while (myOpMode.opModeInInit()) {

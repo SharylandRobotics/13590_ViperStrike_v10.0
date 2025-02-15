@@ -121,10 +121,6 @@ public class BazaarTeleOp extends LinearOpMode{
         double heading;
 
         // extension encoder setup
-        robot.extensionDrive.setTargetPosition(0);
-        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.extensionDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.extensionDrive.setPower(1.0);
@@ -297,5 +293,8 @@ public class BazaarTeleOp extends LinearOpMode{
             stickCounter2++;
             sleep(50);
         }
+        robot.extensionDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
+
 }
