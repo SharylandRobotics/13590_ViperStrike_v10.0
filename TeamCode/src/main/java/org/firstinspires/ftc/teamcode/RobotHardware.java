@@ -228,9 +228,13 @@ public class RobotHardware {
          printed logo on the hub is pointing. (2) the second parameter specifies the direction the USB connector on the
          hub is pointing. All directions are relative to the robot, and left/right is as-viewed from behind the robot.
          */
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
 
+        imu.initialize(parameters);
 
-
+        heading = imu.getRobotYawPitchRollAngles().getYaw();
         /*
          Most robots need the motors on one side to be reversed to drive forward. The motor reversals shown here are
          for a "direct drive" robot (the wheels turn in the same direction as the motor shaft). If your robot has
@@ -262,15 +266,6 @@ public class RobotHardware {
         extensionDrive.setTargetPosition(0);
         extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         if (auto){
-            IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                    RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
-
-            imu.initialize(parameters);
-
-            // Reset the IMU when initializing the hardware class
-            imu.resetYaw();
-
             clawAxial.setPosition(CLAW_MID);
             clawPinch.setPosition(CLAW_CLOSE);
             clawYaw.setPosition(YAW_MID);

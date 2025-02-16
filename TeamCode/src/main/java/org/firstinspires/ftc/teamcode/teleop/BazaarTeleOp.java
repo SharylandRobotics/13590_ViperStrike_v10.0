@@ -270,24 +270,6 @@ public class BazaarTeleOp extends LinearOpMode{
             telemetry.addData("Claw Calibration", "Perpendicular?", calibratePerpendicular);
             telemetry.addData("Elbow Mode:", elbowByExtender ? "Extender Based" : "Free Range");
             telemetry.update();
-            switch ((int) runtime.seconds()) {
-                case 90:
-                    gamepad1.rumble(0.1, 0.1, 200);
-                    break;
-                case 120:
-                case 135:
-                    gamepad1.rumble(0.5, 0.5, 200);
-                    break;
-            }
-            // check for elbow stalls
-            if (prevElbowPos == robot.elbowDrive.getCurrentPosition() && robot.elbowDrive.getPower() >= 1.0){
-                if (Math.abs(robot.elbowDrive.getCurrentPosition() - robot.elbowDrive.getTargetPosition()) > 4) {
-                    timesCounted++;
-                    if (timesCounted >= 10) {
-                        SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, coloredSoundID);
-                    }
-                }
-            }
             stickCounter++;
             leftBumperTimer++;
             stickCounter2++;

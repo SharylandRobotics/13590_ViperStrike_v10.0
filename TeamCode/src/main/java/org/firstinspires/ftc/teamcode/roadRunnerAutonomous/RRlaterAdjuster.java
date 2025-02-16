@@ -12,15 +12,15 @@ import org.firstinspires.ftc.teamcode.teleop.MecanumDrive;
 import java.lang.Math;
 
 @Config
-@Autonomous(name = "RR Ascent Zone Right", group = "RoadRunner")
-public class RRtype2Auto extends LinearOpMode{
+@Autonomous(name = "RR adjuster", group = "RoadRunner")
+public class RRlaterAdjuster extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
     RRactions actionLib = new RRactions(robot);
 
     @Override
     public void runOpMode() {
-        Pose2d initialPose = new Pose2d(21.5, -61.25, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(20, -61.25, Math.toRadians(90));
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
@@ -31,9 +31,9 @@ public class RRtype2Auto extends LinearOpMode{
         RRactions.Axial axial = actionLib.new Axial(hardwareMap);
 
         Action leg1 = drive.actionBuilder(initialPose)
-                .setTangent(Math.toRadians(54))
-                .splineToConstantHeading(new Vector2d(24, 0), Math.toRadians(180))
-                .waitSeconds(1)
+                .setTangent(Math.toRadians(0))
+                .lineToX(32)
+                .waitSeconds(0.2)
                 .build();
 
         robot.init(true);

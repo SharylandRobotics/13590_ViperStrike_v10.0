@@ -60,8 +60,8 @@ public final class MecanumDrive {
 
         // drive model parameters
         public double inPerTick = 69.8/3033.5; // find this value by doing |ForwardPushTest|
-        public double lateralInPerTick = 74.5/3236.5;
-        public double trackWidthTicks = 1124.71083317226;
+        public double lateralInPerTick = 0.0177; // 74.5/3236.5, 60/2222.
+        public double trackWidthTicks = 1114;
 
         // feedforward parameters (in tick units)
         public double kS = 0.822; // 0.822
@@ -79,7 +79,7 @@ public final class MecanumDrive {
 
         // path controller gains
         public double axialGain = 4.4;
-        public double lateralGain = 1.25;
+        public double lateralGain = 12;
         public double headingGain = 4; // shared with turn
 
         public double axialVelGain = 0.0;

@@ -169,9 +169,25 @@ public class RRactions {
             }
         }
 
+        public class AdaptAxial implements Action {
+
+            public AdaptAxial(){
+
+            }
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                robotHW.calibrateClaw(robotHW.ELBOW_PERPENDICULAR);
+                return false;
+            }
+        }
+
         // usable method/ action class shortcut
         public Action rotateAxial(double servoPos) {
             return new RotateAxial(servoPos);
+        }
+        public Action adaptAxial(){
+            return new AdaptAxial();
         }
     }
 }
