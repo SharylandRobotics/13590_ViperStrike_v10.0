@@ -19,19 +19,17 @@ public class RRtype1_2Auto extends LinearOpMode{
     RobotHardware robot = new RobotHardware(this);
     RRactions actionLib = new RRactions(robot);
 
-    public double lateralCorrection = 8.5;
-
     @Override
     public void runOpMode() {
         Pose2d initialPose = new Pose2d(-9.5, -61.25, Math.toRadians(90));
         Pose2d rungPose = new Pose2d(-9.5, -40, Math.toRadians(90));
 
         Pose2d sample1Pose = new Pose2d(-48, -34, Math.toRadians(90));
-        Pose2d drop1Pose = new Pose2d(-55,-55, Math.toRadians(225));
+        Pose2d drop1Pose = new Pose2d(-55,-55, Math.toRadians(45));
 
-        Pose2d sample2Pose = new Pose2d(-59, -34, Math.toRadians(60));
+        Pose2d sample2Pose = new Pose2d(-59, -34, Math.toRadians(90));
 
-        Pose2d sample3Pose = new Pose2d(-59, -34, Math.toRadians(50));
+        Pose2d sample3Pose = new Pose2d(-59, -34, Math.toRadians(130));
 
         Pose2d parkSpot = new Pose2d(-24, 0, Math.toRadians(90));
 
@@ -82,7 +80,7 @@ public class RRtype1_2Auto extends LinearOpMode{
 
         Action toPark = drive.actionBuilder(drop1Pose)
                 .setTangent(Math.atan2(parkSpot.position.y - drop1Pose.position.y, parkSpot.position.x - drop1Pose.position.x))
-                .splineToConstantHeading(new Vector2d(-24, 0), Math.toRadians(180))
+                .splineToLinearHeading(parkSpot, Math.toRadians(60))
                         .build();
 
         robot.init(true);

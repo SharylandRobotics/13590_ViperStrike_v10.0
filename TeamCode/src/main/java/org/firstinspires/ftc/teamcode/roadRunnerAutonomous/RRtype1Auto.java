@@ -29,11 +29,11 @@ public class RRtype1Auto extends LinearOpMode{
         Pose2d sample1Pose = new Pose2d(48, -34, Math.toRadians(90));
         Pose2d drop1Pose = new Pose2d(59,-48, Math.toRadians(90));
 
-        Pose2d sample2Pose = new Pose2d(59, -34, Math.toRadians(60));
-        Pose2d drop2Pose = new Pose2d(59, -48, Math.toRadians(-45));
+        Pose2d sample2Pose = new Pose2d(59, -34, Math.toRadians(90));
+        Pose2d drop2Pose = new Pose2d(59, -48, Math.toRadians(90));
 
         Pose2d sample3Pose = new Pose2d(59, -34, Math.toRadians(50));
-        Pose2d drop3Pose = new Pose2d(48, -48, Math.toRadians(-45));
+        Pose2d drop3Pose = new Pose2d(48, -48, Math.toRadians(90));
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
