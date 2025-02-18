@@ -31,8 +31,8 @@ public class RRlaterAdjuster extends LinearOpMode{
         RRactions.Axial axial = actionLib.new Axial(hardwareMap);
 
         Action leg1 = drive.actionBuilder(initialPose)
-                .setTangent(Math.toRadians(0))
-                .lineToX(32)
+                .setTangent(Math.toRadians(90))
+                .lineToY(-49.25)
                 .waitSeconds(0.2)
                 .build();
 

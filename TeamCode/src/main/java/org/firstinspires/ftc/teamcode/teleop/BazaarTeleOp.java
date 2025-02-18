@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
@@ -107,13 +108,12 @@ public class BazaarTeleOp extends LinearOpMode{
         double strafe;
         double turn;
 
-        double rotateFactor;
+        double rotateFactor = robot.YAW_MID;
 
         boolean elbowByExtender = false;
         boolean g2RightStickSwitch = false;
         calibratePerpendicular = false;
 
-        double prevElbowPos;
         double elbowFactor;
 
         robot.init(false);
@@ -133,7 +133,6 @@ public class BazaarTeleOp extends LinearOpMode{
 
         while (opModeIsActive()) {
             heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
-            prevElbowPos = robot.elbowDrive.getCurrentPosition();
 
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1;
@@ -145,9 +144,11 @@ public class BazaarTeleOp extends LinearOpMode{
                 stickCounter2 = 0;
             }
             if (g2RightStickSwitch){
-                rotateFactor = robot.YAW_RIGHT;
+                rotateFactor = robot.YAW_MID; // FIXME YAW.MID
+                g2RightStickSwitch = false;
             } else {
-                rotateFactor = (gamepad2.right_stick_x*-0.5) + robot.YAW_MID;
+                rotateFactor += (gamepad2.right_stick_x*-0.1);
+                rotateFactor = Range.clip(rotateFactor, 0, 1);
             }
 
             // get LL results

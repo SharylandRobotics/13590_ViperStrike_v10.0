@@ -200,7 +200,7 @@ public class RobotHardware {
 
         CLAW_UP = 0.92; // MAXIMUM, not playable position
         CLAW_MID = 0.51; // playable position
-        CLAW_DOWN = 0.33667; // playable position
+        CLAW_DOWN = 0.29; // playable position
         CLAW_COLLAPSED = 0.08; // MAXIMUM, not playable position
 
         YAW_LEFT = 0.0;
@@ -270,7 +270,7 @@ public class RobotHardware {
             // Reset the IMU when initializing the hardware class
             imu.resetYaw();
 
-            clawAxial.setPosition(CLAW_MID);
+            clawAxial.setPosition(CLAW_DOWN);
             clawPinch.setPosition(CLAW_CLOSE);
             clawYaw.setPosition(YAW_MID);
             elbowDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -590,7 +590,7 @@ public class RobotHardware {
 
     public void velocityExtensionHandler(double inchesC){
         extensionDrive.setTargetPosition((int) (inchesC));
-        ((DcMotorEx) extensionDrive).setVelocity(2200);
+        ((DcMotorEx) extensionDrive).setVelocity(2850);
         extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 }

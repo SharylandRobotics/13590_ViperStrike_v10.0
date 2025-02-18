@@ -27,9 +27,9 @@ public class RRtype1_2Auto extends LinearOpMode{
         Pose2d sample1Pose = new Pose2d(-48, -34, Math.toRadians(90));
         Pose2d drop1Pose = new Pose2d(-55,-55, Math.toRadians(45));
 
-        Pose2d sample2Pose = new Pose2d(-59, -34, Math.toRadians(90));
+        Pose2d sample2Pose = new Pose2d(-58, -34, Math.toRadians(90));
 
-        Pose2d sample3Pose = new Pose2d(-59, -34, Math.toRadians(130));
+        Pose2d sample3Pose = new Pose2d(-58, -34, Math.toRadians(130));
 
         Pose2d parkSpot = new Pose2d(-24, 0, Math.toRadians(90));
 
