@@ -48,7 +48,7 @@ public class RRtype1Auto extends LinearOpMode{
         Action score1 = drive.actionBuilder(initialPose)
                 .setTangent(Math.PI/2)
                 .lineToY(rungPose.position.y)
-                .waitSeconds(1)
+                .waitSeconds(0.25)
                 .build();
 
         Action grabSample1 = drive.actionBuilder(rungPose)
@@ -154,6 +154,7 @@ public class RRtype1Auto extends LinearOpMode{
                                 extension.extenderToInch(0)
                         ),
                         pinch.openClaw(),
+
                         new ParallelAction(
                                 grabSample3,
                                 elbow.elbowToDeg(37)
@@ -161,7 +162,7 @@ public class RRtype1Auto extends LinearOpMode{
 
                         new ParallelAction( // go to 3rd sample, rotate bot & claw
                                 elbow.elbowToDeg(21),
-                                yaw.rotateClaw(0.45),
+                                yaw.rotateClaw(0.45), // 0.37 + 0.08
                                 extension.extenderToInch(8.25),
                                 axial.rotateAxial(0.25)
                         ),

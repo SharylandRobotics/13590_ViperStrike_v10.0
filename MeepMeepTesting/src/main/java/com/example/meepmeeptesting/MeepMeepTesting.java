@@ -12,16 +12,16 @@ public class MeepMeepTesting {
         Pose2d initialPose = new Pose2d(9.5, -64.5, Math.toRadians(90)); // subtracted 3.25 in y
         Pose2d rungPose = new Pose2d(9.5, -43.25, Math.toRadians(90)); // subtracted 3.25 in y
 
-        Pose2d sample1Pose = new Pose2d(48, -34.3, Math.toRadians(90));
-        Pose2d drop1Pose = new Pose2d(58,-48, Math.toRadians(90));
+        Pose2d sample1Pose = new Pose2d(48, -33.75, Math.toRadians(90));
+        Pose2d drop1Pose = new Pose2d(57,-48, Math.toRadians(90));
 
-        Pose2d sample2Pose = new Pose2d(58, -34, Math.toRadians(90));
-        Pose2d drop2Pose = new Pose2d(58, -48, Math.toRadians(90));
+        Pose2d sample2Pose = new Pose2d(57, -34, Math.toRadians(90));
+        Pose2d drop2Pose = new Pose2d(57, -48, Math.toRadians(90));
 
-        Pose2d sample3Pose = new Pose2d(58, -34, Math.toRadians(40));
+        Pose2d sample3Pose = new Pose2d(56, -38, Math.toRadians(45));
         Pose2d drop3Pose = new Pose2d(48, -48, Math.toRadians(90));
 
-        Pose2d pickupPose = new Pose2d(35.5, drop3Pose.position.y, Math.toRadians(90));
+        Pose2d pickupPose = new Pose2d(35.5, drop3Pose.position.y - 3, Math.toRadians(90));
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 17)
