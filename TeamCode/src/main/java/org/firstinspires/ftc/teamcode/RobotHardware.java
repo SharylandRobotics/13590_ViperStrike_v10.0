@@ -63,6 +63,7 @@ public class RobotHardware {
     public double CLAW_DOWN;
     public double CLAW_MID;
     public double CLAW_UP;
+    public double CLAW_RAISED;
     public double CLAW_IN;
     public double CLAW_OUT;
     public double YAW_MID;
@@ -115,8 +116,8 @@ public class RobotHardware {
     public final double EXTENSION_MAXIMUM_COUNT = (EXTENSION_COUNTS_PER_REV * (27.3)); // the other number is how many revs
             // it takes for the linear actuator to reach the top. the -(#) is the amount of revs for tolerance
 
-    private final float FORWARD_EXTENSION_LIMIT = (float) (EXTENSION_COUNTS_PER_INCH * EXTENSION_MAXIMUM_COUNT); // FIXME Placeholder; farthest extender can go forwards
-    private final float REARWARD_EXTENSION_LIMIT = 42 - FORWARD_EXTENSION_LIMIT; // FIXME measured or calculated; farthest the extender can go backwards before going OOB
+    public final double FORWARD_EXTENSION_LIMIT = (EXTENSION_MAXIMUM_COUNT); // FIXME Placeholder; farthest extender can go forwards
+    public final double REARWARD_EXTENSION_LIMIT = 2.3*EXTENSION_COUNTS_PER_INCH; // FIXME measured or calculated; farthest the extender can go backwards before going OOB
 
     // Declare Elbow Encoder Variables, REMEMBER TO DECLARE WHEEL ONES LATER!!
     public final double ARM_COUNTS_PER_DEGREE =
@@ -572,13 +573,15 @@ public class RobotHardware {
     }
 
     public void extensionBoundBox(){
-        // cos (angle) = A/C ; targetC = flatA/ cos(angle) : flatA is REARWARD_EXTENSION_LIMIT
+        // cos (angle) = A/C ; targetC = flatA/ cos(angle) : flatA is 17, 25, 2.4
+        // 17 - 2.4 = 14.6
         // u rike my mat eh?
-        double cosAngle = Math.cos(   Math.toRadians(elbowDrive.getCurrentPosition()/ARM_COUNTS_PER_DEGREE)   );
-        double targetC = REARWARD_EXTENSION_LIMIT /  cosAngle;
+        double cosAngle = Math.cos(   Math.toRadians( (elbowDrive.getCurrentPosition()/ARM_COUNTS_PER_DEGREE) - 37)   );
+        double targetC = 17 /  cosAngle;
+        double ticksC = (targetC - 14.6)*EXTENSION_COUNTS_PER_INCH;
 
-        if (extensionDrive.getCurrentPosition() >= targetC) {
-            extensionDrive.setTargetPosition( (int) (targetC * EXTENSION_COUNTS_PER_INCH));
+        if (extensionDrive.getCurrentPosition() >= ticksC) {
+            extensionDrive.setTargetPosition( (int) (ticksC));
         }
     }
 

@@ -20,7 +20,7 @@ public class RRtype2Auto extends LinearOpMode{
 
     @Override
     public void runOpMode() {
-        Pose2d initialPose = new Pose2d(21.5, -61.25, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(23, -61.25, Math.toRadians(90));
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
@@ -31,8 +31,8 @@ public class RRtype2Auto extends LinearOpMode{
         RRactions.Axial axial = actionLib.new Axial(hardwareMap);
 
         Action leg1 = drive.actionBuilder(initialPose)
-                .setTangent(Math.toRadians(54))
-                .splineToConstantHeading(new Vector2d(24, 0), Math.toRadians(180))
+                .setTangent(Math.toRadians(50))
+                .splineToConstantHeading(new Vector2d(24, 24), Math.toRadians(180))
                 .waitSeconds(1)
                 .build();
 

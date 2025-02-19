@@ -10,7 +10,7 @@ public class MeepMeepTesting {
         MeepMeep meepMeep = new MeepMeep(750);
 
         Pose2d initialPose = new Pose2d(9.5, -64.5, Math.toRadians(90)); // subtracted 3.25 in y
-        Pose2d rungPose = new Pose2d(9.5, -43.25, Math.toRadians(90)); // subtracted 3.25 in y
+        Pose2d rungPose = new Pose2d(9.5, -34.25, Math.toRadians(90)); // subtracted 3.25 in y
 
         Pose2d sample1Pose = new Pose2d(48, -33.75, Math.toRadians(90));
         Pose2d drop1Pose = new Pose2d(57,-48, Math.toRadians(90));

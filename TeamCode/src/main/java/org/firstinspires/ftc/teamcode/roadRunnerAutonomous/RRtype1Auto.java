@@ -23,18 +23,19 @@ public class RRtype1Auto extends LinearOpMode{
     @Override
     public void runOpMode() {
         Pose2d initialPose = new Pose2d(9.5, -64.5, Math.toRadians(90)); // subtracted 3.25 in y
+        Pose2d initialRungPose = new Pose2d(9.5, -32, Math.toRadians(90));
         Pose2d rungPose = new Pose2d(9.5, -43.25, Math.toRadians(90)); // subtracted 3.25 in y
 
-        Pose2d sample1Pose = new Pose2d(48, -33.75, Math.toRadians(90));
+        Pose2d sample1Pose = new Pose2d(48, -33.5, Math.toRadians(90));
         Pose2d drop1Pose = new Pose2d(57,-48, Math.toRadians(90));
 
-        Pose2d sample2Pose = new Pose2d(57, -34, Math.toRadians(90));
+        Pose2d sample2Pose = new Pose2d(56.5, -34, Math.toRadians(90));
         Pose2d drop2Pose = new Pose2d(57, -48, Math.toRadians(90));
 
         Pose2d sample3Pose = new Pose2d(56, -38, Math.toRadians(45));
-        Pose2d drop3Pose = new Pose2d(48, -48, Math.toRadians(90));
+        Pose2d drop3Pose = new Pose2d(48, -48 - 6, Math.toRadians(90));
 
-        Pose2d pickupPose = new Pose2d(35.5, drop3Pose.position.y - 3, Math.toRadians(90));
+        Pose2d pickupPose = new Pose2d(35.5, drop3Pose.position.y + 0.2, Math.toRadians(90));
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
@@ -47,8 +48,12 @@ public class RRtype1Auto extends LinearOpMode{
 
         Action score1 = drive.actionBuilder(initialPose)
                 .setTangent(Math.PI/2)
-                .lineToY(rungPose.position.y)
-                .waitSeconds(0.25)
+                .lineToY(initialRungPose.position.y)
+                .build();
+
+        Action backup = drive.actionBuilder(initialRungPose)
+                .setTangent(Math.atan2(rungPose.position.y - initialRungPose.position.y, rungPose.position.x - initialPose.position.x))
+                        .lineToY(rungPose.position.y)
                 .build();
 
         Action grabSample1 = drive.actionBuilder(rungPose)
@@ -79,11 +84,13 @@ public class RRtype1Auto extends LinearOpMode{
         Action dropSample3 = drive.actionBuilder(sample3Pose)
                 .setTangent(Math.atan2(drop3Pose.position.y - sample3Pose.position.y, drop3Pose.position.x - sample3Pose.position.x))
                 .lineToXLinearHeading(drop3Pose.position.x, drop3Pose.heading)
+                .afterTime(0.2, pinch.openClaw())
                         .build();
 
         Action score2 = drive.actionBuilder(drop3Pose)
                 .setTangent(Math.atan2(rungPose.position.y - drop3Pose.position.y, rungPose.position.x - drop3Pose.position.x))
                 .lineToX(rungPose.position.x+1.5)
+                .afterTime(0.1, extension.extenderToInch(8.5))
                 .build();
 
         Action pickup2 = drive.actionBuilder(rungPose)
@@ -93,7 +100,7 @@ public class RRtype1Auto extends LinearOpMode{
 
         Action score3 = drive.actionBuilder(drop3Pose)
                 .setTangent(Math.atan2(rungPose.position.y - pickupPose.position.y, rungPose.position.x - pickupPose.position.x))
-                .lineToX(rungPose.position.x+3)
+                .lineToX(rungPose.position.x-1.5)
                 .build();
 
         robot.init(true);
@@ -106,28 +113,25 @@ public class RRtype1Auto extends LinearOpMode{
                 new SequentialAction(
                         new ParallelAction(  // go to score first specimen
                                 score1,
-                                elbow.elbowToDeg(112),
-                                extension.extenderToInch(8.5),
-                                axial.rotateAxial(robot.CLAW_UP)
+                                elbow.elbowToDeg(80),
+                                extension.extenderToInch(1),
+                                axial.rotateAxial(robot.CLAW_MID),
+                                yaw.rotateClaw(robot.YAW_RIGHT)
                         ),
-                        axial.rotateAxial(0.35),
-                        elbow.elbowToDeg(60),
-
+                        elbow.elbowToDeg(118),
                         pinch.openClaw(),
-                        new ParallelAction( // release specimen and retract arm/extender
-                                extension.extenderToInch(0),
-                                elbow.elbowToDeg(37)
-                        ),
+                        backup,
 
                         grabSample1, // go to next sample and pick up
                         new ParallelAction(
+                                extension.extenderToInch(0),
                                 elbow.elbowToDeg(0),
                                 axial.rotateAxial(robot.CLAW_DOWN)
                         ),
 
-                        sleepAction(500),
+                        sleepAction(200),
                         pinch.closeClaw(),
-                        sleepAction(500),
+                        sleepAction(200),
 
                         new ParallelAction( // drop off sample
                                 dropSample1,
@@ -142,9 +146,9 @@ public class RRtype1Auto extends LinearOpMode{
                                 elbow.elbowToDeg(0)
                         ),
                         axial.rotateAxial(robot.CLAW_DOWN),
-                        sleepAction(500),
+                        sleepAction(200),
                         pinch.closeClaw(),
-                        sleepAction(500),
+                        sleepAction(200),
 
                         new ParallelAction( // drop off 2nd sample
                                 dropSample2,
@@ -161,39 +165,37 @@ public class RRtype1Auto extends LinearOpMode{
                         ),
 
                         new ParallelAction( // go to 3rd sample, rotate bot & claw
-                                elbow.elbowToDeg(21),
+                                elbow.elbowToDeg(19),
                                 yaw.rotateClaw(0.45), // 0.37 + 0.08
                                 extension.extenderToInch(8.25),
                                 axial.rotateAxial(0.25)
                         ),
-                        sleepAction(500),
+                        sleepAction(200),
                         pinch.closeClaw(),
-                        sleepAction(500),
+                        sleepAction(200),
 
                         new ParallelAction( // retract and drop off 3rd sample
                                 dropSample3,
                                 extension.extenderToInch(0),
                                 elbow.elbowToDeg(180+37),
-                                yaw.rotateClaw(robot.YAW_MID)
-                        ),
-                        pinch.openClaw(),
-
-                        sleepAction(1000),
-
-                        new ParallelAction( // pick up specimen FROM GROUND
-                                elbow.elbowToDeg(180+37+16),
-                                extension.extenderToInch(4.25),
-                                axial.rotateAxial(robot.CLAW_MID + 0.15)
+                                yaw.rotateClaw(robot.YAW_MID),
+                                axial.rotateAxial(robot.CLAW_MID)
                         ),
 
-                        sleepAction(1000),
+                        sleepAction(200),
+
+                        new ParallelAction( // pick up specimen FROM WALL
+                                elbow.elbowToDeg(180+37),
+                                extension.extenderToInch(2.3),
+                                axial.rotateAxial(robot.CLAW_MID)
+                        ),
+
+                        sleepAction(500),
                         pinch.closeClaw(),
-                        extension.extenderToInch(0),
 
                         new ParallelAction( // drop off 2nd specimen
                                 score2,
                                 elbow.elbowToDeg(112),
-                                extension.extenderToInch(8.5),
                                 axial.rotateAxial(robot.CLAW_UP),
                                 yaw.rotateClaw(robot.YAW_RIGHT)
                         ),
@@ -202,7 +204,7 @@ public class RRtype1Auto extends LinearOpMode{
 
                         pinch.openClaw(),
                         new ParallelAction( // retract & come back for pickup FROM WALL
-                                extension.extenderToInch(6),
+                                extension.extenderToInch(2.3),
                                 elbow.elbowToDeg(180+37),
                                 pickup2
                         ),
