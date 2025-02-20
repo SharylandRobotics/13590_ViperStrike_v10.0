@@ -1,6 +1,7 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
@@ -10,18 +11,21 @@ public class MeepMeepTesting {
         MeepMeep meepMeep = new MeepMeep(750);
 
         Pose2d initialPose = new Pose2d(9.5, -64.5, Math.toRadians(90)); // subtracted 3.25 in y
-        Pose2d rungPose = new Pose2d(9.5, -34.25, Math.toRadians(90)); // subtracted 3.25 in y
+        Pose2d initialRungPose = new Pose2d(9.5, -30, Math.toRadians(90));
 
-        Pose2d sample1Pose = new Pose2d(48, -33.75, Math.toRadians(90));
+        Pose2d rungPose = new Pose2d(9.5, -43.25, Math.toRadians(90)); // subtracted 3.25 in y
+        Pose2d rungPose2 = new Pose2d(9.5, -45, Math.toRadians(90));
+
+        Pose2d sample1Pose = new Pose2d(48, -33.5, Math.toRadians(90));
         Pose2d drop1Pose = new Pose2d(57,-48, Math.toRadians(90));
 
-        Pose2d sample2Pose = new Pose2d(57, -34, Math.toRadians(90));
+        Pose2d sample2Pose = new Pose2d(56.5, -34, Math.toRadians(90));
         Pose2d drop2Pose = new Pose2d(57, -48, Math.toRadians(90));
 
-        Pose2d sample3Pose = new Pose2d(56, -38, Math.toRadians(45));
-        Pose2d drop3Pose = new Pose2d(48, -48, Math.toRadians(90));
+        Pose2d sample3Pose = new Pose2d(57, -38, Math.toRadians(50));
+        Pose2d drop3Pose = new Pose2d(48, -48 - 6, Math.toRadians(90));
 
-        Pose2d pickupPose = new Pose2d(35.5, drop3Pose.position.y - 3, Math.toRadians(90));
+        Pose2d pickupPose = new Pose2d(35.5, drop3Pose.position.y + 0.2, Math.toRadians(90));
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 17)
@@ -31,7 +35,7 @@ public class MeepMeepTesting {
                 .setTangent(Math.PI/2)
                 .lineToY(rungPose.position.y)
                 .setTangent(Math.atan2(sample1Pose.position.y - rungPose.position.y, sample1Pose.position.x - rungPose.position.x)) // just the atan (y2-y1 / x2-x1)
-                                .lineToX(sample1Pose.position.x)
+                                .lineToX(sample1Pose.position.x,  null, new ProfileAccelConstraint(-60, 80))
                 //.splineToLinearHeading(sample1Pose, Math.atan2(sample1Pose.position.y - rungPose.position.y, sample1Pose.position.x - rungPose.position.x))
                 .setTangent(Math.atan2(drop1Pose.position.y - sample1Pose.position.y, drop1Pose.position.x - sample1Pose.position.x))
                                 .lineToX(drop1Pose.position.x)

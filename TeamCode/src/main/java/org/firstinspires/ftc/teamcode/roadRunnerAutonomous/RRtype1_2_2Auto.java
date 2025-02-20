@@ -24,12 +24,12 @@ public class RRtype1_2_2Auto extends LinearOpMode{
         Pose2d initialPose = new Pose2d(-9.5 -23, -64.5, Math.toRadians(90));
         Pose2d rungPose = new Pose2d(-9.5, -43.25, Math.toRadians(90));
 
-        Pose2d sample1Pose = new Pose2d(-48, -33.5, Math.toRadians(90));
-        Pose2d drop1Pose = new Pose2d(-55,-55, Math.toRadians(45));
+        Pose2d sample1Pose = new Pose2d(-49, -33.5, Math.toRadians(90));
+        Pose2d drop1Pose = new Pose2d(-55,-57, Math.toRadians(45));
 
         Pose2d sample2Pose = new Pose2d(-56.5, -34, Math.toRadians(90));
 
-        Pose2d sample3Pose = new Pose2d(-56, -38, Math.toRadians(130));
+        Pose2d sample3Pose = new Pose2d(-57, -38, Math.toRadians(130));
 
         Pose2d pickUpPose = new Pose2d(32, -60, Math.toRadians(0));
 
@@ -82,19 +82,19 @@ public class RRtype1_2_2Auto extends LinearOpMode{
 
         Action pickUpPRLD = drive.actionBuilder(drop1Pose)
                 .setTangent(Math.atan2(pickUpPose.position.y - drop1Pose.position.y, pickUpPose.position.x - drop1Pose.position.x))
-                .lineToXLinearHeading(pickUpPose.position.x, pickUpPose.heading)
+                .lineToXLinearHeading(pickUpPose.position.x, pickUpPose.heading, new TranslationalVelConstraint(70))
                 .afterDisp(1, extension.extenderToInch(8.5))
                 .build();
 
 
         Action dropSample4 = drive.actionBuilder(pickUpPose)
                 .setTangent(Math.atan2(drop1Pose.position.y - pickUpPose.position.y, drop1Pose.position.x - pickUpPose.position.x))
-                .lineToXLinearHeading(drop1Pose.position.x, drop1Pose.heading)
+                .lineToXLinearHeading(drop1Pose.position.x, drop1Pose.heading, new TranslationalVelConstraint(70), new ProfileAccelConstraint(-15, 25))
                 .build();
 
         Action toPark = drive.actionBuilder(drop1Pose)
                 .setTangent(Math.atan2(parkSpot.position.y - drop1Pose.position.y, parkSpot.position.x - drop1Pose.position.x))
-                .splineToLinearHeading(parkSpot, Math.toRadians(40))
+                .splineToLinearHeading(parkSpot, Math.toRadians(40), new TranslationalVelConstraint(70), new ProfileAccelConstraint(-50, 30))
                 .build();
 
         robot.init(true);
@@ -118,7 +118,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
 
                         grabSample1, // go to next sample and pick up
                         new ParallelAction(
-                                extension.extenderToInch(0),
+                                extension.extenderToInch(1),
                                 elbow.elbowToDeg(0),
                                 axial.rotateAxial(robot.CLAW_DOWN)
                         ),
@@ -138,7 +138,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
 
                         new ParallelAction( // go to next sample
                                 grabSample2,
-                                extension.extenderToInch(0),
+                                extension.extenderToInch(1),
                                 elbow.elbowToDeg(0)
                         ),
                         axial.rotateAxial(robot.CLAW_DOWN),
@@ -162,14 +162,14 @@ public class RRtype1_2_2Auto extends LinearOpMode{
                         ),
 
                         new ParallelAction( // go to 3rd sample, rotate bot & claw
-                                elbow.elbowToDeg(19),
+                                elbow.elbowToDeg(20),
                                 yaw.rotateClaw(robot.YAW_MID - 0.08),
                                 extension.extenderToInch(8.25),
                                 axial.rotateAxial(0.25)
                         ),
-                        sleepAction(500),
+                        elbow.elbowToDeg(18),
                         pinch.closeClaw(),
-                        sleepAction(500),
+                        sleepAction(200),
 
                         new ParallelAction(
                                 dropSample3,
@@ -201,7 +201,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
                                 axial.rotateAxial(robot.CLAW_MID)
                         ),
                         pinch.openClaw(),
-                        sleepAction(500),
+                        sleepAction(100),
 
 
                         new ParallelAction(
