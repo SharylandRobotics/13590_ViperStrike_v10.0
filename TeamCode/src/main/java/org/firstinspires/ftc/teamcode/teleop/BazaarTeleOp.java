@@ -108,7 +108,7 @@ public class BazaarTeleOp extends LinearOpMode{
         double strafe;
         double turn;
 
-        double rotateFactor = robot.YAW_MID;
+
 
         boolean elbowByExtender = false;
         boolean g2RightStickSwitch = false;
@@ -119,7 +119,7 @@ public class BazaarTeleOp extends LinearOpMode{
         robot.init(false);
         double NEWelbowPos = robot.elbowDrive.getCurrentPosition();
         double heading;
-
+        double rotateFactor = robot.clawYaw.getPosition();
         // extension encoder setup
 
         robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -144,7 +144,7 @@ public class BazaarTeleOp extends LinearOpMode{
                 stickCounter2 = 0;
             }
             if (g2RightStickSwitch){
-                rotateFactor = robot.YAW_MID; // FIXME YAW.MID
+                rotateFactor = robot.YAW_MID;
                 g2RightStickSwitch = false;
             } else {
                 rotateFactor += (gamepad2.right_stick_x*-0.1);
@@ -163,9 +163,9 @@ public class BazaarTeleOp extends LinearOpMode{
 
             if (gamepad1.right_trigger != 0) { // slow down driving
                 double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
-                drive = -gamepad1.left_stick_y * multiplier;
-                strafe = (gamepad1.left_stick_x * 1.1) * multiplier;
-                turn = gamepad1.right_stick_x * multiplier;
+                drive *= Math.abs(multiplier);
+                strafe *= Math.abs(multiplier);
+                turn *= Math.abs(multiplier);
             }
             if (gamepad1.left_trigger != 0) { // release friction
                 robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -179,25 +179,7 @@ public class BazaarTeleOp extends LinearOpMode{
                 robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
 
-
-            // rotate to face straight ahead ; you will lose control for a bit (no driving/strafing until its done)
-            if (gamepad1.b) {
-                double ortho;
-                if (heading < 0){
-                    ortho = -(180 + Math.round(heading));
-                } else {
-                    ortho = (180 - Math.round(heading));
-                }
-                robot.encoderFieldCentric(0,0,ortho);
-                robot.driveFieldCentric(0,0, Math.abs(ortho)/ortho);
-                modeSwapper(DcMotor.RunMode.RUN_TO_POSITION);
-            }
-            // swap mode back when done with rotation
-            if (!robot.leftFrontDrive.isBusy() || !robot.leftBackDrive.isBusy() || !robot.rightFrontDrive.isBusy() || !robot.rightBackDrive.isBusy()){
-                modeSwapper(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                robot.driveFieldCentric(drive, strafe, turn);
-            }
-
+            robot.driveFieldCentric(drive, strafe, turn);
             // gamepad 2
 
             // toggle claw mode
@@ -246,6 +228,7 @@ public class BazaarTeleOp extends LinearOpMode{
                 elbowFactor = elbowFactor();
                 // if they are drive and change the target position
                 NEWelbowPos = robot.elbowDrive.getCurrentPosition() + (int) elbowFactor;
+                elbowByExtender = false;
             }
 
 

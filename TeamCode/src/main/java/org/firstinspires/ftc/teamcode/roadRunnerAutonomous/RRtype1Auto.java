@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.teleop.MecanumDrive;
 import java.lang.Math;
 
 @Config
-@Autonomous(name = "RR Specimen Test", group = "RoadRunner")
+@Autonomous(name = "RR Specimen : x3", group = "RoadRunner")
 public class RRtype1Auto extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
@@ -92,8 +92,7 @@ public class RRtype1Auto extends LinearOpMode{
 
         Action score2 = drive.actionBuilder(drop3Pose)
                 .setTangent(Math.atan2((rungPose2.position.y) - drop3Pose.position.y, rungPose2.position.x - drop3Pose.position.x))
-                .lineToX(rungPose2.position.x)
-                .afterTime(0.1, extension.extenderToInch(8.5))
+                .lineToX(rungPose2.position.x, null, new ProfileAccelConstraint(-30, 70))
                 .build();
 
         Action pickup2 = drive.actionBuilder(rungPose2)
@@ -103,8 +102,7 @@ public class RRtype1Auto extends LinearOpMode{
 
         Action score3 = drive.actionBuilder(drop3Pose)
                 .setTangent(Math.atan2(rungPose3.position.y - pickupPose.position.y, rungPose3.position.x - pickupPose.position.x))
-                .lineToX(rungPose3.position.x)
-                .afterTime(0.1, extension.extenderToInch(8.5))
+                .lineToX(rungPose3.position.x, null, new ProfileAccelConstraint(-30, 70))
                 .build();
 
         Action park = drive.actionBuilder(rungPose3)
@@ -134,7 +132,7 @@ public class RRtype1Auto extends LinearOpMode{
 
                         grabSample1, // go to next sample and pick up
                         new ParallelAction(
-                                extension.extenderToInch(0.5),
+                                extension.extenderToInch(1),
                                 elbow.elbowToDeg(0),
                                 axial.rotateAxial(robot.CLAW_DOWN)
                         ),
@@ -164,7 +162,7 @@ public class RRtype1Auto extends LinearOpMode{
                                 elbow.elbowToDeg(180+37),
                                 yaw.rotateClaw(robot.YAW_MID),
                                 axial.rotateAxial(robot.CLAW_MID),
-                                extension.extenderToInch(0.5)
+                                extension.extenderToInch(2.3)
                         ),
                         pinch.openClaw(),
 
@@ -205,12 +203,13 @@ public class RRtype1Auto extends LinearOpMode{
                                 score2,
                                 elbow.elbowToDeg(112),
                                 axial.rotateAxial(robot.CLAW_UP),
-                                yaw.rotateClaw(robot.YAW_RIGHT)
+                                yaw.rotateClaw(robot.YAW_RIGHT),
+                                extension.extenderToInch(8.5)
                         ),
                         axial.rotateAxial(0.35),
                         elbow.elbowToDeg(60),
-
                         pinch.openClaw(),
+
                         new ParallelAction( // retract & come back for pickup FROM WALL
                                 extension.extenderToInch(2.3),
                                 elbow.elbowToDeg(180+33),
@@ -225,15 +224,17 @@ public class RRtype1Auto extends LinearOpMode{
                                 elbow.elbowToDeg(112),
                                 extension.extenderToInch(8.5),
                                 axial.rotateAxial(robot.CLAW_UP),
-                                yaw.rotateClaw(robot.YAW_MID)
+                                yaw.rotateClaw(robot.YAW_MID),
+                                extension.extenderToInch(8.5)
                         ),
                         axial.rotateAxial(0.35),
                         elbow.elbowToDeg(60),
+                        pinch.openClaw(),
 
-                        pinch.openClaw(), // come back & retract for parking
+                        // come back & retract for parking
                         new ParallelAction(
                                 extension.extenderToInch(0),
-                                elbow.elbowToDeg(180+37),
+                                elbow.elbowToDeg(37),
                                 park
                         )
 

@@ -1,5 +1,7 @@
 package com.example.meepmeeptesting;
 
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.noahbres.meepmeep.MeepMeep;
@@ -30,6 +32,10 @@ public class MeepMeepTesting {
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 17)
                 .build();
+
+        Action marker = myBot.getDrive().actionBuilder(myBot.getPose())
+                .turn(Math.toRadians(60))
+                                .build();
 
         myBot.runAction(myBot.getDrive().actionBuilder(initialPose)
                 .setTangent(Math.PI/2)

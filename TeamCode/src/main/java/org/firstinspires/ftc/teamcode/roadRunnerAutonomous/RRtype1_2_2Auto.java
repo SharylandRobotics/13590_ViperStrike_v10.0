@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.teleop.MecanumDrive;
 import java.lang.Math;
 
 @Config
-@Autonomous(name = "RR Bucket var 2", group = "RoadRunner")
+@Autonomous(name = "RR Bucket : Sample + OZ + Park", group = "RoadRunner")
 public class RRtype1_2_2Auto extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
@@ -24,7 +24,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
         Pose2d initialPose = new Pose2d(-9.5 -23, -64.5, Math.toRadians(90));
         Pose2d rungPose = new Pose2d(-9.5, -43.25, Math.toRadians(90));
 
-        Pose2d sample1Pose = new Pose2d(-49, -33.5, Math.toRadians(90));
+        Pose2d sample1Pose = new Pose2d(-48, -33.5, Math.toRadians(90));
         Pose2d drop1Pose = new Pose2d(-55,-57, Math.toRadians(45));
 
         Pose2d sample2Pose = new Pose2d(-56.5, -34, Math.toRadians(90));
