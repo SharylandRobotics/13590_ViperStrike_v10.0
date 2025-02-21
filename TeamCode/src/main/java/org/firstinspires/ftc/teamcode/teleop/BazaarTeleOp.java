@@ -158,27 +158,6 @@ public class BazaarTeleOp extends LinearOpMode{
                 telemetry.addData("not detecting", "");
             }
 
-
-
-
-            if (gamepad1.right_trigger != 0) { // slow down driving
-                double multiplier = -gamepad1.right_trigger + 1; // reverse trigger (it goes from 0 to 1, bad!)
-                drive *= Math.abs(multiplier);
-                strafe *= Math.abs(multiplier);
-                turn *= Math.abs(multiplier);
-            }
-            if (gamepad1.left_trigger != 0) { // release friction
-                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            } else {
-                robot.leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                robot.leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                robot.rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                robot.rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            }
-
             robot.driveFieldCentric(drive, strafe, turn);
             // gamepad 2
 

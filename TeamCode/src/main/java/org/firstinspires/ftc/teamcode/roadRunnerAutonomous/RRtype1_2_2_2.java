@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.teleop.MecanumDrive;
 import java.lang.Math;
 
 @Config
-@Autonomous(name = "RR Bucket : Sample + Park", group = "RoadRunner")
+@Autonomous(name = "RR Bucket : Sample + Park", group = "RoadRunner MAIN")
 public class RRtype1_2_2_2 extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
