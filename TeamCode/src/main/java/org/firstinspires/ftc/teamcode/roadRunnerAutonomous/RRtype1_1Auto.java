@@ -27,7 +27,8 @@ public class RRtype1_1Auto extends LinearOpMode{
 
         Pose2d rungPose = new Pose2d(9.5, -43.25, Math.toRadians(90)); // subtracted 3.25 in y
         Pose2d rungPose2 = new Pose2d(11, -42.25, Math.toRadians(90));
-        Pose2d rungPose3 = new Pose2d(6, -46.25, Math.toRadians(90));
+        Pose2d rungPose3 = new Pose2d(7, -42.25, Math.toRadians(90));
+        Pose2d rungPose4 = new Pose2d(5, -42.25, Math.toRadians(90));
 
         Pose2d sample1Pose = new Pose2d(38, -38, Math.toRadians(50));
         Pose2d drop1Pose = new Pose2d(46.5,-43, Math.toRadians(90));
@@ -93,7 +94,6 @@ public class RRtype1_1Auto extends LinearOpMode{
         Action score2 = drive.actionBuilder(pickupPose)
                 .setTangent(Math.atan2((rungPose2.position.y) - pickupPose.position.y, rungPose2.position.x - pickupPose.position.x))
                 .lineToXLinearHeading(rungPose2.position.x, rungPose3.heading, null, new ProfileAccelConstraint(-30, 70))
-                .afterTime(0.2, yaw.rotateClaw(robot.YAW_RIGHT))
                 .build();
 
         Action pickup2 = drive.actionBuilder(rungPose2)
@@ -104,11 +104,20 @@ public class RRtype1_1Auto extends LinearOpMode{
         Action score3 = drive.actionBuilder(pickupPose)
                 .setTangent(Math.atan2(rungPose3.position.y - pickupPose.position.y, rungPose3.position.x - pickupPose.position.x))
                 .lineToXLinearHeading(rungPose3.position.x, rungPose3.heading, null, new ProfileAccelConstraint(-30, 70))
-                .afterTime(0.2, yaw.rotateClaw(robot.YAW_MID))
                 .build();
 
-        Action park = drive.actionBuilder(rungPose3)
+        Action pickUp3 = drive.actionBuilder(rungPose3)
                 .setTangent(Math.atan2(pickupPose.position.y - rungPose3.position.y, pickupPose.position.x - rungPose3.position.x))
+                .lineToXLinearHeading(pickupPose.position.x, pickupPose.heading)
+                .build();
+
+        Action score4 = drive.actionBuilder(pickupPose)
+                .setTangent(Math.atan2(rungPose4.position.y - pickupPose.position.y, rungPose4.position.x - pickupPose.position.x))
+                .lineToXLinearHeading(rungPose4.position.x, rungPose4.heading, null, new ProfileAccelConstraint(-30, 70))
+                .build();
+
+        Action park = drive.actionBuilder(rungPose4)
+                .setTangent(Math.atan2(pickupPose.position.y - rungPose4.position.y, pickupPose.position.x - rungPose4.position.x))
                 .lineToX(pickupPose.position.x, new TranslationalVelConstraint(70), new ProfileAccelConstraint(-50, 80))
                 .build();
 
@@ -146,7 +155,7 @@ public class RRtype1_1Auto extends LinearOpMode{
 
                         new ParallelAction( // drop off sample
                                 dropSample1,
-                                elbow.elbowToDeg(25),
+                                elbow.elbowToDeg(30),
                                 yaw.rotateClaw(robot.YAW_MID),
                                 axial.rotateAxial(robot.CLAW_MID)
                         ),
@@ -165,8 +174,8 @@ public class RRtype1_1Auto extends LinearOpMode{
                         sleepAction(400),
 
                         new ParallelAction( // drop off sample
-                                dropSample1,
-                                elbow.elbowToDeg(25),
+                                dropSample2,
+                                elbow.elbowToDeg(30),
                                 yaw.rotateClaw(robot.YAW_MID),
                                 axial.rotateAxial(robot.CLAW_MID)
                         ),
@@ -194,6 +203,7 @@ public class RRtype1_1Auto extends LinearOpMode{
                         ),
 
 
+                        // 2nd specimen
                         new ParallelAction( // pick up specimen FROM WALL
                                 elbow.elbowToDeg(180+33),
                                 extension.extenderToInch(2.3),
@@ -207,13 +217,18 @@ public class RRtype1_1Auto extends LinearOpMode{
                                 score2,
                                 elbow.elbowToDeg(112),
                                 axial.rotateAxial(robot.CLAW_UP),
-                                extension.extenderToInch(8.5)
+                                extension.extenderToInch(8.5),
+                                new SequentialAction(
+                                        sleepAction(300),
+                                        yaw.rotateClaw(robot.YAW_RIGHT)
+                                )
                         ),
                         yaw.rotateClaw(robot.YAW_RIGHT),
                         axial.rotateAxial(0.35),
                         elbow.elbowToDeg(60),
                         pinch.openClaw(),
 
+                        // 3rd specimen
                         new ParallelAction( // retract & come back for pickup FROM WALL
                                 extension.extenderToInch(2.3),
                                 elbow.elbowToDeg(180+29),
@@ -229,9 +244,40 @@ public class RRtype1_1Auto extends LinearOpMode{
                                 extension.extenderToInch(8.5),
                                 axial.rotateAxial(robot.CLAW_UP),
 
-                                extension.extenderToInch(8.5)
+                                extension.extenderToInch(8.5),
+                                new SequentialAction(
+                                        sleepAction(300),
+                                        yaw.rotateClaw(robot.YAW_MID)
+                                )
                         ),
                         yaw.rotateClaw(robot.YAW_MID),
+                        axial.rotateAxial(0.35),
+                        elbow.elbowToDeg(60),
+                        pinch.openClaw(),
+
+                        // 4th specimen
+                        new ParallelAction( // retract & come back for pickup FROM WALL
+                                extension.extenderToInch(2.3),
+                                elbow.elbowToDeg(180+29),
+                                axial.rotateAxial(robot.CLAW_MID),
+                                pickUp3
+                        ),
+                        pinch.closeClaw(),
+                        sleepAction(500),
+
+                        new ParallelAction( // score 3rd specimen
+                                score4,
+                                elbow.elbowToDeg(112),
+                                extension.extenderToInch(8.5),
+                                axial.rotateAxial(robot.CLAW_UP),
+
+                                extension.extenderToInch(8.5),
+                                new SequentialAction(
+                                        sleepAction(300),
+                                        yaw.rotateClaw(robot.YAW_RIGHT)
+                                )
+                        ),
+                        yaw.rotateClaw(robot.YAW_RIGHT),
                         axial.rotateAxial(0.35),
                         elbow.elbowToDeg(60),
                         pinch.openClaw(),

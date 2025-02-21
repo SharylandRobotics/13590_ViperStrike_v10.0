@@ -221,6 +221,7 @@ public class RobotHardware {
 
         // Define and initialize ALL installed sensors (note: need to use reference to the actual OpMode).
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
+        // imu = myOpMode.hardwareMap.get(IMU.class, "imu2");
 
         /*
          Define how the hub is mounted on the robot to get the correct Yaw, Pitch, and Roll values. There are two input

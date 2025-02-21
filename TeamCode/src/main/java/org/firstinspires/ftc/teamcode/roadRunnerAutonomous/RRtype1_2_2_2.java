@@ -107,7 +107,7 @@ public class RRtype1_2_2_2 extends LinearOpMode{
 
                         grabSample1, // go to next sample and pick up
                         new ParallelAction(
-                                extension.extenderToInch(1),
+                                extension.extenderToInch(0.9),
                                 elbow.elbowToDeg(0),
                                 axial.rotateAxial(robot.CLAW_DOWN)
                         ),
@@ -127,7 +127,7 @@ public class RRtype1_2_2_2 extends LinearOpMode{
 
                         new ParallelAction( // go to next sample
                                 grabSample2,
-                                extension.extenderToInch(1),
+                                extension.extenderToInch(0.9),
                                 elbow.elbowToDeg(0)
                         ),
                         axial.rotateAxial(robot.CLAW_DOWN),

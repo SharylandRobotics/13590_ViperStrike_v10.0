@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
-@TeleOp(name = "BazaarTeleOp", group = "Main")
-public class BazaarTeleOp extends LinearOpMode{
+@TeleOp(name = "Robot Centric", group = "Main")
+public class RobotCentricTeleOp extends LinearOpMode{
 
     RobotHardware robot = new RobotHardware(this);
     ElapsedTime runtime = new ElapsedTime();
@@ -158,11 +158,11 @@ public class BazaarTeleOp extends LinearOpMode{
                 telemetry.addData("not detecting", "");
             }
 
-            robot.driveFieldCentric(drive, strafe, turn);
+            robot.driveRobotCentric(drive, strafe, turn);
             // gamepad 2
 
             // toggle claw mode
-             if (gamepad2.left_stick_button && stickCounter > 5) { // set claw perpendicular to floor
+            if (gamepad2.left_stick_button && stickCounter > 5) { // set claw perpendicular to floor
                 calibratePerpendicular = !calibratePerpendicular;
                 stickCounter = 0;
             }

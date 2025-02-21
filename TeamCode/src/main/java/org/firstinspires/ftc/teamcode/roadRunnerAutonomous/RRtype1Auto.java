@@ -107,7 +107,7 @@ public class RRtype1Auto extends LinearOpMode{
 
         Action park = drive.actionBuilder(rungPose3)
                 .setTangent(Math.atan2(pickupPose.position.y - rungPose3.position.y, pickupPose.position.x - rungPose3.position.x))
-                .lineToX(pickupPose.position.x, new TranslationalVelConstraint(70), new ProfileAccelConstraint(-50, 80))
+                .lineToX(pickupPose.position.x, new TranslationalVelConstraint(90), new ProfileAccelConstraint(-50, 90))
                         .build();
 
 
