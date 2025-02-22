@@ -24,8 +24,8 @@ public class RRtype1_2_2_2 extends LinearOpMode{
         Pose2d initialPose = new Pose2d(-9.5 -23, -64.5, Math.toRadians(90));
         Pose2d rungPose = new Pose2d(-9.5, -43.25, Math.toRadians(90));
 
-        Pose2d sample1Pose = new Pose2d(-48, -33.5, Math.toRadians(90));
-        Pose2d drop1Pose = new Pose2d(-55,-57, Math.toRadians(45));
+        Pose2d sample1Pose = new Pose2d(-47, -33.5, Math.toRadians(90));
+        Pose2d drop1Pose = new Pose2d(-56,-60, Math.toRadians(50));
 
         Pose2d sample2Pose = new Pose2d(-56.5, -34, Math.toRadians(90));
 
@@ -88,7 +88,7 @@ public class RRtype1_2_2_2 extends LinearOpMode{
 
         robot.init(true);
 
-        double dropOffAngle = 10;
+        double dropOffAngle = 12;
 
         waitForStart();
 
@@ -124,6 +124,7 @@ public class RRtype1_2_2_2 extends LinearOpMode{
                                 axial.rotateAxial(robot.CLAW_MID)
                         ),
                         pinch.openClaw(),
+                        sleepAction(400),
 
                         new ParallelAction( // go to next sample
                                 grabSample2,
@@ -143,6 +144,7 @@ public class RRtype1_2_2_2 extends LinearOpMode{
                                 axial.rotateAxial(robot.CLAW_MID)
                         ),
                         pinch.openClaw(),
+                        sleepAction(400),
 
                         new ParallelAction(
                                 grabSample3,
@@ -168,8 +170,7 @@ public class RRtype1_2_2_2 extends LinearOpMode{
                                 axial.rotateAxial(robot.CLAW_MID)
                         ),
                         pinch.openClaw(),
-
-                        sleepAction(200),
+                        sleepAction(400),
 
                         new ParallelAction(
                                 toPark,
