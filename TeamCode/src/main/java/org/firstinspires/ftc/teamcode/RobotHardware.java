@@ -29,6 +29,7 @@ public class RobotHardware {
 
     // Define Sensor objects (Make them private so that they CANT be accessed externally)
     public IMU imu = null; // Universal IMU interface
+    public IMU imu2 = null;
 
     public int coloredSoundID;
     public int yellowSoundID;
@@ -221,7 +222,7 @@ public class RobotHardware {
 
         // Define and initialize ALL installed sensors (note: need to use reference to the actual OpMode).
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
-        // imu = myOpMode.hardwareMap.get(IMU.class, "imu2");
+        imu2 = myOpMode.hardwareMap.get(IMU.class, "imu2");
 
         /*
          Define how the hub is mounted on the robot to get the correct Yaw, Pitch, and Roll values. There are two input
@@ -269,8 +270,15 @@ public class RobotHardware {
 
             imu.initialize(parameters);
 
+            IMU.Parameters parameters2 = new IMU.Parameters(new RevHubOrientationOnRobot(
+                    RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                    RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+
+            imu2.initialize(parameters2);
+
             // Reset the IMU when initializing the hardware class
             imu.resetYaw();
+            imu2.resetYaw();
 
             clawAxial.setPosition(CLAW_DOWN);
             clawPinch.setPosition(CLAW_CLOSE);
@@ -311,6 +319,7 @@ public class RobotHardware {
                     leftFrontDrive.getCurrentPosition(), leftBackDrive.getCurrentPosition(),
                     rightFrontDrive.getCurrentPosition(), rightBackDrive.getCurrentPosition());
             myOpMode.telemetry.addData("Starting Elbow Pos:", elbowDrive.getCurrentPosition());
+            myOpMode.telemetry.addData("Headings", heading + " , " + imu2.getRobotYawPitchRollAngles().getYaw());
             myOpMode.telemetry.update();
         }
     }

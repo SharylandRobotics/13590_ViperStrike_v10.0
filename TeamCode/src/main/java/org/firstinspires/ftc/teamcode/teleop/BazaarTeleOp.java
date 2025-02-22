@@ -5,8 +5,10 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
@@ -24,9 +26,6 @@ public class BazaarTeleOp extends LinearOpMode{
     private double NEWextenderPos;
     private boolean calibratePerpendicular;
 
-    private void checkDpad(){
-
-    }
 
     private void checkLetters(){
         // claw positions
@@ -73,13 +72,6 @@ public class BazaarTeleOp extends LinearOpMode{
         return elbowFactor;
     }
 
-    private void modeSwapper (DcMotor.RunMode mode){
-        robot.leftFrontDrive.setMode(mode);
-        robot.leftBackDrive.setMode(mode);
-        robot.rightFrontDrive.setMode(mode);
-        robot.rightBackDrive.setMode(mode);
-    }
-
     @Override
     public void runOpMode() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight-rfc");
@@ -112,6 +104,7 @@ public class BazaarTeleOp extends LinearOpMode{
 
         boolean elbowByExtender = false;
         boolean g2RightStickSwitch = false;
+        boolean ySwitch = false;
         calibratePerpendicular = false;
 
         double elbowFactor;
@@ -121,7 +114,8 @@ public class BazaarTeleOp extends LinearOpMode{
         double heading;
         double rotateFactor = robot.clawYaw.getPosition();
         // extension encoder setup
-
+        IMU imuObj = robot.imu;
+        String telemIMU = "Default";
         robot.extensionDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.extensionDrive.setPower(1.0);
 
@@ -132,7 +126,29 @@ public class BazaarTeleOp extends LinearOpMode{
         runtime.reset();
 
         while (opModeIsActive()) {
-            heading = robot.imu.getRobotYawPitchRollAngles().getYaw();
+            if (gamepad1.left_bumper){
+                imuObj = robot.imu2;
+                telemIMU = "Default";
+            } else if (gamepad1.right_bumper){
+                imuObj = robot.imu;
+                telemIMU = "Backup";
+            } else if (gamepad1.y){
+                ySwitch = !ySwitch;
+                telemIMU = "LL";
+            }
+
+            if (robot.limelight.getLatestResult() != null) {
+                botPose = robot.limelight.getLatestResult().getBotpose();
+            } else {
+                telemetry.addData("not detecting", "");
+            }
+
+            if (ySwitch && botPose != null){
+                heading = botPose.getOrientation().getYaw(AngleUnit.DEGREES);
+            } else {
+                heading = imuObj.getRobotYawPitchRollAngles().getYaw();
+            }
+
 
             drive = -gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x * 1.1;
@@ -152,13 +168,12 @@ public class BazaarTeleOp extends LinearOpMode{
             }
 
             // get LL results
-            if (limelight.getLatestResult() != null) {
-                botPose = limelight.getLatestResult().getBotpose();
-            } else {
-                telemetry.addData("not detecting", "");
-            }
 
-            robot.driveFieldCentric(drive, strafe, turn);
+            if (gamepad1.right_trigger != 0){
+                robot.driveRobotCentric(drive, strafe, turn);
+            } else {
+                robot.driveFieldCentric(drive, strafe, turn);
+            }
             // gamepad 2
 
             // toggle claw mode
@@ -227,6 +242,8 @@ public class BazaarTeleOp extends LinearOpMode{
 
             // telemetry
             telemetry.addData("Heading", heading);
+            telemetry.addData("Backup Headings:", robot.imu2.getRobotYawPitchRollAngles().getYaw() +
+                    ", LL:" + (botPose != null ? botPose.getOrientation().getYaw(AngleUnit.DEGREES) : "LL null"));
             telemetry.addData("Manual Driving", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             telemetry.addData("Elbow Position", robot.elbowDrive.getCurrentPosition() / robot.ARM_COUNTS_PER_DEGREE);
             telemetry.addData("Extender Position", robot.extensionDrive.getCurrentPosition() / robot.EXTENSION_COUNTS_PER_REV);
