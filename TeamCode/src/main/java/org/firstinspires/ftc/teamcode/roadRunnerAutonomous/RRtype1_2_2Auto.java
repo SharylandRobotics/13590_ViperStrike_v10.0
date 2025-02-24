@@ -99,7 +99,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
 
         robot.init(true);
 
-        double dropOffAngle = 10;
+        double dropOffAngle = 12;
 
         waitForStart();
 
@@ -112,7 +112,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
                                 elbow.elbowToDeg(37+90+dropOffAngle),
                                 extension.extenderToInch(8.5),
                                 yaw.rotateClaw(robot.YAW_MID),
-                                axial.rotateAxial(robot.CLAW_MID)
+                                axial.rotateAxial(robot.CLAW_UP)
                         ),
                         pinch.openClaw(),
 
@@ -132,7 +132,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
                                 elbow.elbowToDeg(37+90+dropOffAngle),
                                 extension.extenderToInch(8.5),
                                 yaw.rotateClaw(robot.YAW_MID),
-                                axial.rotateAxial(robot.CLAW_MID)
+                                axial.rotateAxial(robot.CLAW_UP)
                         ),
                         pinch.openClaw(),
 
@@ -151,7 +151,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
                                 elbow.elbowToDeg(37+90+dropOffAngle),
                                 extension.extenderToInch(8.5),
                                 yaw.rotateClaw(robot.YAW_MID),
-                                axial.rotateAxial(robot.CLAW_MID)
+                                axial.rotateAxial(robot.CLAW_UP)
                         ),
                         pinch.openClaw(),
 
@@ -176,7 +176,7 @@ public class RRtype1_2_2Auto extends LinearOpMode{
                                 elbow.elbowToDeg(37+90+dropOffAngle),
                                 extension.extenderToInch(8.5),
                                 yaw.rotateClaw(robot.YAW_MID),
-                                axial.rotateAxial(robot.CLAW_MID)
+                                axial.rotateAxial(robot.CLAW_UP)
                         ),
                         pinch.openClaw(),
 
